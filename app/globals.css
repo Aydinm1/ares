@@ -1,0 +1,40 @@
+:root {
+  --assignment-bg: #f7f9ff;
+  --assignment-surface: #ffffff;
+  --assignment-text: #181c20;
+  --assignment-muted: #5f6673;
+  --assignment-border: #d9dee8;
+  --assignment-border-strong: #c1c8d5;
+  --assignment-blue: #005bc0;
+  --assignment-blue-hover: #004da3;
+  --assignment-blue-soft: #e7efff;
+  --assignment-success: #168447;
+  --assignment-danger: #ba1a1a;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  min-width: 320px;
+  background: var(--assignment-bg);
+}
+
+body {
+  min-height: 100vh;
+  margin: 0;
+  color: var(--assignment-text);
+  background: var(--assignment-bg);
+  font-family: var(--font-figtree), Arial, sans-serif;
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+a {
+  color: inherit;
+}

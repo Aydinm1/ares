@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Academic Precision | Command Center</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700;800;900&amp;family=Public+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "primary-container": "#1a73e8",
+                    "inverse-primary": "#adc7ff",
+                    "on-secondary": "#ffffff",
+                    "primary-fixed": "#d8e2ff",
+                    "outline": "#727785",
+                    "primary": "#005bbf",
+                    "surface-variant": "#dfe3e8",
+                    "on-tertiary-container": "#ffffff",
+                    "secondary": "#b51b15",
+                    "surface-container-low": "#f1f4fa",
+                    "on-surface": "#181c20",
+                    "tertiary-fixed-dim": "#fbbc05",
+                    "on-primary-container": "#ffffff",
+                    "secondary-fixed-dim": "#ffb4a9",
+                    "error-container": "#ffdad6",
+                    "error": "#ba1a1a",
+                    "on-secondary-fixed-variant": "#930004",
+                    "on-error-container": "#93000a",
+                    "surface-container-high": "#e5e8ee",
+                    "secondary-fixed": "#ffdad5",
+                    "surface-bright": "#f7f9ff",
+                    "on-surface-variant": "#414754",
+                    "surface-dim": "#d7dae0",
+                    "inverse-surface": "#2d3135",
+                    "surface-container-highest": "#dfe3e8",
+                    "on-secondary-container": "#fffbff",
+                    "on-primary-fixed-variant": "#004493",
+                    "surface-container": "#ebeef4",
+                    "primary-fixed-dim": "#adc7ff",
+                    "background": "#f7f9ff",
+                    "on-tertiary-fixed-variant": "#5c4300",
+                    "tertiary": "#795900",
+                    "on-primary-fixed": "#001a41",
+                    "on-tertiary": "#ffffff",
+                    "on-tertiary-fixed": "#261a00",
+                    "inverse-on-surface": "#eef1f7",
+                    "outline-variant": "#c1c6d6",
+                    "on-error": "#ffffff",
+                    "on-secondary-fixed": "#410001",
+                    "tertiary-fixed": "#ffdfa0",
+                    "tertiary-container": "#987000",
+                    "surface-container-lowest": "#ffffff",
+                    "surface-tint": "#005bc0",
+                    "on-primary": "#ffffff",
+                    "on-background": "#181c20",
+                    "secondary-container": "#d9372b",
+                    "surface": "#f7f9ff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "2xl": "1rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Figtree", "sans-serif"],
+                    "display": ["Figtree", "sans-serif"],
+                    "body": ["Figtree", "sans-serif"],
+                    "label": ["Figtree", "sans-serif"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            font-family: 'Figtree', sans-serif;
+            background-color: #f7f9ff;
+        }
+        .sidebar-item-active {
+            background-color: #e8f0fe;
+            color: #1a73e8;
+        }
+        .assignment-card:hover {
+            background-color: #f8f9fa;
+        }
+        .google-shadow {
+            box-shadow: 0 1px 2px 0 rgba(60,64,67,.3), 0 1px 3px 1px rgba(60,64,67,.15);
+        }
+    </style>
+</head>
+<body class="text-on-surface">
+<div class="relative flex min-h-screen w-full flex-col bg-white overflow-x-hidden">
+<div class="layout-container flex h-full grow flex-col">
+<!-- Main Navigation Header (Shared Component Integrity) -->
+<header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-outline-variant px-6 py-3 bg-white sticky top-0 z-50">
+<div class="flex items-center gap-8">
+<div class="flex items-center gap-4 text-on-surface">
+<div class="size-6 text-primary">
+<svg fill="none" viewbox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path d="M44 11.2727C44 14.0109 39.8386 16.3957 33.69 17.6364C39.8386 18.877 44 21.2618 44 24C44 26.7382 39.8386 29.123 33.69 30.3636C39.8386 31.6043 44 33.9891 44 36.7273C44 40.7439 35.0457 44 24 44C12.9543 44 4 40.7439 4 36.7273C4 33.9891 8.16144 31.6043 14.31 30.3636C8.16144 29.123 4 26.7382 4 24C4 21.2618 8.16144 18.877 14.31 17.6364C8.16144 16.3957 4 14.0109 4 11.2727C4 7.25611 12.9543 4 24 4C35.0457 4 44 7.25611 44 11.2727Z" fill="currentColor"></path>
+</svg>
+</div>
+<h2 class="text-on-surface text-xl font-bold leading-tight tracking-tight">Academic Precision</h2>
+</div>
+<label class="flex flex-col min-w-64 h-11">
+<div class="flex w-full flex-1 items-stretch rounded-full bg-surface-container overflow-hidden group border border-transparent focus-within:border-primary-container focus-within:bg-white focus-within:shadow-sm transition-all">
+<div class="text-on-surface-variant flex items-center justify-center pl-4" data-icon="MagnifyingGlass">
+<span class="material-symbols-outlined">search</span>
+</div>
+<input class="form-input flex w-full min-w-0 flex-1 border-none bg-transparent focus:ring-0 px-4 text-base font-normal" placeholder="Search files, courses, or grades" value=""/>
+</div>
+</label>
+</div>
+<div class="flex items-center gap-4">
+<div class="flex gap-1">
+<button class="p-2 hover:bg-surface-container rounded-full transition-colors text-on-surface-variant">
+<span class="material-symbols-outlined">help</span>
+</button>
+<button class="p-2 hover:bg-surface-container rounded-full transition-colors text-on-surface-variant" data-icon="Gear">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<button class="p-2 hover:bg-surface-container rounded-full transition-colors text-on-surface-variant" data-icon="Bell">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+</div>
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-9 border border-outline-variant" data-alt="A professional headshot of a young computer science student with a friendly expression, set against a clean, softly lit academic library background. The lighting is bright and natural, suggesting a high-achieving yet approachable personality. The aesthetic is clean and modern." style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCVDoi6i-_x3mCIpvwns9mxQfsRjcsoSSO1XhPxrrROiMl2Y4FlkyVCF9lMZg875QOeK7WfZffEEpiFLUvA_XKpXRVe6UYMlksUp3RWO_5teBRUL38fEZUDyJkUUWYHERkMnSDjdCJBYZ76ENXZ9kuUhIRcsYNbqepUDhsdhySVcFg0e7vDl0K4pOpsVOkCYo3BrXtlyfhg4gGE3_zpc-27KpIChF_2iw4PUu4sIccOlJg2qTWae8m-0_WDfTNYX70aqWZTxtXd1Q4");'></div>
+</div>
+</header>
+<div class="flex flex-1 overflow-hidden">
+<!-- Sidebar -->
+<aside class="w-64 flex-shrink-0 border-r border-outline-variant bg-white p-4 flex flex-col gap-2">
+<div class="flex items-center gap-3 px-3 py-3 rounded-2xl sidebar-item-active font-medium cursor-pointer">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">dashboard</span>
+<p class="text-sm">Command Center</p>
+</div>
+<div class="flex items-center gap-3 px-3 py-3 rounded-2xl hover:bg-surface-container transition-colors font-medium cursor-pointer text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="Scroll">menu_book</span>
+<p class="text-sm">My Courses</p>
+</div>
+<div class="flex items-center gap-3 px-3 py-3 rounded-2xl hover:bg-surface-container transition-colors font-medium cursor-pointer text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="Calendar">calendar_today</span>
+<p class="text-sm">Master Schedule</p>
+</div>
+<div class="flex items-center gap-3 px-3 py-3 rounded-2xl hover:bg-surface-container transition-colors font-medium cursor-pointer text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="Folder">folder_open</span>
+<p class="text-sm">Resources</p>
+</div>
+<div class="mt-auto border-t border-outline-variant pt-4">
+<div class="flex items-center gap-3 px-3 py-3 rounded-2xl hover:bg-surface-container transition-colors font-medium cursor-pointer text-on-surface-variant">
+<span class="material-symbols-outlined">analytics</span>
+<p class="text-sm">Performance</p>
+</div>
+</div>
+</aside>
+<!-- Main Dashboard Area -->
+<main class="flex-1 overflow-y-auto bg-surface-bright p-8">
+<!-- Overview Header -->
+<div class="flex flex-wrap justify-between items-end gap-6 mb-8">
+<div class="flex flex-col gap-2">
+<div class="flex items-center gap-2 text-on-surface-variant text-sm font-medium mb-1">
+<span class="material-symbols-outlined text-base">today</span>
+<span>Monday, October 21, 2024</span>
+</div>
+<h1 class="text-on-surface text-4xl font-bold tracking-tight">Good morning, Aydin</h1>
+<p class="text-on-surface-variant text-lg">You have <span class="font-bold text-primary">3 assignments</span> due this week.</p>
+</div>
+<!-- Sync Indicator & Button -->
+<div class="flex items-center gap-4 bg-white px-5 py-3 rounded-2xl border border-outline-variant shadow-sm">
+<div class="flex flex-col">
+<span class="text-xs text-on-surface-variant uppercase font-bold tracking-wider">Airtable Sync</span>
+<div class="flex items-center gap-1.5">
+<div class="size-2 rounded-full bg-green-500"></div>
+<span class="text-sm font-medium">Last synced 12m ago</span>
+</div>
+</div>
+<button class="flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-full font-bold text-sm hover:bg-primary-container transition-all active:scale-95 shadow-md">
+<span class="material-symbols-outlined text-lg">sync</span>
+<span>Sync Now</span>
+</button>
+</div>
+</div>
+<!-- Main Grid Content -->
+<div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
+<!-- Left Column: Upcoming Assignments -->
+<div class="xl:col-span-2 flex flex-col gap-6">
+<div class="bg-white rounded-2xl border border-outline-variant flex flex-col overflow-hidden">
+<div class="px-6 py-5 border-b border-outline-variant flex items-center justify-between">
+<h3 class="text-xl font-bold text-on-surface">Upcoming Assignments</h3>
+<div class="flex items-center gap-4">
+<label class="relative inline-flex items-center cursor-pointer">
+<input class="sr-only peer" type="checkbox" value=""/>
+<div class="w-10 h-5 bg-surface-variant peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary"></div>
+<span class="ml-3 text-sm font-medium text-on-surface-variant">Hide completed</span>
+</label>
+<button class="p-1.5 hover:bg-surface-container rounded-full text-on-surface-variant">
+<span class="material-symbols-outlined">filter_list</span>
+</button>
+</div>
+</div>
+<!-- Assignment List -->
+<div class="flex flex-col divide-y divide-outline-variant">
+<!-- Row 1 -->
+<div class="assignment-card flex items-center px-6 py-5 transition-colors cursor-pointer group">
+<div class="size-5 rounded border-2 border-outline group-hover:border-primary flex items-center justify-center mr-6"></div>
+<div class="flex-1 flex flex-col">
+<span class="font-bold text-on-surface">Neural Networks: Project Proposal</span>
+<div class="flex items-center gap-2 mt-1">
+<div class="size-2 rounded-full bg-blue-600"></div>
+<span class="text-sm text-on-surface-variant">CS 482: Machine Learning</span>
+</div>
+</div>
+<div class="flex items-center gap-8">
+<div class="flex flex-col items-end">
+<span class="text-sm font-bold text-error">Due tomorrow</span>
+<span class="text-xs text-on-surface-variant">Oct 22, 11:59 PM</span>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant opacity-0 group-hover:opacity-100 transition-opacity">chevron_right</span>
+</div>
+</div>
+<!-- Row 2 -->
+<div class="assignment-card flex items-center px-6 py-5 transition-colors cursor-pointer group">
+<div class="size-5 rounded border-2 border-outline group-hover:border-primary flex items-center justify-center mr-6"></div>
+<div class="flex-1 flex flex-col">
+<span class="font-bold text-on-surface">Data Structures: Heap Implementation</span>
+<div class="flex items-center gap-2 mt-1">
+<div class="size-2 rounded-full bg-green-500"></div>
+<span class="text-sm text-on-surface-variant">CS 210: Algorithms</span>
+</div>
+</div>
+<div class="flex items-center gap-8">
+<div class="flex flex-col items-end">
+<span class="text-sm font-bold text-on-surface">In 3 days</span>
+<span class="text-xs text-on-surface-variant">Oct 24, 5:00 PM</span>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant opacity-0 group-hover:opacity-100 transition-opacity">chevron_right</span>
+</div>
+</div>
+<!-- Row 3 -->
+<div class="assignment-card flex items-center px-6 py-5 transition-colors cursor-pointer group">
+<div class="size-5 rounded border-2 border-outline group-hover:border-primary flex items-center justify-center mr-6"></div>
+<div class="flex-1 flex flex-col">
+<span class="font-bold text-on-surface">Ethics in Tech: Case Study Analysis</span>
+<div class="flex items-center gap-2 mt-1">
+<div class="size-2 rounded-full bg-yellow-500"></div>
+<span class="text-sm text-on-surface-variant">PHL 302: Ethics</span>
+</div>
+</div>
+<div class="flex items-center gap-8">
+<div class="flex flex-col items-end">
+<span class="text-sm font-bold text-on-surface">Oct 27</span>
+<span class="text-xs text-on-surface-variant">11:59 PM</span>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant opacity-0 group-hover:opacity-100 transition-opacity">chevron_right</span>
+</div>
+</div>
+<!-- Row 4 -->
+<div class="assignment-card flex items-center px-6 py-5 transition-colors cursor-pointer group">
+<div class="size-5 rounded border-2 border-outline group-hover:border-primary flex items-center justify-center mr-6"></div>
+<div class="flex-1 flex flex-col">
+<span class="font-bold text-on-surface">Compiler Design: Parser Homework</span>
+<div class="flex items-center gap-2 mt-1">
+<div class="size-2 rounded-full bg-red-500"></div>
+<span class="text-sm text-on-surface-variant">CS 401: Compilers</span>
+</div>
+</div>
+<div class="flex items-center gap-8">
+<div class="flex flex-col items-end">
+<span class="text-sm font-bold text-on-surface">Oct 29</span>
+<span class="text-xs text-on-surface-variant">11:59 PM</span>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant opacity-0 group-hover:opacity-100 transition-opacity">chevron_right</span>
+</div>
+</div>
+</div>
+<div class="bg-surface-container-low px-6 py-4">
+<button class="text-sm font-bold text-primary hover:underline">View all upcoming assignments</button>
+</div>
+</div>
+<!-- Course Overview Section -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div class="bg-white p-6 rounded-2xl border border-outline-variant">
+<div class="flex items-center gap-4 mb-4">
+<div class="size-10 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center">
+<span class="material-symbols-outlined">trending_up</span>
+</div>
+<div>
+<p class="text-xs font-bold text-on-surface-variant uppercase tracking-wider">Current Average</p>
+<h4 class="text-2xl font-black">3.92 GPA</h4>
+</div>
+</div>
+<div class="w-full bg-surface-container rounded-full h-1.5 overflow-hidden">
+<div class="bg-blue-600 h-full w-[94%]"></div>
+</div>
+</div>
+<div class="bg-white p-6 rounded-2xl border border-outline-variant">
+<div class="flex items-center gap-4 mb-4">
+<div class="size-10 rounded-xl bg-green-100 text-green-600 flex items-center justify-center">
+<span class="material-symbols-outlined">check_circle</span>
+</div>
+<div>
+<p class="text-xs font-bold text-on-surface-variant uppercase tracking-wider">Credits Completed</p>
+<h4 class="text-2xl font-black">102 / 128</h4>
+</div>
+</div>
+<div class="w-full bg-surface-container rounded-full h-1.5 overflow-hidden">
+<div class="bg-green-500 h-full w-[80%]"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Column: Calendar Widget -->
+<div class="flex flex-col gap-8">
+<div class="bg-white rounded-2xl border border-outline-variant overflow-hidden">
+<div class="px-6 py-5 border-b border-outline-variant flex items-center justify-between">
+<h3 class="font-bold text-on-surface">October 2024</h3>
+<div class="flex gap-2">
+<button class="p-1 hover:bg-surface-container rounded-full"><span class="material-symbols-outlined text-lg">chevron_left</span></button>
+<button class="p-1 hover:bg-surface-container rounded-full"><span class="material-symbols-outlined text-lg">chevron_right</span></button>
+</div>
+</div>
+<div class="p-4">
+<div class="grid grid-cols-7 gap-1 text-center mb-2">
+<div class="text-[10px] font-bold text-on-surface-variant uppercase">S</div>
+<div class="text-[10px] font-bold text-on-surface-variant uppercase">M</div>
+<div class="text-[10px] font-bold text-on-surface-variant uppercase">T</div>
+<div class="text-[10px] font-bold text-on-surface-variant uppercase">W</div>
+<div class="text-[10px] font-bold text-on-surface-variant uppercase">T</div>
+<div class="text-[10px] font-bold text-on-surface-variant uppercase">F</div>
+<div class="text-[10px] font-bold text-on-surface-variant uppercase">S</div>
+</div>
+<div class="grid grid-cols-7 gap-1">
+<!-- Empty slots for previous month -->
+<div class="aspect-square flex items-center justify-center text-sm text-outline-variant">30</div>
+<!-- Month days -->
+<div class="aspect-square flex items-center justify-center text-sm hover:bg-surface-container rounded-full cursor-pointer transition-colors relative">1</div>
+<div class="aspect-square flex items-center justify-center text-sm hover:bg-surface-container rounded-full cursor-pointer transition-colors relative">
+                                        2<div class="absolute bottom-1 size-1 bg-yellow-500 rounded-full"></div>
+</div>
+<div class="aspect-square flex items-center justify-center text-sm hover:bg-surface-container rounded-full cursor-pointer transition-colors relative">3</div>
+<div class="aspect-square flex items-center justify-center text-sm hover:bg-surface-container rounded-full cursor-pointer transition-colors relative">
+                                        4<div class="absolute bottom-1 size-1 bg-red-500 rounded-full"></div>
+</div>
+<div class="aspect-square flex items-center justify-center text-sm hover:bg-surface-container rounded-full cursor-pointer transition-colors relative">5</div>
+<div class="aspect-square flex items-center justify-center text-sm hover:bg-surface-container rounded-full cursor-pointer transition-colors relative">6</div>
+<div class="aspect-square flex items-center justify-center text-sm hover:bg-surface-container rounded-full cursor-pointer transition-colors relative">7</div>
+<div class="aspect-square flex items-center justify-center text-sm hover:bg-surface-container rounded-full cursor-pointer transition-colors relative">8</div>
+<div class="aspect-square flex items-center justify-center text-sm hover:bg-surface-container rounded-full cursor-pointer transition-colors relative">
+                                        9<div class="absolute bottom-1 size-1 bg-blue-500 rounded-full"></div>
+</div>
+<div class="aspect-square flex items-center justify-center text-sm hover:bg-surface-container rounded-full cursor-pointer transition-colors relative">10</div>
+<div class="aspect-square flex items-center justify-center text-sm hover:bg-surface-container rounded-full cursor-pointer transition-colors relative">11</div>
+<div class="aspect-square flex items-center justify-center text-sm hover:bg-surface-container rounded-full cursor-pointer transition-colors relative">12</div>
+<div class="aspect-square flex items-center justify-center text-sm hover:bg-surface-container rounded-full cursor-pointer transition-colors relative">13</div>
+<div class="aspect-square flex items-center justify-center text-sm hover:bg-surface-container rounded-full cursor-pointer transition-colors relative">14</div>
+<div class="aspect-square flex items-center justify-center text-sm hover:bg-surface-container rounded-full cursor-pointer transition-colors relative">
+                                        15<div class="absolute bottom-1 size-1 bg-green-500 rounded-full"></div>
+</div>
+<div class="aspect-square flex items-center justify-center text-sm hover:bg-surface-container rounded-full cursor-pointer transition-colors relative">16</div>
+<div class="aspect-square flex items-center justify-center text-sm hover:bg-surface-container rounded-full cursor-pointer transition-colors relative">17</div>
+<div class="aspect-square flex items-center justify-center text-sm hover:bg-surface-container rounded-full cursor-pointer transition-colors relative">18</div>
+<div class="aspect-square flex items-center justify-center text-sm hover:bg-surface-container rounded-full cursor-pointer transition-colors relative">19</div>
+<div class="aspect-square flex items-center justify-center text-sm hover:bg-surface-container rounded-full cursor-pointer transition-colors relative">20</div>
+<!-- Current Day -->
+<div class="aspect-square flex items-center justify-center text-sm bg-primary text-white font-bold rounded-full cursor-pointer relative">21</div>
+<div class="aspect-square flex items-center justify-center text-sm hover:bg-surface-container rounded-full cursor-pointer transition-colors relative">
+                                        22<div class="absolute bottom-1 size-1 bg-blue-500 rounded-full"></div>
+</div>
+<div class="aspect-square flex items-center justify-center text-sm hover:bg-surface-container rounded-full cursor-pointer transition-colors relative">23</div>
+<div class="aspect-square flex items-center justify-center text-sm hover:bg-surface-container rounded-full cursor-pointer transition-colors relative">
+                                        24<div class="absolute bottom-1 size-1 bg-green-500 rounded-full"></div>
+</div>
+<div class="aspect-square flex items-center justify-center text-sm hover:bg-surface-container rounded-full cursor-pointer transition-colors relative">25</div>
+<div class="aspect-square flex items-center justify-center text-sm hover:bg-surface-container rounded-full cursor-pointer transition-colors relative">26</div>
+<div class="aspect-square flex items-center justify-center text-sm hover:bg-surface-container rounded-full cursor-pointer transition-colors relative">27</div>
+<div class="aspect-square flex items-center justify-center text-sm hover:bg-surface-container rounded-full cursor-pointer transition-colors relative">28</div>
+<div class="aspect-square flex items-center justify-center text-sm hover:bg-surface-container rounded-full cursor-pointer transition-colors relative">29</div>
+<div class="aspect-square flex items-center justify-center text-sm hover:bg-surface-container rounded-full cursor-pointer transition-colors relative">30</div>
+<div class="aspect-square flex items-center justify-center text-sm hover:bg-surface-container rounded-full cursor-pointer transition-colors relative">31</div>
+</div>
+</div>
+</div>
+<!-- Quick Resources -->
+<div class="bg-white p-6 rounded-2xl border border-outline-variant shadow-sm">
+<h3 class="font-bold text-on-surface mb-4">Quick Resources</h3>
+<div class="flex flex-col gap-3">
+<a class="flex items-center gap-3 p-3 rounded-xl hover:bg-surface-container transition-all group" href="#">
+<div class="size-8 rounded-lg bg-red-100 text-red-600 flex items-center justify-center">
+<span class="material-symbols-outlined text-base">picture_as_pdf</span>
+</div>
+<span class="text-sm font-medium flex-1">Semester Syllabus (Fall '24)</span>
+<span class="material-symbols-outlined text-on-surface-variant opacity-0 group-hover:opacity-100 text-sm">download</span>
+</a>
+<a class="flex items-center gap-3 p-3 rounded-xl hover:bg-surface-container transition-all group" href="#">
+<div class="size-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center">
+<span class="material-symbols-outlined text-base">link</span>
+</div>
+<span class="text-sm font-medium flex-1">Virtual Lab Portal</span>
+<span class="material-symbols-outlined text-on-surface-variant opacity-0 group-hover:opacity-100 text-sm">open_in_new</span>
+</a>
+<a class="flex items-center gap-3 p-3 rounded-xl hover:bg-surface-container transition-all group" href="#">
+<div class="size-8 rounded-lg bg-green-100 text-green-600 flex items-center justify-center">
+<span class="material-symbols-outlined text-base">book</span>
+</div>
+<span class="text-sm font-medium flex-1">Academic Registry</span>
+<span class="material-symbols-outlined text-on-surface-variant opacity-0 group-hover:opacity-100 text-sm">open_in_new</span>
+</a>
+</div>
+</div>
+<!-- Atmospheric Decor -->
+<div class="relative h-48 w-full rounded-2xl overflow-hidden border border-outline-variant">
+<div class="absolute inset-0 bg-cover bg-center" data-alt="A serene, minimalist digital illustration of a clean workspace with a single laptop, a cup of coffee, and a small green plant, bathed in soft afternoon sunlight filtering through a nearby window. The art style is flat and modern, utilizing a palette of soft whites, pale blues, and warm wood tones to create a peaceful study atmosphere." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuA5JFN8as5Oq0lx8oWNutc6E2Mcut2rAtdhXjAPA75zYKsuPmcq8MPrBvDdfpQXyjsDX7u4O7jqRq69tzbLr2tG9xpNlDokm3VO5JL7EgBDYt2QmK4dw89fEV0lKRWu_YCM6h1yzs_8P2gATBZZm2dJK1stEmY7rqHD8oWnrSObpTHhNLMsVlud3DftOiYDtCiPmSgfSo1JzY5KrAOFw3tCXzEihxDa5S90TETvSNyDeLfR2VX_US5Demfy2HrfLMzfCTYRSHcEbUg')"></div>
+<div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-5">
+<p class="text-white text-sm font-medium leading-tight">"Consistency is the key to mastery."</p>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</div>
+</div>
+<script>
+    // Simple micro-interactions
+    document.querySelectorAll('.assignment-card').forEach(card => {
+        card.addEventListener('click', function() {
+            const checkbox = this.querySelector('.size-5');
+            const title = this.querySelector('.font-bold');
+            if (checkbox.innerHTML === '') {
+                checkbox.innerHTML = '<span class="material-symbols-outlined text-primary text-xs">check</span>';
+                checkbox.classList.add('border-primary');
+                title.classList.add('line-through', 'text-on-surface-variant', 'opacity-50');
+            } else {
+                checkbox.innerHTML = '';
+                checkbox.classList.remove('border-primary');
+                title.classList.remove('line-through', 'text-on-surface-variant', 'opacity-50');
+            }
+        });
+    });
+
+    // Theme toggle simulation (optional if needed)
+    // For now stick to light mode as requested.
+</script>
+</body></html>

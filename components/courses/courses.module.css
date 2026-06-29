@@ -1,0 +1,353 @@
+.timeline {
+  display: grid;
+  gap: 12px;
+}
+
+.year {
+  position: relative;
+  display: grid;
+  grid-template-columns: 82px minmax(0, 1fr);
+  overflow: visible;
+  border: 1px solid var(--assignment-border);
+  border-radius: 12px;
+  background: var(--assignment-surface);
+}
+
+.yearLabel {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 16px 10px;
+  border-right: 1px solid var(--assignment-border);
+  color: var(--assignment-muted);
+  background: #f8faff;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.quarterGrid {
+  display: grid;
+  min-width: 0;
+}
+
+.quarter {
+  min-width: 0;
+}
+
+.quarter + .quarter {
+  border-left: 1px solid var(--assignment-border);
+}
+
+.quarterHeader {
+  display: flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--assignment-border);
+  background: #fbfcff;
+}
+
+.quarterTitle {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.quarterMeta {
+  color: var(--assignment-muted);
+  font-size: 10px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.courseList {
+  display: grid;
+}
+
+.courseItem {
+  position: relative;
+  min-width: 0;
+  border-bottom: 1px solid #edf0f5;
+}
+
+.courseItem:last-child {
+  border-bottom: 0;
+}
+
+.courseButton {
+  display: grid;
+  width: 100%;
+  min-height: 34px;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 9px;
+  border: 0;
+  color: var(--assignment-text);
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.courseButton:hover,
+.courseButton[data-selected="true"] {
+  background: var(--assignment-blue-soft);
+}
+
+.courseName {
+  overflow: hidden;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.3;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.units,
+.grade {
+  color: var(--assignment-muted);
+  font-size: 10px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.grade {
+  min-width: 18px;
+  color: var(--assignment-text);
+  font-weight: 700;
+  text-align: right;
+}
+
+.grade[data-progress="true"] {
+  color: #9a5d00;
+  font-size: 0;
+}
+
+.grade[data-progress="true"]::after {
+  font-size: 10px;
+  content: "Now";
+}
+
+.emptyQuarter {
+  min-height: 68px;
+  padding: 14px 10px;
+  color: var(--assignment-muted);
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+.detailPopover {
+  position: absolute;
+  z-index: 60;
+  top: calc(100% + 6px);
+  left: 8px;
+  width: min(320px, calc(100vw - 40px));
+  padding: 14px;
+  border: 1px solid var(--assignment-border);
+  border-radius: 10px;
+  background: #ffffff;
+  box-shadow: 0 10px 30px rgb(24 28 32 / 18%);
+}
+
+.quarter:nth-child(n + 3) .detailPopover {
+  right: 8px;
+  left: auto;
+}
+
+.detailHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.detailTitle {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.detailMeta {
+  margin: 5px 0 0;
+  color: var(--assignment-muted);
+  font-size: 11px;
+}
+
+.closeButton {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  flex: 0 0 auto;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  color: var(--assignment-muted);
+  background: transparent;
+  cursor: pointer;
+}
+
+.closeButton:hover {
+  background: #f1f4fa;
+}
+
+.requirements {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--assignment-border);
+}
+
+.requirementHeading {
+  width: 100%;
+  margin: 0;
+  color: var(--assignment-muted);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.tag {
+  display: inline-flex;
+  min-height: 24px;
+  align-items: center;
+  padding: 3px 8px;
+  border: 1px solid #d8e2f2;
+  border-radius: 5px;
+  color: #31547e;
+  background: #f4f8ff;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.tagMajor {
+  border-color: #d9e8df;
+  color: #2d6848;
+  background: #f3faf6;
+}
+
+.emptyRequirement {
+  color: var(--assignment-muted);
+  font-size: 11px;
+}
+
+.loading,
+.state {
+  overflow: hidden;
+  border: 1px solid var(--assignment-border);
+  border-radius: 12px;
+  background: var(--assignment-surface);
+}
+
+.skeleton {
+  min-height: 92px;
+  border-bottom: 1px solid var(--assignment-border);
+  background:
+    linear-gradient(#e9edf3 0 0) 20px 24px / 120px 11px no-repeat,
+    linear-gradient(#f0f2f6 0 0) 20px 49px / 80% 9px no-repeat;
+}
+
+.state {
+  display: grid;
+  min-height: 260px;
+  place-items: center;
+  padding: 32px;
+  text-align: center;
+}
+
+.state h2 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.state p {
+  max-width: 420px;
+  margin: 8px 0 0;
+  color: var(--assignment-muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.retry {
+  min-height: 34px;
+  margin-top: 14px;
+  padding: 0 13px;
+  border: 1px solid var(--assignment-border-strong);
+  border-radius: 999px;
+  color: var(--assignment-blue);
+  background: #ffffff;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.courseButton:focus-visible,
+.closeButton:focus-visible,
+.retry:focus-visible {
+  outline: 3px solid rgb(11 87 208 / 24%);
+  outline-offset: 2px;
+}
+
+@media (max-width: 900px) {
+  .year {
+    display: block;
+  }
+
+  .yearLabel {
+    justify-content: flex-start;
+    padding: 10px 12px;
+    border-right: 0;
+    border-bottom: 1px solid var(--assignment-border);
+  }
+
+  .quarterGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .quarter {
+    border-bottom: 1px solid var(--assignment-border);
+  }
+
+  .quarter:nth-child(odd) {
+    border-left: 0;
+  }
+
+  .quarter:nth-last-child(-n + 2) {
+    border-bottom: 0;
+  }
+
+  .detailPopover {
+    position: fixed;
+    z-index: 80;
+    top: auto;
+    right: 12px;
+    bottom: 12px;
+    left: 12px;
+    width: auto;
+    max-height: calc(100vh - 24px);
+    overflow-y: auto;
+  }
+}
+
+@media (max-width: 430px) {
+  .quarterGrid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .quarter,
+  .quarter:nth-child(n) {
+    border-left: 0;
+    border-bottom: 1px solid var(--assignment-border);
+  }
+
+  .quarter:last-child {
+    border-bottom: 0;
+  }
+}

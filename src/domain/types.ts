@@ -1,0 +1,67 @@
+export type AirtableRecordId = string;
+
+export type AssignmentStatus =
+  | "not_started"
+  | "in_progress"
+  | "submitted"
+  | "graded"
+  | "missing";
+
+export type AssignmentCategory =
+  | "reading"
+  | "problem_set"
+  | "paper"
+  | "quiz"
+  | "exam"
+  | "project"
+  | "discussion"
+  | "other";
+
+export type CourseStatus = "not_started" | "in_progress" | "completed";
+
+export interface GradeCategory {
+  id: AirtableRecordId;
+  courseId: AirtableRecordId;
+  name: string;
+  weightPercent: number;
+}
+
+export interface GradePolicy {
+  courseId: AirtableRecordId;
+  categories: GradeCategory[];
+  usesWeightedCategories: boolean;
+}
+
+export interface GeneralEducationRequirement {
+  id: AirtableRecordId;
+  category: string;
+}
+
+export interface Course {
+  id: AirtableRecordId;
+  name: string;
+  status?: CourseStatus;
+  quarterTaken?: string;
+  grade?: string;
+  majorRequirements?: string[];
+  geRequirementUsedIds?: AirtableRecordId[];
+  geRequirementsUsed?: GeneralEducationRequirement[];
+  creditHours?: number;
+  gradePolicy?: GradePolicy;
+}
+
+export interface Assignment {
+  id: AirtableRecordId;
+  title: string;
+  courseId?: AirtableRecordId;
+  dueAt?: string;
+  status: AssignmentStatus;
+  category: AssignmentCategory;
+  categoryId?: AirtableRecordId;
+  pointsEarned?: number;
+  pointsPossible?: number;
+  typeLabel?: string;
+  weekLabel?: string;
+  notes?: string;
+  createdAt?: string;
+}
