@@ -222,40 +222,31 @@
   color: var(--assignment-blue);
 }
 
-.syncCard {
-  display: flex;
-  flex: 0 0 auto;
-  align-items: center;
-  gap: 12px;
-  min-width: 270px;
-  min-height: 56px;
-  padding: 8px 10px 8px 14px;
-  border: 1px solid var(--assignment-border);
-  border-radius: 14px;
-  background: var(--assignment-surface);
-}
-
-.syncMeta {
+.syncControl {
   display: grid;
-  min-width: 0;
-  gap: 3px;
-}
-
-.syncEyebrow {
-  color: var(--assignment-muted);
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0;
-  text-transform: uppercase;
+  flex: 0 0 auto;
+  width: 214px;
+  min-height: 36px;
+  grid-template-columns: 168px 36px;
+  align-items: center;
+  gap: 10px;
 }
 
 .syncStatus {
   display: flex;
+  min-width: 0;
   align-items: center;
+  justify-content: flex-end;
   gap: 7px;
-  font-size: 13px;
+  color: var(--assignment-muted);
+  font-size: 12px;
   font-weight: 500;
   white-space: nowrap;
+}
+
+.syncStatusText {
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .primaryButton,
@@ -286,11 +277,15 @@
   background: var(--assignment-blue-hover);
 }
 
-.syncCard .primaryButton {
-  gap: 7px;
+.syncButton {
+  width: 36px;
+  height: 36px;
   min-height: 36px;
-  padding-inline: 12px;
-  font-size: 12px;
+  padding: 0;
+}
+
+.buttonIcon[data-spinning="true"] {
+  animation: sync-spin 850ms linear infinite;
 }
 
 .primaryButton:disabled {
@@ -1121,10 +1116,14 @@
     margin-bottom: 24px;
   }
 
-  .syncCard {
+  .syncControl {
     width: 100%;
+    grid-template-columns: minmax(0, 1fr) 36px;
     margin-top: 0;
-    justify-content: space-between;
+  }
+
+  .syncStatus {
+    justify-content: flex-start;
   }
 
   .mobileSwitcher {
@@ -1173,13 +1172,12 @@
     font-size: 14px;
   }
 
-  .syncCard {
-    gap: 10px;
-    padding-left: 12px;
-  }
-
   .primaryButton {
     padding: 0 11px;
+  }
+
+  .syncButton {
+    padding: 0;
   }
 
   .panelHeader {
@@ -1248,5 +1246,15 @@
   .skeletonLine,
   .skeletonShort {
     animation: none;
+  }
+
+  .buttonIcon[data-spinning="true"] {
+    animation: none;
+  }
+}
+
+@keyframes sync-spin {
+  to {
+    transform: rotate(360deg);
   }
 }

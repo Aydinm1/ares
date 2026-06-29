@@ -151,10 +151,22 @@ export function WorkspaceHeader({
   summary,
   syncState,
   syncLabel,
-  syncActionLabel = "Sync now",
   icons,
   onSync,
 }: WorkspaceHeaderProps) {
+  const displayedSyncLabel =
+    syncState === "syncing"
+      ? "Syncing with Airtable..."
+      : syncState === "error"
+        ? "Sync failed"
+        : syncLabel;
+  const syncButtonLabel =
+    syncState === "syncing"
+      ? "Syncing with Airtable"
+      : syncState === "error"
+        ? "Retry Airtable sync"
+        : "Sync with Airtable";
+
   return (
     <header className={styles.workspaceHeader}>
       <div>
@@ -167,24 +179,26 @@ export function WorkspaceHeader({
         <h1 className={styles.title}>{title}</h1>
         <p className={styles.summary}>{summary}</p>
       </div>
-      <div className={styles.syncCard} aria-live="polite">
-        <div className={styles.syncMeta}>
-          <span className={styles.syncEyebrow}>Airtable sync</span>
-          <span className={styles.syncStatus}>
-            <span className={styles.syncDot} data-state={syncState} aria-hidden="true" />
-            {syncLabel}
-          </span>
-        </div>
+      <div className={styles.syncControl}>
+        <span className={styles.syncStatus} aria-live="polite">
+          <span className={styles.syncDot} data-state={syncState} aria-hidden="true" />
+          <span className={styles.syncStatusText}>{displayedSyncLabel}</span>
+        </span>
         <button
-          className={styles.primaryButton}
+          className={`${styles.primaryButton} ${styles.syncButton}`}
           type="button"
           onClick={onSync}
           disabled={syncState === "syncing"}
+          aria-label={syncButtonLabel}
+          title={syncButtonLabel}
         >
-          <span className={styles.buttonIcon} aria-hidden="true">
+          <span
+            className={styles.buttonIcon}
+            data-spinning={syncState === "syncing"}
+            aria-hidden="true"
+          >
             {icons.sync}
           </span>
-          <span>{syncActionLabel}</span>
         </button>
       </div>
     </header>

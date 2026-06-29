@@ -78,8 +78,10 @@ Assignments and 4 Year Plan are the only primary destinations.
 - The sidebar and mobile header share the Academic Precision brand.
 - Active navigation uses the blue-soft background and blue icon/text.
 - Main content keeps a readable maximum width and consistent left alignment.
-- The Airtable sync surface sits opposite the page heading on desktop and
-  becomes full-width below it on narrow screens.
+- Airtable synchronization uses one quiet status line and a fixed `36px`
+  refresh button opposite the page heading. Its geometry must not change
+  between synced, syncing, and error states. On narrow screens the status
+  track fills the row while the button remains fixed.
 - Mobile replaces the sidebar with the compact top navigation.
 
 ## Assignments
