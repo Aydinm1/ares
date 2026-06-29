@@ -30,7 +30,20 @@ export function filterAssignments(
   const courseId = filters.courseId ?? "all";
   return assignments.filter(
     (assignment) =>
-      (!filters.hideCompleted || !isCompleted(assignment)) &&
+      (
+        !isCompleted(assignment) ||
+        filters.retainedCompletedIds?.has(assignment.id) === true ||
+        (
+          !filters.hideCompleted &&
+          (
+            filters.completedCourseIds === undefined ||
+            (
+              assignment.courseId !== undefined &&
+              filters.completedCourseIds.has(assignment.courseId)
+            )
+          )
+        )
+      ) &&
       (courseId === "all" || assignment.courseId === courseId)
   );
 }
@@ -38,11 +51,22 @@ export function filterAssignments(
 /** Sorts deadlines first, then course name, title, and record ID for total stability. */
 export function sortAssignments(
   assignments: readonly Assignment[],
-  courses: readonly Course[]
+  courses: readonly Course[],
+  options: { completedFirst?: boolean } = {}
 ): Assignment[] {
   const courseNames = new Map(courses.map((course) => [course.id, course.name]));
   const collator = new Intl.Collator(undefined, { sensitivity: "base", numeric: true });
   return [...assignments].sort((left, right) => {
+    if (options.completedFirst) {
+      const leftCompleted = isCompleted(left);
+      const rightCompleted = isCompleted(right);
+      if (leftCompleted !== rightCompleted) return leftCompleted ? -1 : 1;
+      if (leftCompleted && rightCompleted) {
+        const byDate = dueTimestamp(right) - dueTimestamp(left);
+        if (Number.isFinite(byDate) && byDate !== 0) return byDate;
+      }
+    }
+
     const byDate = dueTimestamp(left) - dueTimestamp(right);
     if (Number.isFinite(byDate) && byDate !== 0) return byDate;
     const byCourse = collator.compare(

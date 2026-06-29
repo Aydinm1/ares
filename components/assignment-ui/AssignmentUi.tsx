@@ -7,6 +7,7 @@ import styles from "./assignment-ui.module.css";
 export type AssignmentDueTone = "overdue" | "today" | "soon" | "normal" | "undated";
 export type AssignmentSyncState = "synced" | "syncing" | "error";
 export type AssignmentMobileView = "list" | "calendar";
+export type AssignmentCompletionFeedback = "confirmed" | "exiting";
 
 export interface AssignmentUiIcons {
   brand: ReactNode;
@@ -34,6 +35,7 @@ export interface AssignmentListItem {
   dueTone: AssignmentDueTone;
   completed: boolean;
   saving?: boolean;
+  completionFeedback?: AssignmentCompletionFeedback;
 }
 
 export interface AssignmentCalendarEntry {
@@ -440,15 +442,17 @@ export function AssignmentRow({ item, onCompletionChange }: AssignmentRowProps) 
   return (
     <div
       className={styles.assignmentRow}
+      data-assignment-id={item.id}
       data-completed={item.completed}
       data-saving={item.saving === true}
+      data-feedback={item.completionFeedback}
       style={courseColor}
     >
       <input
         className={styles.completionBox}
         type="checkbox"
         checked={item.completed}
-        disabled={item.saving}
+        disabled={item.saving || item.completionFeedback !== undefined}
         aria-label={`Mark ${item.title} ${item.completed ? "incomplete" : "complete"}`}
         onChange={(event) => onCompletionChange(item.id, event.currentTarget.checked)}
       />
@@ -461,7 +465,11 @@ export function AssignmentRow({ item, onCompletionChange }: AssignmentRowProps) 
           <span className={styles.courseName} title={item.courseName}>
             {item.courseName}
           </span>
-          {item.saving ? <span className={styles.savingLabel}>Saving...</span> : null}
+          {item.saving ? (
+            <span className={styles.savingLabel} role="status">Saving...</span>
+          ) : item.completionFeedback ? (
+            <span className={styles.completedLabel} role="status">Completed</span>
+          ) : null}
         </span>
       </div>
       <div className={styles.dueBlock}>
@@ -624,6 +632,7 @@ export function MobileAssignmentDetail({
     <div className={styles.detailBackdrop} role="presentation" onMouseDown={onClose}>
       <section
         className={styles.detailSheet}
+        data-feedback={item.completionFeedback}
         role="dialog"
         aria-modal="true"
         aria-labelledby="mobile-assignment-title"
@@ -660,10 +669,16 @@ export function MobileAssignmentDetail({
             className={styles.completionBox}
             type="checkbox"
             checked={item.completed}
-            disabled={item.saving}
+            disabled={item.saving || item.completionFeedback !== undefined}
             onChange={(event) => onCompletionChange(item.id, event.currentTarget.checked)}
           />
-          {item.saving ? "Saving..." : item.completed ? "Mark as incomplete" : "Mark as complete"}
+          {item.saving
+            ? "Saving..."
+            : item.completionFeedback
+              ? "Completed"
+              : item.completed
+                ? "Mark as incomplete"
+                : "Mark as complete"}
         </label>
       </section>
     </div>

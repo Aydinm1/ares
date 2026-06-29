@@ -73,11 +73,31 @@ describe("assignment filtering and ordering", () => {
       filterAssignments(values, { courseId: "course-a", hideCompleted: false }).map(({ id }) => id),
       ["done", "z-title", "a-title"]
     );
+    assert.deepEqual(
+      filterAssignments(values, {
+        courseId: "all",
+        hideCompleted: false,
+        completedCourseIds: new Set(["course-z"])
+      }).map(({ id }) => id),
+      ["undated", "z-title", "a-title", "other-course"]
+    );
+    assert.deepEqual(
+      filterAssignments(values, {
+        courseId: "all",
+        hideCompleted: true,
+        retainedCompletedIds: new Set(["done"])
+      }).map(({ id }) => id),
+      ["undated", "done", "z-title", "a-title", "other-course"]
+    );
   });
 
   it("sorts dates, tied course/title values, and undated work", () => {
     assert.deepEqual(
       sortAssignments(values, courses).map(({ id }) => id),
+      ["done", "a-title", "z-title", "other-course", "undated"]
+    );
+    assert.deepEqual(
+      sortAssignments(values, courses, { completedFirst: true }).map(({ id }) => id),
       ["done", "a-title", "z-title", "other-course", "undated"]
     );
   });

@@ -568,14 +568,23 @@
 .assignmentRow {
   position: relative;
   display: grid;
+  overflow: hidden;
   min-height: 76px;
+  max-height: 160px;
   grid-template-columns: 24px minmax(0, 1fr) minmax(100px, auto);
   align-items: center;
   gap: 12px;
   padding: 11px 18px;
   border-bottom: 1px solid var(--assignment-border);
   background: var(--assignment-surface);
-  transition: background-color 120ms ease;
+  transition:
+    max-height 220ms ease,
+    min-height 220ms ease,
+    padding 220ms ease,
+    border-color 220ms ease,
+    opacity 160ms ease,
+    transform 220ms ease,
+    background-color 160ms ease;
 }
 
 .assignmentRow:last-child {
@@ -595,16 +604,66 @@
   background: #f5f8fe;
 }
 
+.assignmentRow[data-feedback="confirmed"],
+.assignmentRow[data-feedback="exiting"] {
+  color: #21613d;
+  background: #effaf3;
+}
+
+.assignmentRow[data-feedback="exiting"] {
+  min-height: 0;
+  max-height: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  border-color: transparent;
+  opacity: 0;
+  transform: translateY(-4px);
+}
+
 .completionBox {
+  position: relative;
   width: 17px;
   height: 17px;
   margin: 0;
-  accent-color: var(--assignment-blue);
+  appearance: none;
+  border: 1px solid #7b818c;
+  border-radius: 3px;
+  background: var(--assignment-surface);
   cursor: pointer;
+}
+
+.completionBox:checked {
+  border-color: var(--assignment-blue);
+  background: var(--assignment-blue);
+}
+
+.completionBox:checked::after {
+  position: absolute;
+  top: 2px;
+  left: 5px;
+  width: 4px;
+  height: 8px;
+  border: solid #ffffff;
+  border-width: 0 2px 2px 0;
+  content: "";
+  transform: rotate(45deg);
+  transform-origin: center;
+}
+
+.assignmentRow[data-feedback] .completionBox,
+.detailSheet[data-feedback] .completionBox {
+  border-color: var(--assignment-success);
+  background: var(--assignment-success);
+}
+
+.assignmentRow[data-feedback="confirmed"] .completionBox,
+.detailSheet[data-feedback="confirmed"] .completionBox {
+  animation: completion-check-pop 260ms ease-out;
 }
 
 .completionBox:disabled {
   cursor: wait;
+  opacity: 1;
 }
 
 .assignmentMain {
@@ -655,6 +714,12 @@
 .savingLabel {
   flex: 0 0 auto;
   color: var(--assignment-blue);
+  font-weight: 700;
+}
+
+.completedLabel {
+  flex: 0 0 auto;
+  color: var(--assignment-success);
   font-weight: 700;
 }
 
@@ -1004,6 +1069,19 @@
   border-radius: 8px;
   background: var(--assignment-surface);
   box-shadow: 0 12px 36px rgb(24 28 32 / 20%);
+  transition:
+    opacity 160ms ease,
+    transform 220ms ease,
+    background-color 160ms ease;
+}
+
+.detailSheet[data-feedback] {
+  background: #effaf3;
+}
+
+.detailSheet[data-feedback="exiting"] {
+  opacity: 0;
+  transform: translateY(8px);
 }
 
 .detailHeader {
@@ -1264,6 +1342,30 @@
 
   .buttonIcon[data-spinning="true"] {
     animation: none;
+  }
+
+  .assignmentRow[data-feedback="exiting"],
+  .detailSheet[data-feedback="exiting"] {
+    transform: none;
+  }
+
+  .assignmentRow[data-feedback="confirmed"] .completionBox,
+  .detailSheet[data-feedback="confirmed"] .completionBox {
+    animation: none;
+  }
+}
+
+@keyframes completion-check-pop {
+  0% {
+    transform: scale(0.78);
+  }
+
+  65% {
+    transform: scale(1.14);
+  }
+
+  100% {
+    transform: scale(1);
   }
 }
 

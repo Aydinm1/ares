@@ -93,6 +93,10 @@ Assignments and 4 Year Plan are the only primary destinations.
   calendar.
 - Assignment rows use a native checkbox, title/course metadata, and a
   right-aligned due state.
+- Successful completion is confirmed only after Airtable responds: show a
+  green check and soft green row for `600ms`, then fade/collapse hidden
+  completed work over `220ms`. Failed writes restore the prior state without
+  success feedback.
 - Course identity is shown with a small stable color marker.
 - Completion is optimistic, but saving and error states must remain visible.
 - Filtering lives in the panel header. Secondary options open from the filter

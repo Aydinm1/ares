@@ -16,6 +16,7 @@ export {
 export type {
   AssignmentCalendarDay,
   AssignmentCalendarEntry,
+  AssignmentCompletionFeedback,
   AssignmentDueTone,
   AssignmentListItem,
   AssignmentMobileView,

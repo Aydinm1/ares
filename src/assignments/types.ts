@@ -22,6 +22,8 @@ export interface MonthGridDay {
 export interface AssignmentFilters {
   courseId?: "all" | string;
   hideCompleted?: boolean;
+  completedCourseIds?: ReadonlySet<string>;
+  retainedCompletedIds?: ReadonlySet<string>;
 }
 
 export interface CompletionMutation {
