@@ -185,7 +185,7 @@ export function WorkspaceHeader({
           <span className={styles.syncStatusText}>{displayedSyncLabel}</span>
         </span>
         <button
-          className={`${styles.primaryButton} ${styles.syncButton}`}
+          className={styles.syncButton}
           type="button"
           onClick={onSync}
           disabled={syncState === "syncing"}

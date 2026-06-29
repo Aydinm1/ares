@@ -78,8 +78,8 @@ Assignments and 4 Year Plan are the only primary destinations.
 - The sidebar and mobile header share the Academic Precision brand.
 - Active navigation uses the blue-soft background and blue icon/text.
 - Main content keeps a readable maximum width and consistent left alignment.
-- Airtable synchronization uses one quiet status line and a fixed `36px`
-  refresh button opposite the page heading. Its geometry must not change
+- Airtable synchronization uses one quiet status line and a neutral `28px`
+  refresh icon opposite the page heading. Its geometry must not change
   between synced, syncing, and error states. On narrow screens the status
   track fills the row while the button remains fixed.
 - Mobile replaces the sidebar with the compact top navigation.
@@ -88,6 +88,9 @@ Assignments and 4 Year Plan are the only primary destinations.
 
 - Desktop presents the assignment list and month calendar together.
 - The list is the primary surface; the calendar is a narrower companion.
+- On wide desktop screens, the content area may grow to `1280px` and the
+  calendar scales from `240px` to `340px`; compact windows retain the smaller
+  calendar.
 - Assignment rows use a native checkbox, title/course metadata, and a
   right-aligned due state.
 - Course identity is shown with a small stable color marker.
