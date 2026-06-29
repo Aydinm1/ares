@@ -27,4 +27,5 @@ npm audit --audit-level=moderate
 
 The Airtable field contract is documented in
 [`docs/airtable-schema.md`](docs/airtable-schema.md). The accepted Stitch
-reference is retained in [`design-reference/stitch`](design-reference/stitch).
+reference is retained in [`design-reference/stitch`](design-reference/stitch),
+and current UI rules are documented in [`DESIGN.md`](DESIGN.md).
