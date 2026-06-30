@@ -240,11 +240,16 @@ and `sequence?`. Do not build a generic analytics or exercise-set engine first.
 #### Artifact
 
 A reusable piece of evidence such as a Git commit, PDF, URL, image, video,
-portfolio asset, or resume version.
+portfolio asset, or generated resume output.
 
 Proposed fields are `title`, `type`, `url?`, `attachment?`, `description?`,
 `capturedAt`, and links to Sessions, Projects, Experiences, Documents, and
 Career Opportunities.
+
+Generated resume Artifacts are immutable outputs rather than editable career
+content. They also retain their generation time and an ordered manifest of the
+Experience, Project, and Bullet records used to produce them. Regeneration
+creates a new Artifact.
 
 The entity is part of the target model, but its library UI is deferred until
 Sessions and Career workflows need it.
@@ -291,11 +296,47 @@ A reusable evidence-backed resume or interview claim. A Bullet links to an
 Experience or Project and optionally to Sessions, Artifacts, Competencies, and
 metrics supporting the claim.
 
-#### Resume Version
+#### Generated Resume Output
 
-Initially represented as an Artifact with version metadata and selected
-Bullets. A layout-generation engine is deferred until the evidence and
-selection workflows are useful manually.
+A resume is generated from canonical Experiences, Projects, and Bullets. The
+composition UI holds temporary selection and ordering state. Exporting or
+submitting creates an immutable resume Artifact linked to its sources and,
+when applicable, the Career Opportunity that received it.
+
+Resume Version is not a source entity and does not receive its own table.
+Canonical content is edited only in its source records. Saved composition
+drafts remain deferred until repeated use proves that temporary composition
+state is insufficient.
+
+### Presentation
+
+#### Portfolio Case Study
+
+An authored narrative built from canonical project or experience data. A Case
+Study owns presentation-specific writing, but it does not own or duplicate the
+underlying facts, evidence, dates, technologies, metrics, or outcomes.
+
+| Field | Requirement |
+| --- | --- |
+| `projectId`, `experienceId` | Exactly one is required as the primary source |
+| `title`, `headline` | Required |
+| `audience`, `angle` | Optional |
+| `problem`, `importance`, `role` | Optional structured sections |
+| `constraints`, `process`, `decisions` | Optional structured sections |
+| `tradeoffs`, `results`, `lessons` | Optional structured sections |
+| Supporting links | Optional Projects, Experiences, Sessions, Artifacts, Documents, and Bullets |
+| `status` | `draft`, `ready`, `published`, or `archived` |
+| `slug` | Required before publishing and stable once published |
+| `publishedAt` | Set on first publication |
+
+A Project or Experience may have several Case Studies for different audiences
+or angles. Sections may remain incomplete while drafting. Blog posts,
+conference talks, and other narrative formats remain Document workflows until
+their own usage justifies a different model.
+
+Portfolio is not an entity or table. It is a read model that renders published
+Case Studies and their linked canonical records. A published page is generated
+output, not another source record.
 
 ### Knowledge, Research, and Relationships
 
@@ -354,8 +395,17 @@ Read models compose existing records and do not become duplicate source tables.
 - Career Opportunities by stage
 - Deadlines and follow-up Work Items
 - Recent outreach and interviews
-- Resume version used
+- Submitted resume output
 - Missing preparation or evidence
+
+### Portfolio
+
+- Published Portfolio Case Studies
+- Canonical Project or Experience facts
+- Supporting Sessions, Artifacts, Documents, and Bullets
+
+Portfolio pages render these records without copying their content into a
+Portfolio table.
 
 ## Dependency Graph
 
@@ -397,8 +447,10 @@ flowchart TD
   Projects --> Bullets
   Sessions --> Bullets
   Artifacts --> Bullets
-  Bullets --> ResumeVersions[Resume Versions]
-  ResumeVersions --> CareerOpportunities
+  Experiences --> ResumeOutput[Resume Output Artifact]
+  Projects --> ResumeOutput
+  Bullets --> ResumeOutput
+  ResumeOutput --> CareerOpportunities
   CareerOpportunities --> InterviewPrep[Interview Preparation]
   Sessions --> InterviewPrep
   Documents --> InterviewPrep
@@ -408,10 +460,13 @@ flowchart TD
   ResearchOutreach --> WorkItems
   Documents --> ResearchOutreach
 
-  Experiences --> Portfolio
-  Projects --> Portfolio
-  Artifacts --> Portfolio
-  Documents --> Portfolio
+  Experiences --> PortfolioCaseStudies[Portfolio Case Studies]
+  Projects --> PortfolioCaseStudies
+  Sessions --> PortfolioCaseStudies
+  Artifacts --> PortfolioCaseStudies
+  Documents --> PortfolioCaseStudies
+  Bullets --> PortfolioCaseStudies
+  PortfolioCaseStudies --> Portfolio[Portfolio View]
 
   WeeklyReview --> AILayer[AI Layer]
   Documents --> AILayer

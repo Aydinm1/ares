@@ -90,12 +90,12 @@ through final outcome.
 
 - [ ] Add application details and submitted date
 - [ ] Link follow-up Work Items and People
-- [ ] Add document and resume-version links without building a resume generator
+- [ ] Link the immutable submitted-resume Artifact to each application
 - [ ] Show overdue follow-ups and upcoming deadlines on the Daily Dashboard
 - [ ] Add a complete application timeline
 
 Exit criterion: no application deadline, follow-up, contact, or submitted
-resume version depends on memory.
+resume output depends on memory.
 
 ### Week 6: Experiences and Bullet Library
 
@@ -104,10 +104,14 @@ resume version depends on memory.
 - [ ] Capture role scope, outcomes, evidence, and date ranges
 - [ ] Build reusable Bullet create/edit/select workflows
 - [ ] Link Bullets to supporting Projects and Sessions
-- [ ] Add a simple resume-version record using selected Bullets
+- [ ] Export an immutable resume Artifact from selected Experiences, Projects,
+      and Bullets
+- [ ] Store the ordered source manifest and generation time on the output
+- [ ] Do not create a Resume Versions table
 
 Exit criterion: a tailored resume can be assembled from reusable,
-evidence-backed material without rewriting accomplishments from scratch.
+evidence-backed material, and every exported output remains traceable without
+becoming an editable source.
 
 ### Week 7: Interview Preparation
 
@@ -169,33 +173,39 @@ context.
 
 ### Phase 5: Portfolio
 
-Dependencies: Experiences, Projects, Artifacts, Documents.
+Dependencies: Experiences, Projects, Sessions, Artifacts, Documents, Bullets.
 
-#### Milestone 5.1: Portfolio Selection
+#### Milestone 5.1: Portfolio Case Studies
 
-- [ ] Mark portfolio-worthy Experiences and Projects
-- [ ] Attach evidence and media through Artifacts
-- [ ] Write concise summaries and outcomes
+- [ ] Create Portfolio Case Studies with exactly one primary Project or
+      Experience
+- [ ] Add structured narrative sections for problem, role, constraints,
+      process, decisions, tradeoffs, results, and lessons
+- [ ] Link supporting Projects, Experiences, Sessions, Artifacts, Documents,
+      and Bullets
+- [ ] Support draft, ready, published, and archived states
 
-Usable outcome: portfolio content is curated in the Personal OS even before a
-public site exists.
+Usable outcome: a project or experience can be shaped into an authored
+narrative without moving or duplicating its canonical facts.
 
-#### Milestone 5.2: Generated Project Pages
+#### Milestone 5.2: Portfolio Preview
 
-- [ ] Define a stable page projection from stored records
-- [ ] Generate private preview pages
+- [ ] Render private previews from Case Studies and linked canonical records
 - [ ] Handle missing media and incomplete records explicitly
+- [ ] Support multiple Case Studies for different audiences or angles
 
-Usable outcome: selected records render as complete previewable project pages.
+Usable outcome: each Case Study renders as a complete preview without a
+separate Portfolio content store.
 
 #### Milestone 5.3: Publishing
 
-- [ ] Add manual publish/unpublish state
-- [ ] Add stable public URLs
+- [ ] Publish only Case Studies in the published state
+- [ ] Add stable slugs and public URLs
 - [ ] Verify mobile, metadata, and accessibility
+- [ ] Do not create Portfolio or Published Pages tables
 
-Usable outcome: approved structured content can be published without copying it
-into another CMS.
+Usable outcome: approved Case Studies become public generated pages while
+their narrative and source data remain authoritative in the Personal OS.
 
 ### Phase 6: People
 

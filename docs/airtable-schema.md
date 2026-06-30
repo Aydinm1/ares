@@ -225,6 +225,11 @@ The next approved schema-planning sequence is:
 7. Add Organizations, minimal People, and Career Opportunities.
 8. Add Habits only after Session logging works.
 
+Phase 5 may add a Portfolio Case Studies table after Experiences, Bullets, and
+Artifacts exist. Portfolio and Resume Versions do not receive tables: Portfolio
+is a read model, and each generated resume is stored as an immutable Artifact
+output with source provenance.
+
 Future tables should be added only when their corresponding application
 workflow is ready to ship. This document must be updated from live metadata
 after each migration.
