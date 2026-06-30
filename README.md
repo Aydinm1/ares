@@ -29,3 +29,7 @@ The Airtable field contract is documented in
 [`docs/airtable-schema.md`](docs/airtable-schema.md). The accepted Stitch
 reference is retained in [`design-reference/stitch`](design-reference/stitch),
 and current UI rules are documented in [`DESIGN.md`](DESIGN.md).
+
+Long-term product decisions live in
+[`docs/architecture.md`](docs/architecture.md), with implementation milestones
+tracked in [`todo.md`](todo.md).
