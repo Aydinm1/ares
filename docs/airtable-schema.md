@@ -219,7 +219,7 @@ The next approved schema-planning sequence is:
 1. Back up the base and rename it for the Personal OS.
 2. Establish common immutable ID, lifecycle, timestamp, and archive fields.
 3. Add Areas and Projects.
-4. Add Inbox Items and Tasks.
+4. Add Inbox Items and Work Items.
 5. Add Activities and Sessions.
 6. Add Organizations, minimal People, and Career Opportunities.
 7. Add Habits only after Session logging works.

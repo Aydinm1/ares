@@ -20,6 +20,8 @@ remain the source of truth.
 6. Archive records instead of deleting history.
 7. Keep domain types independent from Airtable so storage can change later.
 8. Add AI only after the corresponding manual workflow is reliable.
+9. The system should never require planning. It should support planning when
+   complexity justifies it.
 
 ## Storage Strategy
 
@@ -48,6 +50,11 @@ justified. No current field or table is renamed as part of this documentation
 phase.
 
 ## Domain Layers
+
+The model distinguishes domain entities such as Courses, Academic Assignments,
+Projects, Organizations, People, and Career Opportunities from the Work Item
+planning entity. A Work Item is the smallest meaningful unit of action in a
+plan; it may link to domain entities without becoming one of them.
 
 ### Structure
 
@@ -78,16 +85,22 @@ A temporary initiative with a defined outcome.
 | `notes` | Optional |
 | `experienceId`, `courseId` | Optional domain context |
 
-A Project may have many Tasks, Sessions, Artifacts, Documents, and Bullets.
+A Project may have many Work Items, Sessions, Artifacts, Documents, and
+Bullets.
 
-#### Course and Assignment
+#### Course and Academic Assignment
 
-Courses and Assignments remain academic domain records. An Assignment is a
-graded deliverable, not a generic Task. A Task may link to an Assignment when
-it represents a next action or subtask.
+Courses and Academic Assignments are domain entities. An Academic Assignment
+is a specific academic artifact created by the structure of a Course, such as
+Homework 4, a midterm, a lab report, or a final project. It belongs to one
+Course and may carry grading weight, points, assigned and due dates, Canvas or
+submission information, and academic completion state.
 
-The Daily Dashboard combines open Assignments and Tasks without copying either
-record into the other table.
+An Academic Assignment does not require a Work Item. Work Items are created
+only when additional planning provides value. For example, a final project may
+be decomposed into Work Items for its literature review, prototype, report,
+and presentation. Academic Assignment and Work Item completion remain
+independent.
 
 ### Capture and Action
 
@@ -102,30 +115,37 @@ known yet.
 | `source` | `manual`, `email`, `web`, `mobile`, or `integration` |
 | `capturedAt` | Required |
 | `status` | `unprocessed`, `triaged`, or `discarded` |
-| Converted links | Optional links to the resulting Task, Project, Document, or other record |
+| Converted links | Optional links to the resulting Work Item, Project, Document, or other record |
 
 Inbox Items are not permanent knowledge. Triage either converts, links, or
 discards them.
 
-#### Task
+#### Work Item
 
-A universal next action.
+Any actionable unit of work. Its source is irrelevant: it may be assigned by
+another person, created by the user, or arise from any life domain.
 
 | Field | Requirement |
 | --- | --- |
-| `areaId` | Required after Inbox triage |
 | `title` | Required |
 | `status` | `inbox`, `next`, `scheduled`, `waiting`, `completed`, `canceled`, or `archived` |
+| `areaId` | Optional broad context |
 | `projectId` | Optional |
-| `courseId`, `assignmentId` | Optional academic context |
-| Career/research context links | Added with those modules |
+| `academicAssignmentId` | Optional |
+| `organizationId`, `personId` | Optional when those modules exist |
+| `careerOpportunityId` | Optional when Career Hub exists |
 | `dueAt`, `scheduledAt`, `completedAt` | Optional |
 | `priority` | Optional manual priority |
 | `notes` | Optional |
 
-Tasks may have several explicit context links, but the app should present one
-clear primary context. Do not use an unvalidated `entityType/entityId`
-polymorphic pair.
+Work Items may have several explicit context links, but the app should present
+one clear primary context. They do not link directly to Courses; academic
+context follows Course to Academic Assignment to Work Item. Do not introduce
+inheritance, a universal entity table, a generic relationship table, or an
+unvalidated `entityType/entityId` polymorphic pair.
+
+**Dashboards compose Work Items and Academic Assignments without duplicating
+either.**
 
 ### Practice and Evidence
 
@@ -156,11 +176,17 @@ future AI analysis.
 | `occurredAt` | Required for completed manual logs |
 | `startedAt`, `endedAt`, `durationMinutes` | Optional |
 | `projectId` | Optional primary Project |
-| `taskIds` | Optional links to one or more Tasks |
-| `courseId`, `assignmentId` | Optional academic context |
+| `workItemId` | Optional immediate execution context |
+| `academicAssignmentId` | Optional academic context |
 | `takeaway` | Optional one-line summary |
 | `accomplishments`, `challenges`, `nextStep` | Optional rich text |
 | `artifactIds` | Added after the Artifact module exists |
+
+Every Session links to an Activity. It may also link directly to a Project, a
+Work Item, or an Academic Assignment. Work on an undecomposed assignment uses
+Session to Academic Assignment. When additional planning was useful, it uses
+Session to Work Item to Academic Assignment. A Session may retain both links
+when useful, while the Work Item remains its immediate execution context.
 
 The first workflow is a manual log that takes less than 30 seconds. Timers are
 deferred until manual Session logging is used consistently.
@@ -233,7 +259,7 @@ Proposed statuses are `saved`, `preparing`, `applied`, `interviewing`, `offer`,
 `rejected`, `withdrawn`, and `archived`.
 
 It links an Organization, role title, job URL, source, deadlines, contacts,
-follow-up Tasks, Documents, Sessions, and the submitted resume Artifact.
+follow-up Work Items, Documents, Sessions, and the submitted resume Artifact.
 
 #### Bullet
 
@@ -254,15 +280,15 @@ selection workflows are useful manually.
 A common content record with a `type` such as note, journal entry, research
 summary, meeting note, paper summary, email draft, or weekly review.
 
-Documents may link to Areas, Projects, Courses, Assignments, Sessions,
+Documents may link to Areas, Projects, Courses, Academic Assignments, Sessions,
 Experiences, People, Organizations, and Opportunities. Type-specific views
 provide different workflows without creating separate tables prematurely.
 
 #### Research Outreach
 
-Research Hub depends on Organizations, People, Tasks, and Documents. Labs are
-Organizations, professors are People, outreach follow-ups are Tasks, and email
-drafts or meeting notes are Documents.
+Research Hub depends on Organizations, People, Work Items, and Documents. Labs
+are Organizations, professors are People, outreach follow-ups are Work Items,
+and email drafts or meeting notes are Documents.
 
 #### Competency
 
@@ -282,16 +308,16 @@ Read models compose existing records and do not become duplicate source tables.
 
 ### Daily Dashboard
 
-- Open Tasks due, scheduled, or selected for today
-- Active academic Assignments
+- Open Work Items due, scheduled, or selected for today
+- Active Academic Assignments
 - Today's Habit targets and completion state
 - Quick Inbox capture
 - Quick Session log
 
 ### Weekly Review
 
-- Completed and deferred Tasks
-- Assignment progress
+- Completed and deferred Work Items
+- Academic Assignment progress
 - Sessions by Activity and Project
 - Habit days completed
 - Accomplishments, challenges, next steps, and unresolved Inbox Items
@@ -299,7 +325,7 @@ Read models compose existing records and do not become duplicate source tables.
 ### Recruiting Dashboard
 
 - Career Opportunities by stage
-- Deadlines and follow-up Tasks
+- Deadlines and follow-up Work Items
 - Recent outreach and interviews
 - Resume version used
 - Missing preparation or evidence
@@ -310,21 +336,28 @@ Read models compose existing records and do not become duplicate source tables.
 flowchart TD
   Areas --> Projects
   Areas --> Activities
-  Projects --> Tasks
+  Areas --> WorkItems[Work Items]
+  Projects --> WorkItems
+  Projects --> Sessions
   Activities --> Sessions
   Activities --> Habits
-  Tasks --> DailyDashboard[Daily Dashboard]
-  Courses --> Assignments
-  Assignments --> DailyDashboard
+  WorkItems --> DailyDashboard[Daily Dashboard]
+  Courses --> AcademicAssignments[Academic Assignments]
+  AcademicAssignments --> WorkItems
+  AcademicAssignments --> DailyDashboard
+  AcademicAssignments --> Sessions
+  WorkItems --> Sessions
   Habits --> DailyDashboard
   Sessions --> WeeklyReview[Weekly Review]
-  Tasks --> WeeklyReview
+  WorkItems --> WeeklyReview
   Habits --> WeeklyReview
 
   Organizations --> Experiences
   Organizations --> CareerOpportunities[Career Opportunities]
   People --> CareerOpportunities
-  Tasks --> CareerOpportunities
+  Organizations --> WorkItems
+  People --> WorkItems
+  CareerOpportunities --> WorkItems
   Sessions --> Artifacts
   Projects --> Artifacts
   Experiences --> Bullets
@@ -339,7 +372,7 @@ flowchart TD
 
   Organizations --> ResearchOutreach[Research Outreach]
   People --> ResearchOutreach
-  Tasks --> ResearchOutreach
+  ResearchOutreach --> WorkItems
   Documents --> ResearchOutreach
 
   Experiences --> Portfolio
@@ -362,7 +395,7 @@ The following are explicitly deferred until usage justifies them:
 - Generic metric and analytics engines
 - Competency scoring
 - Timer-driven Sessions
-- Recurring Task engines
+- Recurring Work Item engines
 - Automated dashboards without a manual workflow
 - AI-owned memory or planning state
 - Graph databases
@@ -376,7 +409,8 @@ cannot be served reasonably by the operational model.
 ## AI Contract
 
 AI reads existing structured records and may propose changes. It does not own
-canonical Tasks, Sessions, Projects, Documents, or relationships.
+canonical Work Items, Academic Assignments, Sessions, Projects, Documents, or
+relationships.
 
 AI-generated plans, summaries, bullets, and insights must retain links to their
 source records and remain reviewable before they change operational data.

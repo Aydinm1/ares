@@ -43,14 +43,15 @@ priority over building tooling for recruiting.
 Exit criterion: an active initiative can be captured under one Area and managed
 without using raw Airtable.
 
-### Week 2: Inbox, Tasks, and Daily Dashboard
+### Week 2: Inbox, Work Items, and Daily Dashboard
 
-- [ ] Create Inbox Items and Tasks tables
+- [ ] Create Inbox Items and Work Items tables
 - [ ] Implement fast Inbox capture
-- [ ] Implement Inbox-to-Task triage
-- [ ] Add Task create, complete, schedule, waiting, and archive actions
-- [ ] Compose Tasks and academic Assignments into one Daily Dashboard
-- [ ] Keep each source record authoritative; do not duplicate Assignments
+- [ ] Implement Inbox-to-Work-Item triage
+- [ ] Add Work Item create, complete, schedule, waiting, and archive actions
+- [ ] Compose Work Items and Academic Assignments into one Daily Dashboard
+- [ ] Keep each source record authoritative; do not duplicate Academic
+      Assignments
 
 Exit criterion: the dashboard is usable each morning to decide what to do and
 each evening to close or reschedule work.
@@ -61,7 +62,8 @@ each evening to close or reschedule work.
 - [ ] Add Activity management under one primary Area
 - [ ] Build a manual Session form that takes less than 30 seconds
 - [ ] Capture duration, takeaway, accomplishments, challenges, and next step
-- [ ] Link Sessions optionally to Projects, Tasks, Courses, and Assignments
+- [ ] Link Sessions to an Activity and optionally to Projects, Work Items, and
+      Academic Assignments
 - [ ] Add recent Sessions to relevant Project and Activity views
 
 Exit criterion: intentional work can be logged consistently without a timer or
@@ -81,7 +83,7 @@ through final outcome.
 ### Week 5: Application Operations
 
 - [ ] Add application details and submitted date
-- [ ] Link follow-up Tasks and People
+- [ ] Link follow-up Work Items and People
 - [ ] Add document and resume-version links without building a resume generator
 - [ ] Show overdue follow-ups and upcoming deadlines on the Daily Dashboard
 - [ ] Add a complete application timeline
@@ -104,10 +106,10 @@ evidence-backed material without rewriting accomplishments from scratch.
 ### Week 7: Interview Preparation
 
 - [ ] Add interview stages and scheduled interview records
-- [ ] Link preparation Tasks and Documents to Career Opportunities
+- [ ] Link preparation Work Items and Documents to Career Opportunities
 - [ ] Capture interview stories from Experiences, Projects, and Sessions
 - [ ] Log interview-practice Sessions
-- [ ] Add post-interview notes and follow-up Tasks
+- [ ] Add post-interview notes and follow-up Work Items
 
 Exit criterion: each active interview has a visible preparation plan, evidence,
 practice history, and follow-up.
@@ -118,7 +120,7 @@ practice history, and follow-up.
 - [ ] Implement Monday-Sunday distinct-day progress
 - [ ] Let a quick check create a minimal completed Session
 - [ ] Keep the tracker limited to target, seven days, and current progress
-- [ ] Review friction in Inbox, Tasks, Sessions, and Career Opportunities
+- [ ] Review friction in Inbox, Work Items, Sessions, and Career Opportunities
 - [ ] Fix workflow problems before adding another module
 - [ ] Reassess the next eight weeks using recruiting needs and actual usage
 
@@ -129,7 +131,7 @@ existing daily workflows are stable enough to continue expanding.
 
 ### Phase 4: Research Hub
 
-Dependencies: Organizations, People, Tasks, Documents.
+Dependencies: Organizations, People, Work Items, Documents.
 
 #### Milestone 4.1: Research Directory
 
@@ -143,7 +145,7 @@ without maintaining a separate spreadsheet.
 #### Milestone 4.2: Outreach Pipeline
 
 - [ ] Add outreach stages and last-contact dates
-- [ ] Link follow-up Tasks
+- [ ] Link follow-up Work Items
 - [ ] Store email drafts as Documents
 
 Usable outcome: every intended outreach has a visible status, draft, and next
@@ -153,7 +155,7 @@ action.
 
 - [ ] Store meetings and notes as Documents
 - [ ] Capture decisions and outcomes
-- [ ] Create Projects or Tasks directly from accepted opportunities
+- [ ] Create Projects or Work Items directly from accepted opportunities
 
 Usable outcome: outreach conversations turn into tracked work without losing
 context.
@@ -212,7 +214,7 @@ Usable outcome: important conversations and commitments are searchable.
 #### Milestone 6.3: Follow-Up
 
 - [ ] Add optional follow-up dates
-- [ ] Create linked Tasks rather than a second reminder system
+- [ ] Create linked Work Items rather than a second reminder system
 - [ ] Add focused networking views
 
 Usable outcome: relationship follow-ups appear in the same execution system as
@@ -220,7 +222,7 @@ other work.
 
 ### Phase 7: Knowledge and Reviews
 
-Dependencies: Documents, Sessions, Tasks, Projects, Habits.
+Dependencies: Documents, Sessions, Work Items, Projects, Habits.
 
 #### Milestone 7.1: Documents and Search
 
@@ -233,7 +235,8 @@ remembering where it was filed.
 
 #### Milestone 7.2: Weekly Review
 
-- [ ] Generate a deterministic weekly review from Tasks, Sessions, and Habits
+- [ ] Generate a deterministic weekly review from Work Items, Sessions, and
+      Habits
 - [ ] Capture accomplishments, friction, decisions, and next-week focus
 - [ ] Save the review as a linked Document
 
@@ -343,7 +346,7 @@ inspectable and recoverable.
 ## Parking Lot
 
 - Session timers and interruption recovery
-- Recurring Task engine
+- Recurring Work Item engine
 - Generic metrics and analytics
 - Competency scoring
 - Automated resume layout
