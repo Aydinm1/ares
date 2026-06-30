@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   CalendarDays,
-  BookOpen,
   ChevronLeft,
   ChevronRight,
   CircleAlert,
@@ -13,6 +12,7 @@ import {
   List,
   ListTodo,
   LocateFixed,
+  GraduationCap,
   RefreshCw,
   X,
 } from "lucide-react";
@@ -61,7 +61,7 @@ import type { Assignment, Course } from "../../src/domain";
 const icons: AssignmentUiIcons = {
   brand: <Layers3 size={22} strokeWidth={2.2} />,
   assignments: <ListTodo size={19} strokeWidth={2} />,
-  courses: <BookOpen size={19} strokeWidth={2} />,
+  courses: <GraduationCap size={19} strokeWidth={2} />,
   calendar: <CalendarDays size={17} strokeWidth={2} />,
   list: <List size={17} strokeWidth={2} />,
   previous: <ChevronLeft size={18} strokeWidth={2} />,

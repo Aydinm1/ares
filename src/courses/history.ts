@@ -41,6 +41,37 @@ export function quarterUnitTotal(courses: readonly Course[]): number {
   return courses.reduce((total, course) => total + (course.creditHours ?? 0), 0);
 }
 
+const gradePoints: Readonly<Record<string, number>> = {
+  "A+": 4,
+  A: 4,
+  "A-": 3.7,
+  "B+": 3.3,
+  B: 3,
+  "B-": 2.7,
+  "C+": 2.3,
+  C: 2,
+  "C-": 1.7,
+  "D+": 1.3,
+  D: 1,
+  "D-": 0.7,
+  F: 0
+};
+
+export function courseGpa(courses: readonly Course[]): number | undefined {
+  let gradedUnits = 0;
+  let weightedPoints = 0;
+
+  for (const course of courses) {
+    const units = course.creditHours;
+    const points = course.grade ? gradePoints[course.grade.trim().toUpperCase()] : undefined;
+    if (units === undefined || units <= 0 || points === undefined) continue;
+    gradedUnits += units;
+    weightedPoints += units * points;
+  }
+
+  return gradedUnits > 0 ? weightedPoints / gradedUnits : undefined;
+}
+
 export function coursesForAcademicYear(
   courses: readonly Course[],
   quarters: readonly CourseHistoryQuarter[]

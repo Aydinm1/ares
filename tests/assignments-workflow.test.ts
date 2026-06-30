@@ -47,6 +47,11 @@ describe("assignment filtering and ordering", () => {
       dueAt: "2026-06-01T10:00:00",
       status: "submitted"
     }),
+    assignment("done-later", {
+      courseId: "course-z",
+      dueAt: "2026-06-03T10:00:00",
+      status: "submitted"
+    }),
     assignment("z-title", {
       title: "Zebra",
       courseId: "course-a",
@@ -79,7 +84,7 @@ describe("assignment filtering and ordering", () => {
         hideCompleted: false,
         completedCourseIds: new Set(["course-z"])
       }).map(({ id }) => id),
-      ["undated", "z-title", "a-title", "other-course"]
+      ["undated", "done-later", "z-title", "a-title", "other-course"]
     );
     assert.deepEqual(
       filterAssignments(values, {
@@ -94,11 +99,11 @@ describe("assignment filtering and ordering", () => {
   it("sorts dates, tied course/title values, and undated work", () => {
     assert.deepEqual(
       sortAssignments(values, courses).map(({ id }) => id),
-      ["done", "a-title", "z-title", "other-course", "undated"]
+      ["done", "a-title", "z-title", "other-course", "done-later", "undated"]
     );
     assert.deepEqual(
       sortAssignments(values, courses, { completedFirst: true }).map(({ id }) => id),
-      ["done", "a-title", "z-title", "other-course", "undated"]
+      ["done-later", "done", "a-title", "z-title", "other-course", "undated"]
     );
   });
 });

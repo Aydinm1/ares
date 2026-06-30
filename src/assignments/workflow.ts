@@ -62,12 +62,12 @@ export function sortAssignments(
       const rightCompleted = isCompleted(right);
       if (leftCompleted !== rightCompleted) return leftCompleted ? -1 : 1;
       if (leftCompleted && rightCompleted) {
-        const byDate = dueTimestamp(right) - dueTimestamp(left);
+        const byDate = compareDueTimestamp(left, right, "desc");
         if (Number.isFinite(byDate) && byDate !== 0) return byDate;
       }
     }
 
-    const byDate = dueTimestamp(left) - dueTimestamp(right);
+    const byDate = compareDueTimestamp(left, right, "asc");
     if (Number.isFinite(byDate) && byDate !== 0) return byDate;
     const byCourse = collator.compare(
       courseNames.get(left.courseId ?? "") ?? "",
@@ -75,6 +75,22 @@ export function sortAssignments(
     );
     return byCourse || collator.compare(left.title, right.title) || left.id.localeCompare(right.id);
   });
+}
+
+function compareDueTimestamp(
+  left: Assignment,
+  right: Assignment,
+  order: "asc" | "desc"
+): number {
+  const leftTimestamp = dueTimestamp(left);
+  const rightTimestamp = dueTimestamp(right);
+  const leftMissing = leftTimestamp === Number.POSITIVE_INFINITY;
+  const rightMissing = rightTimestamp === Number.POSITIVE_INFINITY;
+  if (leftMissing || rightMissing) {
+    if (leftMissing && rightMissing) return 0;
+    return leftMissing ? 1 : -1;
+  }
+  return order === "asc" ? leftTimestamp - rightTimestamp : rightTimestamp - leftTimestamp;
 }
 
 /** Maps a course record ID deterministically onto the shared accessible palette. */

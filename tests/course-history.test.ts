@@ -5,6 +5,7 @@ import { fields, tableRef } from "../src/airtable/schema.js";
 import {
   ACADEMIC_YEARS,
   COURSE_HISTORY_QUARTERS,
+  courseGpa,
   courseGradeLabel,
   coursesForAcademicYear,
   coursesForQuarter,
@@ -51,6 +52,8 @@ test("course history filters exact quarters, totals units, and formats grades", 
   const fall = coursesForQuarter(courses, "Fall 2024");
   assert.deepEqual(fall.map(({ id }) => id), ["a", "b"]);
   assert.equal(quarterUnitTotal(fall), 9);
+  assert.equal(courseGpa(fall)?.toFixed(2), "3.69");
+  assert.equal(courseGpa([courses[2]!] as Course[]), undefined);
   assert.equal(courseGradeLabel(fall[0]!), "B+");
   assert.equal(courseGradeLabel(courses[2]!), "In progress");
   assert.equal(courseGradeLabel({ id: "d", name: "Unknown" }), "—");
