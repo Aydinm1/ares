@@ -218,11 +218,12 @@ The next approved schema-planning sequence is:
 
 1. Back up the base and rename it for the Personal OS.
 2. Establish common immutable ID, lifecycle, timestamp, and archive fields.
-3. Add Areas and Projects.
-4. Add Inbox Items and Work Items.
-5. Add Activities and Sessions.
-6. Add Organizations, minimal People, and Career Opportunities.
-7. Add Habits only after Session logging works.
+3. Add the minimal Inbox Items table and capture workflow.
+4. Add Areas and Projects.
+5. Add Work Items.
+6. Add Activities and Sessions.
+7. Add Organizations, minimal People, and Career Opportunities.
+8. Add Habits only after Session logging works.
 
 Future tables should be added only when their corresponding application
 workflow is ready to ship. This document must be updated from live metadata

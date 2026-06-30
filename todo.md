@@ -31,23 +31,26 @@ new modules are introduced.
 Assumption: 5-8 focused build hours per week. Actual recruiting work takes
 priority over building tooling for recruiting.
 
-### Week 1: Foundation Conventions and Projects
+### Week 1: Inbox, Foundation Conventions, Areas, and Projects
 
 - [ ] Review and approve `docs/architecture.md`
 - [ ] Back up the current Airtable base
 - [ ] Rename the base for the broader Personal OS
 - [ ] Define common ID, lifecycle, timestamp, and archive conventions
+- [ ] Create the three-field Inbox Items table
+- [ ] Build five-second capture with only text input and automatic creation time
 - [ ] Create Areas and Projects tables
 - [ ] Add a compact Project list with create, status, and archive actions
 
-Exit criterion: an active initiative can be captured under one Area and managed
-without using raw Airtable.
+Exit criterion: thoughts can be captured without classification, and an active
+initiative can be managed under one Area without using raw Airtable.
 
-### Week 2: Inbox, Work Items, and Daily Dashboard
+### Week 2: Inbox Review, Work Items, and Daily Dashboard
 
-- [ ] Create Inbox Items and Work Items tables
-- [ ] Implement fast Inbox capture
-- [ ] Implement Inbox-to-Work-Item triage
+- [ ] Create the Work Items table
+- [ ] Build Inbox Review with process and delete actions
+- [ ] Convert captures to Work Items or Projects using the captured text
+- [ ] Leave captures unprocessed when their destination module does not exist
 - [ ] Add Work Item create, complete, schedule, waiting, and archive actions
 - [ ] Compose Work Items and Academic Assignments into one Daily Dashboard
 - [ ] Keep each source record authoritative; do not duplicate Academic
@@ -60,14 +63,17 @@ each evening to close or reschedule work.
 
 - [ ] Create Activities and Sessions tables
 - [ ] Add Activity management under one primary Area
-- [ ] Build a manual Session form that takes less than 30 seconds
-- [ ] Capture duration, takeaway, accomplishments, challenges, and next step
+- [ ] Build one-click minimal Session logging with an Activity and current time
+- [ ] Add optional duration, takeaway, notes, accomplishments, challenge, and
+      next step through progressive disclosure
 - [ ] Link Sessions to an Activity and optionally to Projects, Work Items, and
       Academic Assignments
+- [ ] Allow Work Items to link an Activity for prefilled Session logging
+- [ ] Keep Work Item completion and Session creation completely independent
 - [ ] Add recent Sessions to relevant Project and Activity views
 
-Exit criterion: intentional work can be logged consistently without a timer or
-AI, and the log is useful for recalling progress.
+Exit criterion: meaningful work can be logged in one click without a timer or
+AI, enriched only when worthwhile, and recalled by Activity or outcome.
 
 ### Week 4: Recruiting Pipeline
 
@@ -118,7 +124,8 @@ practice history, and follow-up.
 
 - [ ] Create Habit definitions linked to Activities
 - [ ] Implement Monday-Sunday distinct-day progress
-- [ ] Let a quick check create a minimal completed Session
+- [ ] Let a quick check create a minimal Session
+- [ ] Allow at most one active Habit per Activity
 - [ ] Keep the tracker limited to target, seven days, and current progress
 - [ ] Review friction in Inbox, Work Items, Sessions, and Career Opportunities
 - [ ] Fix workflow problems before adding another module

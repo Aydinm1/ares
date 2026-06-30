@@ -22,6 +22,8 @@ remain the source of truth.
 8. Add AI only after the corresponding manual workflow is reliable.
 9. The system should never require planning. It should support planning when
    complexity justifies it.
+10. Capture should be faster than remembering. Capturing an Inbox Item must not
+    require classification or planning.
 
 ## Storage Strategy
 
@@ -106,19 +108,23 @@ independent.
 
 #### Inbox Item
 
-A temporary low-friction capture record used when the final entity type is not
-known yet.
+A temporary capture record and the front door to the system. Initial capture
+must take about five seconds and require no classification decisions.
 
 | Field | Requirement |
 | --- | --- |
-| `content` | Required |
-| `source` | `manual`, `email`, `web`, `mobile`, or `integration` |
-| `capturedAt` | Required |
-| `status` | `unprocessed`, `triaged`, or `discarded` |
-| Converted links | Optional links to the resulting Work Item, Project, Document, or other record |
+| `text` | Required |
+| `createdAt` | Required; set automatically |
+| `processed` | Required; defaults to `false` |
 
-Inbox Items are not permanent knowledge. Triage either converts, links, or
-discards them.
+Inbox Items have no tags, categories, destination, or planning metadata.
+Inbox Review later converts an item into a Work Item, Project, Person, or
+Document, or deletes it. Ideas are Documents with type `idea`; an academic
+note is a Document linked to an Academic Assignment. Destinations appear only
+after their modules exist, and an item may remain unprocessed until then.
+
+Inbox Items are temporary rather than durable records, so deleting a discarded
+capture does not violate the archive-first rule.
 
 #### Work Item
 
@@ -131,6 +137,7 @@ another person, created by the user, or arise from any life domain.
 | `status` | `inbox`, `next`, `scheduled`, `waiting`, `completed`, `canceled`, or `archived` |
 | `areaId` | Optional broad context |
 | `projectId` | Optional |
+| `activityId` | Optional Session-logging context |
 | `academicAssignmentId` | Optional |
 | `organizationId`, `personId` | Optional when those modules exist |
 | `careerOpportunityId` | Optional when Career Hub exists |
@@ -151,7 +158,9 @@ either.**
 
 #### Activity
 
-A reusable definition of something practiced repeatedly.
+A reusable definition of behavior performed repeatedly. Activities describe
+what the user does; Projects describe temporary outcomes. A Session may link
+to both without making either one a subtype of the other.
 
 | Field | Requirement |
 | --- | --- |
@@ -165,21 +174,22 @@ work.
 
 #### Session
 
-An append-only record of an intentional work or practice period. Sessions are
-the primary evidence ledger for progress, reviews, interview stories, and
-future AI analysis.
+A historical record of an intentional work or practice period that actually
+occurred. Sessions are optional evidence of meaningful work, not completion
+records. They are the primary evidence ledger for progress, reviews, interview
+stories, and future AI analysis.
 
 | Field | Requirement |
 | --- | --- |
 | `activityId` | Required |
-| `status` | `planned`, `active`, `completed`, or `canceled` |
-| `occurredAt` | Required for completed manual logs |
-| `startedAt`, `endedAt`, `durationMinutes` | Optional |
+| `occurredAt` | Required; defaults to the current time |
 | `projectId` | Optional primary Project |
 | `workItemId` | Optional immediate execution context |
 | `academicAssignmentId` | Optional academic context |
+| `durationMinutes` | Optional enrichment |
 | `takeaway` | Optional one-line summary |
-| `accomplishments`, `challenges`, `nextStep` | Optional rich text |
+| `notes`, `accomplishments`, `challenge`, `nextStep` | Optional rich text |
+| Metrics | Added only after Session data proves the need |
 | `artifactIds` | Added after the Artifact module exists |
 
 Every Session links to an Activity. It may also link directly to a Project, a
@@ -188,8 +198,18 @@ Session to Academic Assignment. When additional planning was useful, it uses
 Session to Work Item to Academic Assignment. A Session may retain both links
 when useful, while the Work Item remains its immediate execution context.
 
-The first workflow is a manual log that takes less than 30 seconds. Timers are
-deferred until manual Session logging is used consistently.
+One Work Item may accumulate zero, one, or many Sessions before completion.
+Work Item completion never creates, completes, voids, or deletes Sessions, and
+a Session never implies Work Item completion. Trivial or administrative Work
+Items can therefore be completed without polluting Session history.
+
+The first workflow creates a minimal Session in one click using the current
+time and a known Activity. Project, Work Item, or Academic Assignment context
+is prefilled when launched from those records. The user may later enrich the
+Session with reflection, duration, metrics, or artifacts. The occurrence and
+context remain historical, while enrichment and factual corrections remain
+editable. Planned Sessions, active timers, and an Action/Session Work Item type
+are deferred.
 
 #### Habit
 
@@ -202,9 +222,13 @@ A small cadence definition attached to one Activity.
 | `weekStartsOn` | Monday |
 | `status` | `active`, `paused`, or `archived` |
 
-Progress counts distinct dates with at least one completed Session during the
-current Monday-through-Sunday week. A quick habit check creates a minimal
-completed Session; richer information can be added later.
+Progress counts distinct dates with at least one Session during the current
+Monday-through-Sunday week. A quick habit check creates a minimal Session;
+richer information can be added later.
+
+The initial model permits at most one active Habit for an Activity. A Habit
+does not own Sessions or require a direct Session link; its progress is derived
+from Sessions for its Activity.
 
 #### Session Metric
 
@@ -277,8 +301,8 @@ selection workflows are useful manually.
 
 #### Document
 
-A common content record with a `type` such as note, journal entry, research
-summary, meeting note, paper summary, email draft, or weekly review.
+A common content record with a `type` such as note, idea, journal entry,
+research summary, meeting note, paper summary, email draft, or weekly review.
 
 Documents may link to Areas, Projects, Courses, Academic Assignments, Sessions,
 Experiences, People, Organizations, and Opportunities. Type-specific views
@@ -292,15 +316,18 @@ and email drafts or meeting notes are Documents.
 
 #### Competency
 
-A future lifetime capability taxonomy linked to Activities, Projects,
-Experiences, Sessions, and Bullets.
+A future lifetime capability taxonomy. Activities represent behavior;
+Competencies represent growth. When the module is justified, Activities and
+Competencies use a many-to-many relationship because one behavior may develop
+several capabilities.
 
 Status may be `active`, `seasonal`, `dormant`, or `someday`. Current and target
 levels begin as narrative, evidence-backed descriptions rather than a
 universal numeric scale. Cadence belongs to Habit, not Competency.
 
-Competencies are documented now but should not receive a table or UI until
-Activity and Session data reveal useful categories.
+Competencies are documented now but Activities have no Competency fields in
+the initial model. Do not create a table or UI until Activity and Session data
+reveal useful categories.
 
 ## Read Models
 
@@ -334,11 +361,16 @@ Read models compose existing records and do not become duplicate source tables.
 
 ```mermaid
 flowchart TD
+  Inbox[Inbox Items] --> WorkItems[Work Items]
+  Inbox --> Projects
+  Inbox --> Documents
+  Inbox --> People
   Areas --> Projects
   Areas --> Activities
-  Areas --> WorkItems[Work Items]
+  Areas --> WorkItems
   Projects --> WorkItems
   Projects --> Sessions
+  Activities --> WorkItems
   Activities --> Sessions
   Activities --> Habits
   WorkItems --> DailyDashboard[Daily Dashboard]
@@ -351,6 +383,7 @@ flowchart TD
   Sessions --> WeeklyReview[Weekly Review]
   WorkItems --> WeeklyReview
   Habits --> WeeklyReview
+  Competencies -. future many-to-many .-> Activities
 
   Organizations --> Experiences
   Organizations --> CareerOpportunities[Career Opportunities]
