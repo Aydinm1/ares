@@ -75,7 +75,9 @@ page chrome must continue using the shared tokens.
 Desktop uses a fixed `204px` navigation rail and a fluid content region.
 Intake, Assignments, and 4 Year Plan are the primary destinations.
 
-- The sidebar and mobile header share the Personal OS brand.
+- The sidebar and mobile header share the ARES brand.
+- ARES expands to Adaptive Retrieval and Execution System in documentation;
+  the interface displays only the acronym.
 - Intake is the first navigation item and the default route.
 - Active navigation uses the blue-soft background and blue icon/text.
 - Main content keeps a readable maximum width and consistent left alignment.
@@ -84,6 +86,8 @@ Intake, Assignments, and 4 Year Plan are the primary destinations.
   between synced, syncing, and error states. On narrow screens the status
   track fills the row while the button remains fixed.
 - Mobile replaces the sidebar with the compact top navigation.
+- The sidebar footer remains empty until it has a real utility such as
+  settings or account controls; it does not display decorative copy.
 
 ## Assignments
 

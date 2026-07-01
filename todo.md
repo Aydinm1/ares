@@ -1,4 +1,4 @@
-# Personal Operating System Roadmap
+# ARES Roadmap
 
 ## Working Rules
 
@@ -36,7 +36,7 @@ priority over building tooling for recruiting.
 
 - [ ] Review and approve `docs/architecture.md`
 - [ ] Back up the current Airtable base
-- [ ] Rename the base for the broader Personal OS
+- [ ] Rename the base to ARES
 - [ ] Define common ID, lifecycle, timestamp, and archive conventions
 - [x] Create the three-field Inbox Items table
 - [x] Build five-second capture with only text input and automatic creation time
@@ -206,7 +206,7 @@ separate Portfolio content store.
 - [ ] Do not create Portfolio or Published Pages tables
 
 Usable outcome: approved Case Studies become public generated pages while
-their narrative and source data remain authoritative in the Personal OS.
+their narrative and source data remain authoritative in ARES.
 
 ### Phase 6: People
 

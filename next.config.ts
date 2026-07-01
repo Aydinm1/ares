@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  devIndicators: false,
   experimental: {
     extensionAlias: {
       ".js": [".ts", ".tsx", ".js"],

@@ -8,7 +8,7 @@ const figtree = Figtree({
 });
 
 export const metadata = {
-  title: "Personal OS",
+  title: "ARES",
   description: "A focused system for capturing and organizing daily work.",
 };
 

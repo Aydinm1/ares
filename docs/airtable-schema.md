@@ -17,8 +17,8 @@ Airtable now, not duplicate the future domain model.
 | Metadata inspected | 2026-06-29 |
 | Live tables | 6 |
 
-The architecture roadmap proposes renaming this base for the broader Personal
-OS. That rename has not happened yet.
+The architecture roadmap proposes renaming this base to ARES. That rename has
+not happened yet.
 
 ## Application Contract
 
@@ -243,7 +243,7 @@ Implemented after the original academic schema:
 
 The remaining approved schema-planning sequence is:
 
-1. Back up the base and rename it for the Personal OS.
+1. Back up the base and rename it to ARES.
 2. Establish common immutable ID, lifecycle, timestamp, and archive fields.
 3. Add Areas and Projects.
 4. Add Work Items.

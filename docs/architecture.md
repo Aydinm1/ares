@@ -1,10 +1,11 @@
-# Personal Operating System Architecture
+# ARES Architecture
 
 ## Purpose
 
-Aydin is a Personal Operating System for reducing cognitive load, organizing
-work, capturing evidence, and reusing information across school, career,
-research, health, relationships, and creative practice.
+ARES (Adaptive Retrieval and Execution System) is Aydin's Personal Operating
+System for reducing cognitive load, organizing work, capturing evidence, and
+reusing information across school, career, research, health, relationships,
+and creative practice.
 
 The system must be useful without AI. AI may summarize, rank, draft, or detect
 patterns later, but structured user-owned data and complete manual workflows
@@ -28,9 +29,8 @@ remain the source of truth.
 ## Storage Strategy
 
 The current Airtable base is the operational database through the Execution
-and Career phases. It should be renamed from `Assignment Tracker` to reflect
-the broader Personal OS and extended incrementally rather than replaced in a
-big-bang migration.
+and Career phases. It should be renamed from `Assignment Tracker` to `ARES`
+and extended incrementally rather than replaced in a big-bang migration.
 
 Airtable record IDs remain adapter identifiers. New Phase 2 records also
 receive an immutable app-generated `id` so future storage migrations do not

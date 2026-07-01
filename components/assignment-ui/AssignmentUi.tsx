@@ -71,7 +71,7 @@ interface AssignmentShellProps {
 }
 
 export function AssignmentShell({
-  brandName = "Personal OS",
+  brandName = "ARES",
   activeNav,
   icons,
   children,
@@ -148,9 +148,6 @@ export function AssignmentShell({
             </span>
             <span>4 Year Plan</span>
           </Link>
-          <div className={styles.sidebarFooter}>
-            Capture once. Use everywhere.
-          </div>
         </aside>
         <main className={styles.main}>
           <div className={styles.content}>{children}</div>

@@ -164,15 +164,6 @@
   place-items: center;
 }
 
-.sidebarFooter {
-  margin-top: auto;
-  padding: 16px 10px 4px;
-  border-top: 1px solid var(--assignment-border);
-  color: var(--assignment-muted);
-  font-size: 12px;
-  line-height: 1.45;
-}
-
 .main {
   min-width: 0;
   padding: 26px 30px 36px;
