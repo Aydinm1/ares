@@ -19,8 +19,9 @@
 - [x] Airtable-backed Assignments
 - [x] Assignment list and month calendar
 - [x] Reversible assignment completion
+- [x] Assignment editing and due-date management
 - [x] Four-year plan with 13 quarters
-- [ ] Resolve and commit the current uncommitted Courses work
+- [x] Commit the Assignments and Courses page designs
 - [ ] Update the live Airtable contract documentation after any schema changes
 
 Exit criterion: Courses and Assignments remain trustworthy daily tools while
@@ -361,6 +362,17 @@ Usable outcome: repetitive trusted workflows can run automatically and remain
 inspectable and recoverable.
 
 ## Parking Lot
+
+### Academic Enhancements
+
+Defer these until daily use reveals enough friction to justify reopening the
+stable academic workspace.
+
+- [ ] Add Assignment filtering by course week
+- [ ] Add four-year-plan editing for course placement and academic details
+- [ ] Build grade tracking from Assignment scores and Category Weights
+
+### Other Deferred Work
 
 - Session timers and interruption recovery
 - Recurring Work Item engine
