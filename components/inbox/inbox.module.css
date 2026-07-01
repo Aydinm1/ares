@@ -207,15 +207,16 @@
 
 .intakeContent {
   width: min(100%, 680px);
-  transform: translateY(-5vh);
+  transform: translateY(-11vh);
 }
 
 .intakeContent h1 {
-  margin: 0 0 24px;
+  margin: 0 0 34px;
   color: var(--assignment-text);
-  font-size: 30px;
-  font-weight: 600;
-  line-height: 1.2;
+  font-size: 28px;
+  font-weight: 500;
+  line-height: 1.25;
+  letter-spacing: 0;
   text-align: center;
 }
 
@@ -227,12 +228,12 @@
 .intakeField {
   position: relative;
   display: grid;
-  min-height: 58px;
+  min-height: 56px;
   align-items: center;
   border: 1px solid var(--assignment-border-strong);
-  border-radius: 16px;
+  border-radius: 28px;
   background: #ffffff;
-  box-shadow: 0 2px 12px rgb(24 28 32 / 7%);
+  box-shadow: 0 1px 8px rgb(24 28 32 / 6%);
   transition:
     border-color 160ms ease,
     box-shadow 160ms ease;
@@ -256,7 +257,7 @@
   max-height: 240px;
   overflow-y: auto;
   resize: none;
-  padding: 16px 58px 16px 18px;
+  padding: 13px 56px 11px 20px;
   border: 0;
   outline: 0;
   color: var(--assignment-text);
@@ -272,11 +273,11 @@
 
 .intakeSubmit {
   position: absolute;
-  right: 11px;
-  bottom: 11px;
+  right: 10px;
+  bottom: 10px;
   display: grid;
-  width: 36px;
-  height: 36px;
+  width: 34px;
+  height: 34px;
   place-items: center;
   padding: 0;
   border: 0;
@@ -374,16 +375,16 @@
   }
 
   .intakeContent {
-    transform: translateY(-4vh);
+    transform: translateY(-7vh);
   }
 
   .intakeContent h1 {
-    margin-bottom: 20px;
+    margin-bottom: 28px;
     font-size: 26px;
   }
 
   .intakeField {
-    border-radius: 14px;
+    border-radius: 28px;
   }
 }
 

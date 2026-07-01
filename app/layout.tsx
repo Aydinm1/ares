@@ -8,8 +8,8 @@ const figtree = Figtree({
 });
 
 export const metadata = {
-  title: "Aydin Assignments",
-  description: "A focused Airtable-backed assignment list and calendar.",
+  title: "Personal OS",
+  description: "A focused system for capturing and organizing daily work.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

@@ -1,5 +1,10 @@
-import { redirect } from "next/navigation";
+import { AssignmentsWorkspace } from "../../components/assignments/AssignmentsWorkspace";
 
-export default function AssignmentsRoute() {
-  redirect("/");
+export const metadata = {
+  title: "Assignments | Personal OS",
+  description: "View, schedule, and complete academic assignments.",
+};
+
+export default function AssignmentsPage() {
+  return <AssignmentsWorkspace />;
 }

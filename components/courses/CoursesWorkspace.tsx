@@ -34,7 +34,7 @@ const icons = {
   brand: <Layers3 size={22} strokeWidth={2.2} />,
   assignments: <ListTodo size={19} strokeWidth={2} />,
   courses: <GraduationCap size={19} strokeWidth={2} />,
-  inbox: <Inbox size={19} strokeWidth={2} />,
+  intake: <Inbox size={19} strokeWidth={2} />,
   calendar: <CalendarDays size={17} strokeWidth={2} />,
   sync: <RefreshCw size={16} strokeWidth={2} />,
 };

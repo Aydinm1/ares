@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
-import { Check, Inbox, LoaderCircle, Send, X } from "lucide-react";
+import { ArrowUp, Check, Inbox, LoaderCircle, Send, X } from "lucide-react";
 import { createInboxItem } from "../../src/app/apiClient";
 import type { InboxItem } from "../../src/domain";
 import styles from "./inbox.module.css";
@@ -120,7 +120,7 @@ export function CaptureComposer({
             {saving ? (
               <LoaderCircle className={styles.savingIcon} size={17} aria-hidden="true" />
             ) : (
-              <Send size={17} aria-hidden="true" />
+              <ArrowUp size={19} strokeWidth={2.4} aria-hidden="true" />
             )}
           </button>
         </div>

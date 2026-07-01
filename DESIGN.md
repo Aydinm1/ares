@@ -73,9 +73,10 @@ page chrome must continue using the shared tokens.
 ## Application Shell
 
 Desktop uses a fixed `204px` navigation rail and a fluid content region.
-Assignments, 4 Year Plan, and Inbox are the primary destinations.
+Intake, Assignments, and 4 Year Plan are the primary destinations.
 
-- The sidebar and mobile header share the Academic Precision brand.
+- The sidebar and mobile header share the Personal OS brand.
+- Intake is the first navigation item and the default route.
 - Active navigation uses the blue-soft background and blue icon/text.
 - Main content keeps a readable maximum width and consistent left alignment.
 - Airtable synchronization uses one quiet status line and a neutral `28px`
@@ -110,12 +111,12 @@ Assignments, 4 Year Plan, and Inbox are the primary destinations.
 - On mobile, List and Calendar use a segmented switch rather than rendering
   both cramped side by side.
 
-## Inbox
+## Intake
 
-- Quick capture is available from the shared header outside the Inbox page.
+- Quick capture is available from the shared header outside the Intake page.
 - The capture dialog uses an expanding textarea, visible submit action, and
   `Cmd/Ctrl+Enter` keyboard submission.
-- The Inbox page is pure intake: a centered “What’s on your mind?” prompt and
+- The Intake page is pure intake: a centered “What’s on your mind?” prompt and
   one compact composer on an otherwise open canvas.
 - The page composer starts at one line, grows with its content, submits with
   Enter, and inserts a newline with Shift+Enter.

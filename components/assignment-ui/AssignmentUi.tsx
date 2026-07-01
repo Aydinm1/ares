@@ -14,7 +14,7 @@ export interface AssignmentUiIcons {
   brand: ReactNode;
   assignments: ReactNode;
   courses: ReactNode;
-  inbox: ReactNode;
+  intake: ReactNode;
   calendar: ReactNode;
   list: ReactNode;
   previous: ReactNode;
@@ -65,13 +65,13 @@ export interface CourseFilterOption {
 
 interface AssignmentShellProps {
   brandName?: string;
-  activeNav: "assignments" | "courses" | "inbox";
-  icons: Pick<AssignmentUiIcons, "brand" | "assignments" | "courses" | "inbox">;
+  activeNav: "intake" | "assignments" | "courses";
+  icons: Pick<AssignmentUiIcons, "brand" | "intake" | "assignments" | "courses">;
   children: ReactNode;
 }
 
 export function AssignmentShell({
-  brandName = "Academic Precision",
+  brandName = "Personal OS",
   activeNav,
   icons,
   children,
@@ -86,11 +86,19 @@ export function AssignmentShell({
           <span className={styles.brandName}>{brandName}</span>
         </div>
         <div className={styles.topbarActions}>
-          {activeNav !== "inbox" ? <InboxQuickCapture /> : null}
+          {activeNav !== "intake" ? <InboxQuickCapture /> : null}
           <nav className={styles.mobileNav} aria-label="Mobile navigation">
             <Link
-              className={`${styles.mobileNavItem} ${activeNav === "assignments" ? styles.mobileNavItemActive : ""}`}
+              className={`${styles.mobileNavItem} ${activeNav === "intake" ? styles.mobileNavItemActive : ""}`}
               href="/"
+              aria-label="Intake"
+              aria-current={activeNav === "intake" ? "page" : undefined}
+            >
+              {icons.intake}
+            </Link>
+            <Link
+              className={`${styles.mobileNavItem} ${activeNav === "assignments" ? styles.mobileNavItemActive : ""}`}
+              href="/assignments"
               aria-label="Assignments"
               aria-current={activeNav === "assignments" ? "page" : undefined}
             >
@@ -104,14 +112,6 @@ export function AssignmentShell({
             >
               {icons.courses}
             </Link>
-            <Link
-              className={`${styles.mobileNavItem} ${activeNav === "inbox" ? styles.mobileNavItemActive : ""}`}
-              href="/inbox"
-              aria-label="Inbox"
-              aria-current={activeNav === "inbox" ? "page" : undefined}
-            >
-              {icons.inbox}
-            </Link>
           </nav>
         </div>
       </header>
@@ -119,8 +119,18 @@ export function AssignmentShell({
         <aside className={styles.sidebar} aria-label="Primary navigation">
           <p className={styles.sidebarLabel}>Workspace</p>
           <Link
-            className={`${styles.navItem} ${activeNav === "assignments" ? styles.navItemActive : ""}`}
+            className={`${styles.navItem} ${activeNav === "intake" ? styles.navItemActive : ""}`}
             href="/"
+            aria-current={activeNav === "intake" ? "page" : undefined}
+          >
+            <span className={styles.navIcon} aria-hidden="true">
+              {icons.intake}
+            </span>
+            <span>Intake</span>
+          </Link>
+          <Link
+            className={`${styles.navItem} ${activeNav === "assignments" ? styles.navItemActive : ""}`}
+            href="/assignments"
             aria-current={activeNav === "assignments" ? "page" : undefined}
           >
             <span className={styles.navIcon} aria-hidden="true">
@@ -138,18 +148,8 @@ export function AssignmentShell({
             </span>
             <span>4 Year Plan</span>
           </Link>
-          <Link
-            className={`${styles.navItem} ${activeNav === "inbox" ? styles.navItemActive : ""}`}
-            href="/inbox"
-            aria-current={activeNav === "inbox" ? "page" : undefined}
-          >
-            <span className={styles.navIcon} aria-hidden="true">
-              {icons.inbox}
-            </span>
-            <span>Inbox</span>
-          </Link>
           <div className={styles.sidebarFooter}>
-            Airtable is the source of truth for academic records.
+            Capture once. Use everywhere.
           </div>
         </aside>
         <main className={styles.main}>

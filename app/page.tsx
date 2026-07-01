@@ -1,5 +1,10 @@
-import { AssignmentsWorkspace } from "../components/assignments/AssignmentsWorkspace";
+import { InboxWorkspace } from "../components/inbox/InboxWorkspace";
+
+export const metadata = {
+  title: "Intake | Personal OS",
+  description: "A focused place to capture what is on your mind.",
+};
 
 export default function HomePage() {
-  return <AssignmentsWorkspace />;
+  return <InboxWorkspace />;
 }
