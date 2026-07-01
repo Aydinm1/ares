@@ -7,6 +7,9 @@ import type {
   CourseStatus,
   GeneralEducationRequirement,
   GradeCategory,
+  Habit,
+  HabitCheckIn,
+  HabitUpdate,
   InboxItem
 } from "../domain/types.js";
 import type { AirtableRecord } from "./client.js";
@@ -110,6 +113,69 @@ export function inboxItemToAirtable(text: string, createdAt: string): AnyFields 
     [fields.inboxItems.text]: text,
     [fields.inboxItems.createdAt]: createdAt,
     [fields.inboxItems.processed]: false
+  };
+}
+
+export function mapHabit(record: AirtableRecord<AnyFields>): Habit {
+  return {
+    id: record.id,
+    name: stringValue(record.fields[fields.habits.name])?.trim() || "Untitled habit",
+    targetDaysPerWeek: numberValue(record.fields[fields.habits.targetDaysPerWeek]) ?? 4,
+    status: record.fields[fields.habits.status] === "Archived" ? "archived" : "active",
+    createdAt:
+      stringValue(record.fields[fields.habits.createdAt]) ??
+      record.createdTime ??
+      new Date(0).toISOString()
+  };
+}
+
+export function habitToAirtable(
+  name: string,
+  targetDaysPerWeek: number,
+  createdAt: string
+): AnyFields {
+  return {
+    [fields.habits.name]: name,
+    [fields.habits.targetDaysPerWeek]: targetDaysPerWeek,
+    [fields.habits.status]: "Active",
+    [fields.habits.createdAt]: createdAt
+  };
+}
+
+export function habitUpdateToAirtable(update: HabitUpdate): AnyFields {
+  const result: AnyFields = {};
+  if (update.name !== undefined) result[fields.habits.name] = update.name;
+  if (update.targetDaysPerWeek !== undefined) {
+    result[fields.habits.targetDaysPerWeek] = update.targetDaysPerWeek;
+  }
+  if (update.status !== undefined) {
+    result[fields.habits.status] = update.status === "archived" ? "Archived" : "Active";
+  }
+  return result;
+}
+
+export function mapHabitCheckIn(record: AirtableRecord<AnyFields>): HabitCheckIn {
+  return {
+    id: record.id,
+    habitId: firstLinkedId(record.fields[fields.habitCheckIns.habit]) ?? "",
+    date: stringValue(record.fields[fields.habitCheckIns.date]) ?? "",
+    createdAt:
+      stringValue(record.fields[fields.habitCheckIns.createdAt]) ??
+      record.createdTime ??
+      new Date(0).toISOString()
+  };
+}
+
+export function habitCheckInToAirtable(
+  habitId: string,
+  date: string,
+  createdAt: string
+): AnyFields {
+  return {
+    [fields.habitCheckIns.key]: `${habitId}:${date}`,
+    [fields.habitCheckIns.habit]: [habitId],
+    [fields.habitCheckIns.date]: date,
+    [fields.habitCheckIns.createdAt]: createdAt
   };
 }
 

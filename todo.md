@@ -127,11 +127,12 @@ practice history, and follow-up.
 
 ### Week 8: Habit Tracker and Hardening
 
-- [ ] Create Habit definitions linked to Activities
-- [ ] Implement Monday-Sunday distinct-day progress
-- [ ] Let a quick check create a minimal Session
-- [ ] Allow at most one active Habit per Activity
-- [ ] Keep the tracker limited to target, seven days, and current progress
+- [x] Create standalone Habit definitions and dated Check-ins
+- [x] Implement Monday-Sunday distinct-day progress
+- [x] Build immediate optimistic habit checks without requiring Sessions
+- [ ] Add optional Activity links after Activities and Sessions exist
+- [ ] Decide whether enriched checks should optionally create or link Sessions
+- [x] Keep the tracker limited to target, seven days, and current progress
 - [ ] Review friction in Inbox, Work Items, Sessions, and Career Opportunities
 - [ ] Fix workflow problems before adding another module
 - [ ] Reassess the next eight weeks using recruiting needs and actual usage

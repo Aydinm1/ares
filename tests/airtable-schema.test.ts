@@ -76,6 +76,31 @@ const expectedSchema: ExpectedTable[] = [
       { id: "fldGB45UhXXCHgwv3", name: "Created At", type: "dateTime" },
       { id: "fld6uRZAHwr5Vj3Ni", name: "Processed", type: "checkbox" }
     ]
+  },
+  {
+    id: tables.habits.id,
+    name: tables.habits.name,
+    fields: [
+      { id: "fldH3LJ0SZ10an1Bx", name: "Name", type: "singleLineText" },
+      { id: "fldqp5e6dK3fI0Dec", name: "Target Days per Week", type: "number" },
+      { id: "fldvQy9duk70Ya72S", name: "Status", type: "singleSelect" },
+      { id: "fldlkupf7xJ1aGF4Y", name: "Created At", type: "dateTime" }
+    ]
+  },
+  {
+    id: tables.habitCheckIns.id,
+    name: tables.habitCheckIns.name,
+    fields: [
+      { id: "fldwKUd43qyAI3pMA", name: "Key", type: "singleLineText" },
+      {
+        id: "fldGv76U3A8srROqs",
+        name: "Habit",
+        type: "multipleRecordLinks",
+        linkedTableId: tables.habits.id
+      },
+      { id: "fldTgiR19mBkjO2Qd", name: "Date", type: "date" },
+      { id: "fldYkG614nyOBbXLB", name: "Created At", type: "dateTime" }
+    ]
   }
 ];
 

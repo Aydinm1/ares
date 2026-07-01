@@ -81,3 +81,33 @@ export interface InboxItem {
   createdAt: string;
   processed: boolean;
 }
+
+export type HabitStatus = "active" | "archived";
+
+export interface Habit {
+  id: AirtableRecordId;
+  name: string;
+  targetDaysPerWeek: number;
+  status: HabitStatus;
+  createdAt: string;
+}
+
+export interface HabitCheckIn {
+  id: AirtableRecordId;
+  habitId: AirtableRecordId;
+  date: string;
+  createdAt: string;
+}
+
+export interface HabitWeek {
+  habits: Habit[];
+  checkIns: HabitCheckIn[];
+  weekStart: string;
+  weekEnd: string;
+}
+
+export interface HabitUpdate {
+  name?: string;
+  targetDaysPerWeek?: number;
+  status?: HabitStatus;
+}

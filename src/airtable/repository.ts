@@ -1,12 +1,26 @@
-import type { Assignment, AssignmentUpdate, Course, InboxItem } from "../domain/types.js";
+import type {
+  Assignment,
+  AssignmentUpdate,
+  Course,
+  Habit,
+  HabitCheckIn,
+  HabitUpdate,
+  HabitWeek,
+  InboxItem
+} from "../domain/types.js";
 import { AirtableClient } from "./client.js";
 import {
   assignmentUpdateToAirtable,
+  habitCheckInToAirtable,
+  habitToAirtable,
+  habitUpdateToAirtable,
   inboxItemToAirtable,
   mapAssignment,
   mapCourse,
   mapGeneralEducationRequirement,
   mapGradeCategory,
+  mapHabit,
+  mapHabitCheckIn,
   mapInboxItem
 } from "./mappers.js";
 import { fields, tableRef } from "./schema.js";
@@ -82,5 +96,76 @@ export class SchoolRepository {
 
   async deleteInboxItem(recordId: string): Promise<void> {
     await this.client.delete(tableRef("inboxItems"), recordId);
+  }
+
+  async listHabitWeek(weekStart: string, weekEnd: string): Promise<HabitWeek> {
+    const habitQuery = new URLSearchParams();
+    habitQuery.set("filterByFormula", `{${fields.habits.status}}="Active"`);
+    habitQuery.set("sort[0][field]", fields.habits.createdAt);
+    habitQuery.set("sort[0][direction]", "asc");
+    const checkInQuery = new URLSearchParams();
+    checkInQuery.set(
+      "filterByFormula",
+      `AND({${fields.habitCheckIns.date}}>="${weekStart}",{${fields.habitCheckIns.date}}<="${weekEnd}")`
+    );
+    const [habitRecords, checkInRecords] = await Promise.all([
+      this.client.list<Record<string, unknown>>(tableRef("habits"), habitQuery),
+      this.client.list<Record<string, unknown>>(tableRef("habitCheckIns"), checkInQuery)
+    ]);
+    const habits = habitRecords
+      .map(mapHabit)
+      .filter((habit) => habit.createdAt.slice(0, 10) <= weekEnd);
+    const habitIds = new Set(habits.map((habit) => habit.id));
+    return {
+      habits,
+      checkIns: checkInRecords.map(mapHabitCheckIn).filter((item) => habitIds.has(item.habitId)),
+      weekStart,
+      weekEnd
+    };
+  }
+
+  async createHabit(name: string, targetDaysPerWeek: number): Promise<Habit> {
+    const createdAt = new Date().toISOString();
+    const record = await this.client.create<Record<string, unknown>>(
+      tableRef("habits"),
+      habitToAirtable(name, targetDaysPerWeek, createdAt)
+    );
+    return mapHabit(record);
+  }
+
+  async updateHabit(recordId: string, update: HabitUpdate): Promise<Habit> {
+    const record = await this.client.update<Record<string, unknown>>(
+      tableRef("habits"),
+      recordId,
+      habitUpdateToAirtable(update)
+    );
+    return mapHabit(record);
+  }
+
+  async setHabitCheckIn(habitId: string, date: string): Promise<HabitCheckIn> {
+    const existing = await this.findHabitCheckIns(habitId, date);
+    if (existing[0]) return mapHabitCheckIn(existing[0]);
+    const createdAt = new Date().toISOString();
+    const record = await this.client.create<Record<string, unknown>>(
+      tableRef("habitCheckIns"),
+      habitCheckInToAirtable(habitId, date, createdAt)
+    );
+    return mapHabitCheckIn(record);
+  }
+
+  async removeHabitCheckIn(habitId: string, date: string): Promise<void> {
+    const records = await this.findHabitCheckIns(habitId, date);
+    await Promise.all(
+      records.map((record) => this.client.delete(tableRef("habitCheckIns"), record.id))
+    );
+  }
+
+  private findHabitCheckIns(habitId: string, date: string) {
+    const query = new URLSearchParams();
+    query.set(
+      "filterByFormula",
+      `{${fields.habitCheckIns.key}}="${habitId}:${date}"`
+    );
+    return this.client.list<Record<string, unknown>>(tableRef("habitCheckIns"), query);
   }
 }

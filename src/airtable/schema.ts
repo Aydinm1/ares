@@ -5,7 +5,9 @@ export const tables = {
   generalEducation: { id: "tbl3Beqraxljn1aDm", name: "General Education Requirements" },
   assignments: { id: "tbllXlXa7oKsoFMae", name: "Assignments" },
   gradeCategories: { id: "tblXC0Vug7xyPFZqW", name: "Category Weights" },
-  inboxItems: { id: "tblpTfEK98iyHCaEb", name: "Inbox Items" }
+  inboxItems: { id: "tblpTfEK98iyHCaEb", name: "Inbox Items" },
+  habits: { id: "tblnPymbsaGbAtuum", name: "Habits" },
+  habitCheckIns: { id: "tblYMLiIEVUkQZmre", name: "Habit Check-ins" }
 } as const;
 
 export const fields = {
@@ -41,6 +43,18 @@ export const fields = {
     text: "Text",
     createdAt: "Created At",
     processed: "Processed"
+  },
+  habits: {
+    name: "Name",
+    targetDaysPerWeek: "Target Days per Week",
+    status: "Status",
+    createdAt: "Created At"
+  },
+  habitCheckIns: {
+    key: "Key",
+    habit: "Habit",
+    date: "Date",
+    createdAt: "Created At"
   }
 } as const;
 

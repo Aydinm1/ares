@@ -12,6 +12,7 @@ export {
   WorkspaceHeader,
   WorkspaceNotice,
 } from "./AssignmentUi";
+export { AresMark } from "./AresMark";
 
 export type {
   AssignmentCalendarDay,

@@ -6,9 +6,9 @@ import {
   ChevronLeft,
   ChevronRight,
   CircleAlert,
+  CircleCheckBig,
   Filter,
   Inbox,
-  Layers3,
   List,
   ListTodo,
   LocateFixed,
@@ -66,10 +66,10 @@ import {
 } from "./AssignmentEditorDrawer";
 
 const icons: AssignmentUiIcons = {
-  brand: <Layers3 size={22} strokeWidth={2.2} />,
   assignments: <ListTodo size={19} strokeWidth={2} />,
   courses: <GraduationCap size={19} strokeWidth={2} />,
   intake: <Inbox size={19} strokeWidth={2} />,
+  habits: <CircleCheckBig size={19} strokeWidth={2} />,
   calendar: <CalendarDays size={17} strokeWidth={2} />,
   list: <List size={17} strokeWidth={2} />,
   previous: <ChevronLeft size={18} strokeWidth={2} />,
@@ -403,10 +403,10 @@ export function AssignmentsWorkspace() {
     <AssignmentShell
       activeNav="assignments"
       icons={{
-        brand: icons.brand,
         assignments: icons.assignments,
         courses: icons.courses,
         intake: icons.intake,
+        habits: icons.habits,
       }}
     >
       <WorkspaceHeader

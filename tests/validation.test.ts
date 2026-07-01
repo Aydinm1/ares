@@ -3,6 +3,11 @@ import assert from "node:assert/strict";
 import {
   validateAssignmentCompletionWrite,
   validateAssignmentWrite,
+  validateHabitCreate,
+  validateHabitCheckInDate,
+  validateHabitDate,
+  validateHabitUpdate,
+  validateHabitWeekStart,
   validateInboxCapture,
   ValidationError
 } from "../src/validation/domain.js";
@@ -38,6 +43,42 @@ test("validates low-friction Inbox captures", () => {
   ]) {
     assert.throws(() => validateInboxCapture(value), ValidationError);
   }
+});
+
+test("validates habit definitions and week dates", () => {
+  assert.deepEqual(
+    validateHabitCreate({ name: "  Gym  ", targetDaysPerWeek: 4 }),
+    { name: "Gym", targetDaysPerWeek: 4 }
+  );
+  assert.deepEqual(validateHabitUpdate({ targetDaysPerWeek: 7 }), {
+    targetDaysPerWeek: 7
+  });
+  assert.deepEqual(validateHabitUpdate({ status: "archived" }), {
+    status: "archived"
+  });
+  assert.equal(validateHabitDate("2026-07-01"), "2026-07-01");
+  assert.equal(
+    validateHabitCheckInDate("2026-07-01", new Date("2026-07-01T20:00:00.000Z")),
+    "2026-07-01"
+  );
+  assert.equal(validateHabitWeekStart("2026-06-29"), "2026-06-29");
+  for (const value of [
+    {},
+    { name: "", targetDaysPerWeek: 4 },
+    { name: "Gym", targetDaysPerWeek: 0 },
+    { name: "Gym", targetDaysPerWeek: 8 },
+    { name: "Gym", targetDaysPerWeek: 4.5 },
+    { name: "Gym", targetDaysPerWeek: 4, status: "active" }
+  ]) {
+    assert.throws(() => validateHabitCreate(value), ValidationError);
+  }
+  assert.throws(() => validateHabitUpdate({ status: "paused" }), ValidationError);
+  assert.throws(() => validateHabitDate("2026-02-30"), ValidationError);
+  assert.throws(
+    () => validateHabitCheckInDate("2026-07-02", new Date("2026-07-01T20:00:00.000Z")),
+    ValidationError
+  );
+  assert.throws(() => validateHabitWeekStart("2026-07-01"), ValidationError);
 });
 
 test("validates and normalizes editable assignment fields", () => {

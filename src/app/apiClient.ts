@@ -1,4 +1,12 @@
-import type { Assignment, Course, InboxItem } from "../domain/index.js";
+import type {
+  Assignment,
+  Course,
+  Habit,
+  HabitCheckIn,
+  HabitUpdate,
+  HabitWeek,
+  InboxItem
+} from "../domain/index.js";
 
 export interface AssignmentEditorUpdate {
   title?: string;
@@ -37,6 +45,49 @@ export async function deleteInboxItem(id: string): Promise<void> {
   await fetchJson<{ deleted: true }>(`/api/inbox/${encodeURIComponent(id)}`, {
     method: "DELETE"
   });
+}
+
+export async function loadHabitWeek(weekStart: string): Promise<HabitWeek> {
+  const response = await fetchJson<{ week: HabitWeek }>(
+    `/api/habits?weekStart=${encodeURIComponent(weekStart)}`
+  );
+  return response.week;
+}
+
+export async function createHabit(
+  name: string,
+  targetDaysPerWeek: number
+): Promise<Habit> {
+  const response = await fetchJson<{ habit: Habit }>("/api/habits", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name, targetDaysPerWeek })
+  });
+  return response.habit;
+}
+
+export async function updateHabit(id: string, update: HabitUpdate): Promise<Habit> {
+  const response = await fetchJson<{ habit: Habit }>(
+    `/api/habits/${encodeURIComponent(id)}`,
+    {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(update)
+    }
+  );
+  return response.habit;
+}
+
+export async function setHabitCheckIn(
+  habitId: string,
+  date: string,
+  completed: boolean
+): Promise<HabitCheckIn | undefined> {
+  const response = await fetchJson<{ checkIn?: HabitCheckIn; completed?: false }>(
+    `/api/habits/${encodeURIComponent(habitId)}/check-ins/${encodeURIComponent(date)}`,
+    { method: completed ? "PUT" : "DELETE" }
+  );
+  return response.checkIn;
 }
 
 export async function updateAssignmentCompletion(

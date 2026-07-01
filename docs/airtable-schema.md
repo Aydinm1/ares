@@ -15,7 +15,7 @@ Airtable now, not duplicate the future domain model.
 | Current name | `Assignment Tracker` |
 | Base ID | `appVy9thv2l5e9JKv` |
 | Metadata inspected | 2026-06-29 |
-| Live tables | 6 |
+| Live tables | 8 |
 
 The architecture roadmap proposes renaming this base to ARES. That rename has
 not happened yet.
@@ -31,6 +31,11 @@ PATCH /api/assignments/:id
 GET   /api/inbox
 POST  /api/inbox
 DELETE /api/inbox/:id
+GET   /api/habits?weekStart=YYYY-MM-DD
+POST  /api/habits
+PATCH /api/habits/:id
+PUT   /api/habits/:id/check-ins/:date
+DELETE /api/habits/:id/check-ins/:date
 ```
 
 The PATCH operation accepts a strict partial update for Assignment Name,
@@ -55,6 +60,7 @@ flowchart LR
   Courses -->|Staff Contacts| StaffContacts[Staff Contacts]
   Courses -->|Prerequisites| Courses
   Assignments -->|Category Weights| CategoryWeights
+  Habits -->|dated completion| HabitCheckIns[Habit Check-ins]
 ```
 
 ## Courses
@@ -159,9 +165,35 @@ Table ID: `tblpTfEK98iyHCaEb`
 | Created At | `fldGB45UhXXCHgwv3` | `dateTime` | Set automatically by the server |
 | Processed | `fld6uRZAHwr5Vj3Ni` | `checkbox` | Always false until Inbox Review exists |
 
-The current Inbox workflow lists unprocessed records newest-first, creates
-captures, and permanently deletes mistaken captures. It does not process or
-convert records.
+The current Intake screen creates captures only. GET and DELETE remain in the
+API contract for a future review workflow, but Intake does not list, process,
+or delete records.
+
+## Habits
+
+Table ID: `tblnPymbsaGbAtuum`
+
+| Field | Field ID | Airtable type | Application role |
+| --- | --- | --- | --- |
+| Name | `fldH3LJ0SZ10an1Bx` | `singleLineText` | Required habit name |
+| Target Days per Week | `fldqp5e6dK3fI0Dec` | `number` | Integer cadence from 1 through 7 |
+| Status | `fldvQy9duk70Ya72S` | `singleSelect` | Active or Archived |
+| Created At | `fldlkupf7xJ1aGF4Y` | `dateTime` | Server-set creation timestamp |
+
+## Habit Check-ins
+
+Table ID: `tblYMLiIEVUkQZmre`
+
+| Field | Field ID | Airtable type | Application role |
+| --- | --- | --- | --- |
+| Key | `fldwKUd43qyAI3pMA` | `singleLineText` | Deterministic `habitId:YYYY-MM-DD` key |
+| Habit | `fldGv76U3A8srROqs` | `multipleRecordLinks` | Links `tblnPymbsaGbAtuum` |
+| Date | `fldTgiR19mBkjO2Qd` | `date` | Local completion date |
+| Created At | `fldYkG614nyOBbXLB` | `dateTime` | Server-set creation timestamp |
+
+The application treats Habit as a single conceptual link and prevents
+duplicate habit/date check-ins. Deleting a habit in the interface archives its
+definition and preserves check-ins.
 
 ## Category Weights
 
@@ -240,6 +272,7 @@ The logical definitions and dependencies for future entities live in
 Implemented after the original academic schema:
 
 - Inbox Items and five-second capture.
+- Habits and standalone dated Habit Check-ins.
 
 The remaining approved schema-planning sequence is:
 
@@ -247,9 +280,10 @@ The remaining approved schema-planning sequence is:
 2. Establish common immutable ID, lifecycle, timestamp, and archive fields.
 3. Add Areas and Projects.
 4. Add Work Items.
-5. Add Activities and Sessions.
+5. Add Activities and Sessions, then optionally link existing Habits.
 6. Add Organizations, minimal People, and Career Opportunities.
-7. Add Habits only after Session logging works.
+7. Decide whether a Habit Check-in should optionally link or create a Session
+   after the Activity and Session workflows exist.
 
 Phase 5 may add a Portfolio Case Studies table after Experiences, Bullets, and
 Artifacts exist. Portfolio and Resume Versions do not receive tables: Portfolio

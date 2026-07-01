@@ -73,12 +73,17 @@ page chrome must continue using the shared tokens.
 ## Application Shell
 
 Desktop uses a fixed `204px` navigation rail and a fluid content region.
-Intake, Assignments, and 4 Year Plan are the primary destinations.
+Intake, Habits, Assignments, and 4 Year Plan are the primary destinations.
 
 - The sidebar and mobile header share the ARES brand.
 - ARES expands to Adaptive Retrieval and Execution System in documentation;
   the interface displays only the acronym.
+- The canonical ARES mark is an open geometric `A`: a blue rounded arch with
+  one diagonal break through its right stem. It has no crossbar, internal
+  symbol, target, or launch imagery. Render it as a code-native SVG at `22px`
+  beside a medium-weight uppercase wordmark with modest tracking.
 - Intake is the first navigation item and the default route.
+- Habits is the second navigation item for repeated daily use.
 - Active navigation uses the blue-soft background and blue icon/text.
 - Main content keeps a readable maximum width and consistent left alignment.
 - Airtable synchronization uses one quiet status line and a neutral `28px`
@@ -114,6 +119,18 @@ Intake, Assignments, and 4 Year Plan are the primary destinations.
   multiple assignments on one date remain unambiguous.
 - On mobile, List and Calendar use a segmented switch rather than rendering
   both cramped side by side.
+
+## Habits
+
+- The tracker shows one Monday-through-Sunday week and all seven dates at once.
+- Each habit row shows live progress toward its weekly target; no streaks,
+  charts, badges, heatmaps, or motivational copy are added.
+- Valid day boxes turn green immediately on click with a short check animation.
+  Persistence happens in the background and failures roll the box back.
+- Future dates remain visible but disabled. Previous and future weeks remain
+  navigable, with a direct return to the current week.
+- New and edited habits use a compact modal on desktop and bottom sheet on
+  mobile. Delete archives the habit and preserves its dated history.
 
 ## Intake
 

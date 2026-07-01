@@ -213,22 +213,25 @@ are deferred.
 
 #### Habit
 
-A small cadence definition attached to one Activity.
+A small cadence definition that can exist independently for immediate daily
+use and may later link to one Activity.
 
 | Field | Requirement |
 | --- | --- |
-| `activityId` | Required |
+| `activityId` | Optional; added after Activities exist |
 | `targetDaysPerWeek` | Required; initial default is `4` |
 | `weekStartsOn` | Monday |
-| `status` | `active`, `paused`, or `archived` |
+| `status` | `active` or `archived` in the initial workflow |
 
-Progress counts distinct dates with at least one Session during the current
-Monday-through-Sunday week. A quick habit check creates a minimal Session;
-richer information can be added later.
+Progress counts distinct dated Habit Check-ins during a Monday-through-Sunday
+week. A check-in is immediate binary evidence and does not require planning,
+duration, reflection, or a Session.
 
-The initial model permits at most one active Habit for an Activity. A Habit
-does not own Sessions or require a direct Session link; its progress is derived
-from Sessions for its Activity.
+Once Activities and Sessions exist, a Habit may link to one Activity. A
+check-in may then optionally link or create a minimal Session when richer
+practice evidence provides value. Existing check-ins remain authoritative and
+must not be replaced by fabricated Session times. At most one active Habit per
+Activity is enforced only after Activity links exist.
 
 #### Session Metric
 
@@ -422,7 +425,8 @@ flowchart TD
   Projects --> Sessions
   Activities --> WorkItems
   Activities --> Sessions
-  Activities --> Habits
+  Activities -. optional later .-> Habits
+  Habits --> HabitCheckIns[Habit Check-ins]
   WorkItems --> DailyDashboard[Daily Dashboard]
   Courses --> AcademicAssignments[Academic Assignments]
   AcademicAssignments --> WorkItems
@@ -432,7 +436,7 @@ flowchart TD
   Habits --> DailyDashboard
   Sessions --> WeeklyReview[Weekly Review]
   WorkItems --> WeeklyReview
-  Habits --> WeeklyReview
+  HabitCheckIns --> WeeklyReview
   Competencies -. future many-to-many .-> Activities
 
   Organizations --> Experiences

@@ -3,10 +3,15 @@ import assert from "node:assert/strict";
 import {
   assignmentCompletionToAirtable,
   assignmentUpdateToAirtable,
+  habitCheckInToAirtable,
+  habitToAirtable,
+  habitUpdateToAirtable,
   inboxItemToAirtable,
   mapAssignment,
   mapCourse,
   mapGeneralEducationRequirement,
+  mapHabit,
+  mapHabitCheckIn,
   mapInboxItem
 } from "../src/airtable/mappers.js";
 import { fields } from "../src/airtable/schema.js";
@@ -60,6 +65,59 @@ test("maps and serializes Inbox Items", () => {
       [fields.inboxItems.text]: "Capture this",
       [fields.inboxItems.createdAt]: "2026-06-30T18:00:00.000Z",
       [fields.inboxItems.processed]: false
+    }
+  );
+});
+
+test("maps and serializes habits and dated check-ins", () => {
+  assert.deepEqual(mapHabit({
+    id: "recHabit",
+    fields: {
+      [fields.habits.name]: "Gym",
+      [fields.habits.targetDaysPerWeek]: 4,
+      [fields.habits.status]: "Active",
+      [fields.habits.createdAt]: "2026-07-01T18:00:00.000Z"
+    }
+  }), {
+    id: "recHabit",
+    name: "Gym",
+    targetDaysPerWeek: 4,
+    status: "active",
+    createdAt: "2026-07-01T18:00:00.000Z"
+  });
+  assert.deepEqual(
+    habitToAirtable("Gym", 4, "2026-07-01T18:00:00.000Z"),
+    {
+      [fields.habits.name]: "Gym",
+      [fields.habits.targetDaysPerWeek]: 4,
+      [fields.habits.status]: "Active",
+      [fields.habits.createdAt]: "2026-07-01T18:00:00.000Z"
+    }
+  );
+  assert.deepEqual(habitUpdateToAirtable({ name: "Lift", status: "archived" }), {
+    [fields.habits.name]: "Lift",
+    [fields.habits.status]: "Archived"
+  });
+  assert.deepEqual(mapHabitCheckIn({
+    id: "recCheckIn",
+    fields: {
+      [fields.habitCheckIns.habit]: ["recHabit"],
+      [fields.habitCheckIns.date]: "2026-07-01",
+      [fields.habitCheckIns.createdAt]: "2026-07-01T18:00:00.000Z"
+    }
+  }), {
+    id: "recCheckIn",
+    habitId: "recHabit",
+    date: "2026-07-01",
+    createdAt: "2026-07-01T18:00:00.000Z"
+  });
+  assert.deepEqual(
+    habitCheckInToAirtable("recHabit", "2026-07-01", "2026-07-01T18:00:00.000Z"),
+    {
+      [fields.habitCheckIns.key]: "recHabit:2026-07-01",
+      [fields.habitCheckIns.habit]: ["recHabit"],
+      [fields.habitCheckIns.date]: "2026-07-01",
+      [fields.habitCheckIns.createdAt]: "2026-07-01T18:00:00.000Z"
     }
   );
 });

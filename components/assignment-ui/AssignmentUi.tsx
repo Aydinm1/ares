@@ -3,6 +3,7 @@
 import { useEffect, useRef, type CSSProperties, type ReactNode } from "react";
 import Link from "next/link";
 import { InboxQuickCapture } from "../inbox/InboxCapture";
+import { AresMark } from "./AresMark";
 import styles from "./assignment-ui.module.css";
 
 export type AssignmentDueTone = "overdue" | "today" | "soon" | "normal" | "undated";
@@ -11,10 +12,10 @@ export type AssignmentMobileView = "list" | "calendar";
 export type AssignmentCompletionFeedback = "confirmed" | "exiting";
 
 export interface AssignmentUiIcons {
-  brand: ReactNode;
   assignments: ReactNode;
   courses: ReactNode;
   intake: ReactNode;
+  habits: ReactNode;
   calendar: ReactNode;
   list: ReactNode;
   previous: ReactNode;
@@ -65,8 +66,8 @@ export interface CourseFilterOption {
 
 interface AssignmentShellProps {
   brandName?: string;
-  activeNav: "intake" | "assignments" | "courses";
-  icons: Pick<AssignmentUiIcons, "brand" | "intake" | "assignments" | "courses">;
+  activeNav: "intake" | "habits" | "assignments" | "courses";
+  icons: Pick<AssignmentUiIcons, "intake" | "habits" | "assignments" | "courses">;
   children: ReactNode;
 }
 
@@ -81,7 +82,7 @@ export function AssignmentShell({
       <header className={styles.topbar}>
         <div className={styles.brand}>
           <span className={styles.brandIcon} aria-hidden="true">
-            {icons.brand}
+            <AresMark />
           </span>
           <span className={styles.brandName}>{brandName}</span>
         </div>
@@ -95,6 +96,14 @@ export function AssignmentShell({
               aria-current={activeNav === "intake" ? "page" : undefined}
             >
               {icons.intake}
+            </Link>
+            <Link
+              className={`${styles.mobileNavItem} ${activeNav === "habits" ? styles.mobileNavItemActive : ""}`}
+              href="/habits"
+              aria-label="Habits"
+              aria-current={activeNav === "habits" ? "page" : undefined}
+            >
+              {icons.habits}
             </Link>
             <Link
               className={`${styles.mobileNavItem} ${activeNav === "assignments" ? styles.mobileNavItemActive : ""}`}
@@ -127,6 +136,16 @@ export function AssignmentShell({
               {icons.intake}
             </span>
             <span>Intake</span>
+          </Link>
+          <Link
+            className={`${styles.navItem} ${activeNav === "habits" ? styles.navItemActive : ""}`}
+            href="/habits"
+            aria-current={activeNav === "habits" ? "page" : undefined}
+          >
+            <span className={styles.navIcon} aria-hidden="true">
+              {icons.habits}
+            </span>
+            <span>Habits</span>
           </Link>
           <Link
             className={`${styles.navItem} ${activeNav === "assignments" ? styles.navItemActive : ""}`}
