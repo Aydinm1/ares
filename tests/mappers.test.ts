@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {
   assignmentCompletionToAirtable,
+  assignmentUpdateToAirtable,
   mapAssignment,
   mapCourse,
   mapGeneralEducationRequirement
@@ -81,5 +82,27 @@ test("serializes completion-only writes in both directions", () => {
   });
   assert.deepEqual(assignmentCompletionToAirtable("not_started"), {
     [fields.assignments.completed]: false
+  });
+});
+
+test("serializes editable assignment fields without touching omitted fields", () => {
+  assert.deepEqual(
+    assignmentUpdateToAirtable({
+      title: "Revised essay",
+      courseId: "recCourse",
+      dueAt: null,
+      pointsPossible: 25,
+      weekLabel: null
+    }),
+    {
+      [fields.assignments.title]: "Revised essay",
+      [fields.assignments.course]: ["recCourse"],
+      [fields.assignments.dueAt]: null,
+      [fields.assignments.pointsPossible]: 25,
+      [fields.assignments.weekLabel]: null
+    }
+  );
+  assert.deepEqual(assignmentUpdateToAirtable({ courseId: null }), {
+    [fields.assignments.course]: []
   });
 });

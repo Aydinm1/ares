@@ -101,6 +101,12 @@ Assignments and 4 Year Plan are the only primary destinations.
 - Completion is optimistic, but saving and error states must remain visible.
 - Filtering lives in the panel header. Secondary options open from the filter
   icon and close on outside interaction.
+- Assignment rows expose a pencil icon for editing. Editing uses a right-side
+  drawer on desktop and a full-width bottom sheet on mobile.
+- The assignment editor uses explicit Save and keeps completion as a separate
+  checkbox workflow. Dirty forms require confirmation before closing.
+- Selecting a populated calendar day opens a day agenda before the editor so
+  multiple assignments on one date remain unambiguous.
 - On mobile, List and Calendar use a segmented switch rather than rendering
   both cramped side by side.
 

@@ -30,8 +30,14 @@ GET   /api/courses
 PATCH /api/assignments/:id
 ```
 
-The PATCH operation may only update the Assignments `Completed` checkbox.
-Checked maps to domain status `submitted`; unchecked maps to `not_started`.
+The PATCH operation accepts a strict partial update for Assignment Name,
+Courses, Due Date, Points Possible, Week, or Completed. Completion maps checked
+to domain status `submitted` and unchecked to `not_started`.
+
+Editor requests send a Pacific local `dueDate` with an optional `dueTime`.
+Date-only deadlines are stored at 11:59 PM in `America/Los_Angeles`; the app
+treats that time as a date-only display convention. Assignment Type remains
+read-only until its select taxonomy is expanded.
 
 Field names used by the adapter are centralized in
 `src/airtable/schema.ts`. Airtable credentials remain server-side.
@@ -131,7 +137,7 @@ Table ID: `tbllXlXa7oKsoFMae`
 | Due Date | `fldEisJqSaUIIDWy8` | `dateTime` | `Assignment.dueAt` |
 | Points Earned | `fld4rCP4y8j3ulO0Y` | `number` | `Assignment.pointsEarned` |
 | Points Possible | `fldAWln49fynQWzFv` | `number` | `Assignment.pointsPossible` |
-| Completed | `fldA1MTcA1wh0GLA4` | `checkbox` | Only field written by current app |
+| Completed | `fldA1MTcA1wh0GLA4` | `checkbox` | Completion write |
 | Category Weights | `fld33ksNpJYirqrfm` | `multipleRecordLinks` | Links `tblXC0Vug7xyPFZqW` |
 | General Assignment Type | `fldAZvY3fCDuMp8gZ` | `singleSelect` | Maps to assignment category/type |
 | Week | `fldk4t3tyOGLZ1ncx` | `singleSelect` | `Assignment.weekLabel` |

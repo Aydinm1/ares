@@ -7,7 +7,8 @@ import {
   ApiClientError,
   loadAssignments,
   loadCourses,
-  updateAssignmentCompletion
+  updateAssignmentCompletion,
+  updateAssignmentDetails
 } from "../src/app/apiClient.js";
 import { fields, tableRef } from "../src/airtable/schema.js";
 
@@ -111,6 +112,49 @@ test("assignment and course GET routes return mapped Airtable records", async ()
   );
 });
 
+test("assignment PATCH updates editable Airtable fields", async () => {
+  let requestBody: unknown;
+  globalThis.fetch = async (_input, init) => {
+    requestBody = JSON.parse(String(init?.body));
+    return Response.json({
+      id: "recAssignment",
+      fields: {
+        [fields.assignments.title]: "Revised essay",
+        [fields.assignments.course]: ["rec12345678901234"],
+        [fields.assignments.dueAt]: "2026-07-04T06:59:00.000Z",
+        [fields.assignments.pointsPossible]: 20,
+        [fields.assignments.weekLabel]: "2"
+      }
+    });
+  };
+
+  const response = await PATCH(
+    new Request("http://localhost/api/assignments/recAssignment", {
+      method: "PATCH",
+      body: JSON.stringify({
+        title: "Revised essay",
+        courseId: "rec12345678901234",
+        dueDate: "2026-07-03",
+        dueTime: "",
+        pointsPossible: 20,
+        weekLabel: "2"
+      })
+    }),
+    { params: Promise.resolve({ id: "recAssignment" }) }
+  );
+
+  assert.equal(response.status, 200);
+  assert.deepEqual(requestBody, {
+    fields: {
+      [fields.assignments.title]: "Revised essay",
+      [fields.assignments.course]: ["rec12345678901234"],
+      [fields.assignments.dueAt]: "2026-07-04T06:59:00.000Z",
+      [fields.assignments.pointsPossible]: 20,
+      [fields.assignments.weekLabel]: "2"
+    }
+  });
+});
+
 test("assignment GET exposes Airtable failures as a non-2xx response", async () => {
   globalThis.fetch = async () => new Response("unavailable", { status: 503 });
 
@@ -181,5 +225,34 @@ test("workspace API client serializes completion and propagates normalized error
       error.status === 503 &&
       error.message === "Airtable unavailable" &&
       error.issues?.[0] === "retry later"
+  );
+});
+
+test("workspace API client serializes assignment editor updates", async () => {
+  globalThis.fetch = async (input, init) => {
+    assert.equal(String(input), "/api/assignments/recAssignment");
+    assert.equal(init?.method, "PATCH");
+    assert.deepEqual(JSON.parse(String(init?.body)), {
+      title: "Revised essay",
+      dueDate: "2026-07-03",
+      dueTime: null
+    });
+    return Response.json({
+      assignment: {
+        id: "recAssignment",
+        title: "Revised essay",
+        status: "not_started",
+        category: "paper"
+      }
+    });
+  };
+
+  assert.equal(
+    (await updateAssignmentDetails("recAssignment", {
+      title: "Revised essay",
+      dueDate: "2026-07-03",
+      dueTime: null
+    })).title,
+    "Revised essay"
   );
 });

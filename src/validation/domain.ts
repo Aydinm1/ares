@@ -1,3 +1,6 @@
+import { fromZonedTime } from "date-fns-tz";
+import type { AssignmentUpdate } from "../domain/types.js";
+
 export class ValidationError extends Error {
   constructor(public readonly issues: string[]) {
     super(issues.join("; "));
@@ -5,23 +8,132 @@ export class ValidationError extends Error {
   }
 }
 
-export function validateAssignmentCompletionWrite(
-  value: unknown
-): "submitted" | "not_started" {
+const ASSIGNMENT_UPDATE_FIELDS = new Set([
+  "title",
+  "courseId",
+  "dueDate",
+  "dueTime",
+  "pointsPossible",
+  "weekLabel",
+  "status"
+]);
+const ASSIGNMENT_WEEKS = new Set([
+  "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "Finals"
+]);
+const AIRTABLE_RECORD_ID = /^rec[A-Za-z0-9]{14}$/;
+const LOCAL_DATE = /^\d{4}-\d{2}-\d{2}$/;
+const LOCAL_TIME = /^(?:[01]\d|2[0-3]):[0-5]\d$/;
+const ACADEMIC_TIME_ZONE = "America/Los_Angeles";
+
+export function validateAssignmentWrite(value: unknown): AssignmentUpdate {
   if (!value || typeof value !== "object" || Array.isArray(value)) {
     throw new ValidationError(["Request body must be an object."]);
   }
 
   const payload = value as Record<string, unknown>;
   const issues: string[] = [];
+  const keys = Object.keys(payload);
+  if (keys.length === 0) issues.push("At least one field must be changed.");
+  if (keys.some((key) => !ASSIGNMENT_UPDATE_FIELDS.has(key))) {
+    issues.push("Request contains fields that cannot be changed.");
+  }
 
-  if (Object.keys(payload).some((key) => key !== "status")) {
-    issues.push("Only status can be changed.");
+  const update: AssignmentUpdate = {};
+  if ("title" in payload) {
+    if (typeof payload.title !== "string" || payload.title.trim().length === 0) {
+      issues.push("title must be a non-empty string.");
+    } else if (payload.title.trim().length > 200) {
+      issues.push("title must be 200 characters or fewer.");
+    } else {
+      update.title = payload.title.trim();
+    }
   }
-  if (payload.status !== "submitted" && payload.status !== "not_started") {
-    issues.push("status must be submitted or not_started.");
+  if ("courseId" in payload) {
+    if (payload.courseId !== null && (
+      typeof payload.courseId !== "string" || !AIRTABLE_RECORD_ID.test(payload.courseId)
+    )) {
+      issues.push("courseId must be an Airtable record ID or null.");
+    } else {
+      update.courseId = payload.courseId as string | null;
+    }
   }
+  if ("status" in payload) {
+    if (payload.status !== "submitted" && payload.status !== "not_started") {
+      issues.push("status must be submitted or not_started.");
+    } else {
+      update.status = payload.status;
+    }
+  }
+  if ("pointsPossible" in payload) {
+    if (payload.pointsPossible !== null && (
+      typeof payload.pointsPossible !== "number" ||
+      !Number.isFinite(payload.pointsPossible) ||
+      payload.pointsPossible < 0
+    )) {
+      issues.push("pointsPossible must be a non-negative number or null.");
+    } else {
+      update.pointsPossible = payload.pointsPossible as number | null;
+    }
+  }
+  if ("weekLabel" in payload) {
+    if (payload.weekLabel !== null && (
+      typeof payload.weekLabel !== "string" || !ASSIGNMENT_WEEKS.has(payload.weekLabel)
+    )) {
+      issues.push("weekLabel must be 1 through 10, Finals, or null.");
+    } else {
+      update.weekLabel = payload.weekLabel as string | null;
+    }
+  }
+
+  const hasDueDate = "dueDate" in payload;
+  const hasDueTime = "dueTime" in payload;
+  if (hasDueTime && !hasDueDate) issues.push("dueTime cannot be changed without dueDate.");
+  if (hasDueDate) {
+    if (payload.dueDate === null) {
+      if (hasDueTime && payload.dueTime !== null && payload.dueTime !== "") {
+        issues.push("dueTime cannot be set when dueDate is null.");
+      }
+      update.dueAt = null;
+    } else if (typeof payload.dueDate !== "string" || !isValidLocalDate(payload.dueDate)) {
+      issues.push("dueDate must be a valid YYYY-MM-DD date or null.");
+    } else if (
+      hasDueTime &&
+      payload.dueTime !== null &&
+      payload.dueTime !== "" &&
+      (typeof payload.dueTime !== "string" || !LOCAL_TIME.test(payload.dueTime))
+    ) {
+      issues.push("dueTime must be HH:mm, empty, or null.");
+    } else {
+      const dueTime =
+        typeof payload.dueTime === "string" && payload.dueTime ? payload.dueTime : "23:59";
+      update.dueAt = fromZonedTime(
+        `${payload.dueDate}T${dueTime}:00`,
+        ACADEMIC_TIME_ZONE
+      ).toISOString();
+    }
+  }
+
   if (issues.length) throw new ValidationError(issues);
+  return update;
+}
 
-  return payload.status as "submitted" | "not_started";
+export function validateAssignmentCompletionWrite(
+  value: unknown
+): "submitted" | "not_started" {
+  const update = validateAssignmentWrite(value);
+  if (Object.keys(update).length !== 1 || update.status === undefined) {
+    throw new ValidationError(["Only status can be changed."]);
+  }
+  return update.status;
+}
+
+function isValidLocalDate(value: string): boolean {
+  if (!LOCAL_DATE.test(value)) return false;
+  const [year, month, day] = value.split("-").map(Number);
+  const date = new Date(Date.UTC(year!, month! - 1, day));
+  return (
+    date.getUTCFullYear() === year &&
+    date.getUTCMonth() === month! - 1 &&
+    date.getUTCDate() === day
+  );
 }

@@ -13,6 +13,7 @@ import {
   ListTodo,
   LocateFixed,
   GraduationCap,
+  Pencil,
   RefreshCw,
   X,
 } from "lucide-react";
@@ -21,7 +22,6 @@ import {
   AssignmentPanel,
   AssignmentShell,
   CalendarPanel,
-  MobileAssignmentDetail,
   MobileViewSwitcher,
   WorkspaceGrid,
   WorkspaceHeader,
@@ -40,6 +40,7 @@ import {
   commitCompletionChange,
   createOptimisticCompletionState,
   filterAssignments,
+  formatAssignmentDeadline,
   formatLastSyncedLabel,
   groupAssignmentsByLocalDate,
   isSameLocalMonth,
@@ -55,8 +56,14 @@ import {
   loadAssignments,
   loadCourses,
   updateAssignmentCompletion,
+  updateAssignmentDetails,
+  type AssignmentEditorUpdate,
 } from "../../src/app/apiClient";
 import type { Assignment, Course } from "../../src/domain";
+import {
+  AssignmentEditorDrawer,
+  type AssignmentDrawerState,
+} from "./AssignmentEditorDrawer";
 
 const icons: AssignmentUiIcons = {
   brand: <Layers3 size={22} strokeWidth={2.2} />,
@@ -69,6 +76,7 @@ const icons: AssignmentUiIcons = {
   today: <LocateFixed size={16} strokeWidth={2} />,
   sync: <RefreshCw size={16} strokeWidth={2} />,
   filter: <Filter size={17} strokeWidth={2} />,
+  edit: <Pencil size={15} strokeWidth={2} />,
   close: <X size={17} strokeWidth={2} />,
   empty: <Inbox size={19} strokeWidth={2} />,
   error: <CircleAlert size={19} strokeWidth={2} />,
@@ -96,7 +104,9 @@ export function AssignmentsWorkspace() {
   const todayRef = useRef(today);
   const [selectedDateKey, setSelectedDateKey] = useState(() => localDateKey(today));
   const [mobileView, setMobileView] = useState<AssignmentMobileView>("list");
-  const [selectedAssignmentId, setSelectedAssignmentId] = useState<string>();
+  const [drawerState, setDrawerState] = useState<AssignmentDrawerState>();
+  const [editorSaving, setEditorSaving] = useState(false);
+  const [editorError, setEditorError] = useState<string>();
   const [completionFeedbackById, setCompletionFeedbackById] = useState<
     Readonly<Record<string, AssignmentCompletionFeedback | undefined>>
   >({});
@@ -135,8 +145,10 @@ export function AssignmentsWorkspace() {
           delete next[assignmentId];
           return next;
         });
-        setSelectedAssignmentId((selected) =>
-          selected === assignmentId ? undefined : selected
+        setDrawerState((current) =>
+          current?.kind === "editor" && current.assignmentId === assignmentId
+            ? undefined
+            : current
         );
       }, COMPLETION_EXIT_MS);
       completionFeedbackTimersRef.current.set(assignmentId, exitTimer);
@@ -294,7 +306,16 @@ export function AssignmentsWorkspace() {
         .map((course) => ({ id: course.id, label: course.name })),
     [courses],
   );
-  const selectedItem = selectedAssignmentId ? rowItemById.get(selectedAssignmentId) : undefined;
+  const assignmentById = useMemo(
+    () => new Map(completionState.assignments.map((assignment) => [assignment.id, assignment])),
+    [completionState.assignments],
+  );
+  const selectedAssignment =
+    drawerState?.kind === "editor" ? assignmentById.get(drawerState.assignmentId) : undefined;
+  const agendaDay =
+    drawerState?.kind === "agenda"
+      ? calendarDays.find((day) => day.key === drawerState.dateKey)
+      : undefined;
   const activeCount = completionState.assignments.filter(
     (assignment) => assignment.status !== "submitted",
   ).length;
@@ -335,9 +356,37 @@ export function AssignmentsWorkspace() {
     [clearCompletionFeedback, replaceCompletionState, scheduleCompletionFeedback],
   );
 
-  const handleEntrySelect = useCallback((item: AssignmentListItem) => {
-    setSelectedAssignmentId(item.id);
+  const handleEntrySelect = useCallback((assignmentId: string, returnDateKey?: string) => {
+    setEditorError(undefined);
+    setDrawerState({ kind: "editor", assignmentId, returnDateKey });
   }, []);
+
+  const handleAssignmentSave = useCallback(
+    async (assignmentId: string, update: AssignmentEditorUpdate) => {
+      setEditorSaving(true);
+      setEditorError(undefined);
+      try {
+        const serverAssignment = await updateAssignmentDetails(assignmentId, update);
+        const current = completionStateRef.current;
+        replaceCompletionState({
+          ...current,
+          assignments: current.assignments.map((assignment) =>
+            assignment.id === assignmentId ? serverAssignment : assignment
+          ),
+        });
+        const syncedAt = new Date();
+        setLastSyncedAt(syncedAt);
+        setSyncClock(syncedAt);
+        setSyncState("synced");
+        setDrawerState(undefined);
+      } catch (error) {
+        setEditorError(error instanceof Error ? error.message : "Assignment changes could not be saved.");
+      } finally {
+        setEditorSaving(false);
+      }
+    },
+    [replaceCompletionState],
+  );
 
   const formattedToday = format(today, "EEEE, MMMM d, yyyy");
   const syncLabel =
@@ -392,6 +441,7 @@ export function AssignmentsWorkspace() {
             error={loadError}
             icons={{
               filter: icons.filter,
+              edit: icons.edit,
               empty: icons.empty,
               error: icons.error,
               sync: icons.sync,
@@ -399,6 +449,7 @@ export function AssignmentsWorkspace() {
             onCourseChange={setSelectedCourseId}
             onHideCompletedChange={setHideCompleted}
             onCompletionChange={(id, completed) => void handleCompletionChange(id, completed)}
+            onEdit={handleEntrySelect}
             onRetry={() => void loadWorkspace()}
           />
         }
@@ -426,19 +477,32 @@ export function AssignmentsWorkspace() {
             }}
             onDateSelect={(day) => {
               setSelectedDateKey(day.key);
-              const firstItem = day.entries[0]?.item;
-              if (firstItem) handleEntrySelect(firstItem);
+              if (day.entries.length > 0) {
+                setEditorError(undefined);
+                setDrawerState({ kind: "agenda", dateKey: day.key });
+              }
             }}
             onRetry={() => void loadWorkspace()}
           />
         }
       />
 
-      <MobileAssignmentDetail
-        item={selectedItem}
-        closeIcon={icons.close}
-        onClose={() => setSelectedAssignmentId(undefined)}
-        onCompletionChange={(id, completed) => void handleCompletionChange(id, completed)}
+      <AssignmentEditorDrawer
+        state={drawerState}
+        assignment={selectedAssignment}
+        agendaDay={agendaDay}
+        courses={courses}
+        saving={editorSaving}
+        saveError={editorError}
+        onClose={() => {
+          if (!editorSaving) setDrawerState(undefined);
+        }}
+        onEditAssignment={handleEntrySelect}
+        onBackToAgenda={(dateKey) => {
+          setEditorError(undefined);
+          setDrawerState({ kind: "agenda", dateKey });
+        }}
+        onSave={handleAssignmentSave}
       />
     </AssignmentShell>
   );
@@ -459,7 +523,7 @@ function toListItems(
     courseName: viewModel.course?.name ?? "Course not linked",
     courseColor: viewModel.courseColor,
     dueLabel: viewModel.dueLabel,
-    dueExact: formatDeadline(viewModel.assignment.dueAt),
+    dueExact: formatAssignmentDeadline(viewModel.assignment.dueAt),
     dueTone: viewModel.dueTone,
     completed: viewModel.completed,
     saving: completionState.pending[viewModel.assignment.id] !== undefined,
@@ -499,10 +563,4 @@ function toCalendarDays(
       entries: visibleEntries,
     };
   });
-}
-
-function formatDeadline(dueAt: string | undefined): string | undefined {
-  if (!dueAt) return undefined;
-  const due = new Date(dueAt);
-  return Number.isNaN(due.getTime()) ? undefined : format(due, "MMM d, yyyy · h:mm a");
 }

@@ -1,5 +1,6 @@
 import type {
   Assignment,
+  AssignmentUpdate,
   AssignmentCategory,
   AssignmentStatus,
   Course,
@@ -95,6 +96,25 @@ export function assignmentCompletionToAirtable(
   status: "submitted" | "not_started"
 ): AnyFields {
   return { [fields.assignments.completed]: status === "submitted" };
+}
+
+export function assignmentUpdateToAirtable(update: AssignmentUpdate): AnyFields {
+  const fieldsToUpdate: AnyFields = {};
+  if (update.title !== undefined) fieldsToUpdate[fields.assignments.title] = update.title;
+  if (update.courseId !== undefined) {
+    fieldsToUpdate[fields.assignments.course] = update.courseId ? [update.courseId] : [];
+  }
+  if (update.dueAt !== undefined) fieldsToUpdate[fields.assignments.dueAt] = update.dueAt;
+  if (update.status !== undefined) {
+    fieldsToUpdate[fields.assignments.completed] = update.status === "submitted";
+  }
+  if (update.pointsPossible !== undefined) {
+    fieldsToUpdate[fields.assignments.pointsPossible] = update.pointsPossible;
+  }
+  if (update.weekLabel !== undefined) {
+    fieldsToUpdate[fields.assignments.weekLabel] = update.weekLabel;
+  }
+  return fieldsToUpdate;
 }
 
 export function mapGradeCategory(record: AirtableRecord<AnyFields>): GradeCategory {

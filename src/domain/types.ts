@@ -65,3 +65,12 @@ export interface Assignment {
   notes?: string;
   createdAt?: string;
 }
+
+export interface AssignmentUpdate {
+  title?: string;
+  courseId?: AirtableRecordId | null;
+  dueAt?: string | null;
+  status?: "submitted" | "not_started";
+  pointsPossible?: number | null;
+  weekLabel?: string | null;
+}

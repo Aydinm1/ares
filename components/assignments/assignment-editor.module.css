@@ -1,0 +1,372 @@
+.backdrop {
+  position: fixed;
+  z-index: 100;
+  inset: 0;
+}
+
+.scrim {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  border: 0;
+  background: rgb(24 28 32 / 28%);
+  cursor: default;
+}
+
+.drawer {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: flex;
+  width: min(440px, 100%);
+  height: 100%;
+  flex-direction: column;
+  overflow: hidden;
+  border-left: 1px solid var(--assignment-border);
+  background: #ffffff;
+  box-shadow: -16px 0 48px rgb(24 28 32 / 16%);
+  animation: drawer-in 180ms ease-out;
+}
+
+.drawerHeader {
+  display: flex;
+  min-height: 82px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--assignment-border);
+}
+
+.headerLead {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.eyebrow {
+  margin: 0 0 3px;
+  color: var(--assignment-blue);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.drawerTitle {
+  margin: 0;
+  color: var(--assignment-text);
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.drawerSubtitle {
+  margin: 4px 0 0;
+  color: var(--assignment-muted);
+  font-size: 12px;
+}
+
+.iconButton {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  flex: 0 0 auto;
+  padding: 0;
+  border: 0;
+  border-radius: 7px;
+  color: var(--assignment-muted);
+  background: transparent;
+  cursor: pointer;
+}
+
+.iconButton:hover {
+  color: var(--assignment-text);
+  background: var(--assignment-blue-soft);
+}
+
+.agendaList {
+  display: grid;
+  gap: 8px;
+  padding: 16px;
+  overflow-y: auto;
+}
+
+.agendaItem {
+  display: grid;
+  width: 100%;
+  min-height: 64px;
+  grid-template-columns: 8px minmax(0, 1fr) 18px;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 13px;
+  border: 1px solid var(--assignment-border);
+  border-radius: 8px;
+  color: var(--assignment-text);
+  background: #ffffff;
+  text-align: left;
+  cursor: pointer;
+}
+
+.agendaItem:hover {
+  border-color: var(--assignment-border-strong);
+  background: #f8faff;
+}
+
+.agendaDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.agendaCopy {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.agendaCopy strong,
+.agendaCopy span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.agendaCopy strong {
+  font-size: 13px;
+}
+
+.agendaCopy span {
+  color: var(--assignment-muted);
+  font-size: 11px;
+}
+
+.editor {
+  position: relative;
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+}
+
+.formBody {
+  display: grid;
+  gap: 18px;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.field {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+  color: var(--assignment-text);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.field > span {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.field em {
+  color: var(--assignment-muted);
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 500;
+}
+
+.field input,
+.field select {
+  width: 100%;
+  min-width: 0;
+  min-height: 42px;
+  padding: 8px 10px;
+  border: 1px solid var(--assignment-border-strong);
+  border-radius: 7px;
+  color: var(--assignment-text);
+  background: #ffffff;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.field input:focus,
+.field select:focus {
+  border-color: var(--assignment-blue);
+  outline: 3px solid rgb(11 87 208 / 12%);
+}
+
+.field input:disabled {
+  color: var(--assignment-muted);
+  background: #f2f4f7;
+}
+
+.dateGrid,
+.twoColumn {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 12px;
+}
+
+.clearDate {
+  width: fit-content;
+  margin-top: -10px;
+  padding: 0;
+  border: 0;
+  color: var(--assignment-blue);
+  background: transparent;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.readOnlyField {
+  display: grid;
+  gap: 4px;
+  padding: 12px;
+  border: 1px solid var(--assignment-border);
+  border-radius: 7px;
+  background: #f7f9fc;
+}
+
+.readOnlyField > span {
+  color: var(--assignment-muted);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.readOnlyField strong {
+  font-size: 13px;
+}
+
+.readOnlyField small {
+  color: var(--assignment-muted);
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+.formError {
+  padding: 10px 12px;
+  border: 1px solid #efb3ad;
+  border-radius: 7px;
+  color: #8c1d18;
+  background: #fff3f1;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.editorFooter {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: auto;
+  padding: 14px 20px;
+  border-top: 1px solid var(--assignment-border);
+  background: #ffffff;
+}
+
+.primaryButton,
+.secondaryButton,
+.dangerButton {
+  min-height: 38px;
+  padding: 0 14px;
+  border-radius: 7px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.primaryButton {
+  border: 1px solid var(--assignment-blue);
+  color: #ffffff;
+  background: var(--assignment-blue);
+}
+
+.secondaryButton {
+  border: 1px solid var(--assignment-border-strong);
+  color: var(--assignment-text);
+  background: #ffffff;
+}
+
+.dangerButton {
+  border: 1px solid #a52a23;
+  color: #ffffff;
+  background: #a52a23;
+}
+
+.primaryButton:disabled,
+.secondaryButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.discardPrompt {
+  position: absolute;
+  inset: auto 16px 16px;
+  z-index: 2;
+  display: grid;
+  gap: 14px;
+  padding: 15px;
+  border: 1px solid var(--assignment-border-strong);
+  border-radius: 9px;
+  background: #ffffff;
+  box-shadow: 0 12px 32px rgb(24 28 32 / 18%);
+}
+
+.discardPrompt strong {
+  font-size: 13px;
+}
+
+.discardPrompt p {
+  margin: 4px 0 0;
+  color: var(--assignment-muted);
+  font-size: 11px;
+}
+
+.discardActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+@keyframes drawer-in {
+  from { transform: translateX(20px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@media (max-width: 700px) {
+  .drawer {
+    top: auto;
+    bottom: 0;
+    width: 100%;
+    height: min(92vh, 760px);
+    border-top: 1px solid var(--assignment-border);
+    border-left: 0;
+    border-radius: 14px 14px 0 0;
+    animation-name: sheet-in;
+  }
+
+  .dateGrid,
+  .twoColumn {
+    grid-template-columns: 1fr;
+  }
+
+  @keyframes sheet-in {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .drawer {
+    animation: none;
+  }
+}

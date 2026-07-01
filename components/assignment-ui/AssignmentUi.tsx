@@ -20,6 +20,7 @@ export interface AssignmentUiIcons {
   today: ReactNode;
   sync: ReactNode;
   filter: ReactNode;
+  edit: ReactNode;
   close: ReactNode;
   empty: ReactNode;
   error: ReactNode;
@@ -293,10 +294,11 @@ interface AssignmentPanelProps {
   hideCompleted: boolean;
   loading?: boolean;
   error?: string;
-  icons: Pick<AssignmentUiIcons, "filter" | "empty" | "error" | "sync">;
+  icons: Pick<AssignmentUiIcons, "filter" | "edit" | "empty" | "error" | "sync">;
   onCourseChange: (courseId: string) => void;
   onHideCompletedChange: (hideCompleted: boolean) => void;
   onCompletionChange: (assignmentId: string, completed: boolean) => void;
+  onEdit: (assignmentId: string) => void;
   onRetry: () => void;
 }
 
@@ -311,6 +313,7 @@ export function AssignmentPanel({
   onCourseChange,
   onHideCompletedChange,
   onCompletionChange,
+  onEdit,
   onRetry,
 }: AssignmentPanelProps) {
   const filterMenuRef = useRef<HTMLDetailsElement>(null);
@@ -419,7 +422,13 @@ export function AssignmentPanel({
         <>
           <div className={styles.assignmentList}>
             {items.map((item) => (
-              <AssignmentRow key={item.id} item={item} onCompletionChange={onCompletionChange} />
+              <AssignmentRow
+                key={item.id}
+                item={item}
+                editIcon={icons.edit}
+                onCompletionChange={onCompletionChange}
+                onEdit={onEdit}
+              />
             ))}
           </div>
           <div className={styles.panelFooter}>
@@ -433,10 +442,12 @@ export function AssignmentPanel({
 
 interface AssignmentRowProps {
   item: AssignmentListItem;
+  editIcon: ReactNode;
   onCompletionChange: (assignmentId: string, completed: boolean) => void;
+  onEdit: (assignmentId: string) => void;
 }
 
-export function AssignmentRow({ item, onCompletionChange }: AssignmentRowProps) {
+export function AssignmentRow({ item, editIcon, onCompletionChange, onEdit }: AssignmentRowProps) {
   const courseColor = { "--course-color": item.courseColor } as CSSProperties;
 
   return (
@@ -478,6 +489,16 @@ export function AssignmentRow({ item, onCompletionChange }: AssignmentRowProps) 
         </span>
         {item.dueExact ? <span className={styles.dueExact}>{item.dueExact}</span> : null}
       </div>
+      <button
+        className={styles.rowEditButton}
+        type="button"
+        aria-label={`Edit ${item.title}`}
+        title="Edit assignment"
+        disabled={item.saving || item.completionFeedback !== undefined}
+        onClick={() => onEdit(item.id)}
+      >
+        <span className={styles.buttonIcon} aria-hidden="true">{editIcon}</span>
+      </button>
     </div>
   );
 }

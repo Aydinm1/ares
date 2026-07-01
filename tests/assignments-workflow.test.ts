@@ -3,9 +3,11 @@ import { describe, it } from "node:test";
 import type { Assignment, Course } from "../src/domain/types.js";
 import {
   beginCompletionChange,
+  assignmentDueInputParts,
   buildAssignmentRowViewModels,
   buildMonthGrid,
   formatLastSyncedLabel,
+  formatAssignmentDeadline,
   commitCompletionChange,
   courseColor,
   createOptimisticCompletionState,
@@ -109,6 +111,26 @@ describe("assignment filtering and ordering", () => {
 });
 
 describe("local date workflow", () => {
+  it("maps Pacific deadlines into optional editor time fields", () => {
+    assert.deepEqual(assignmentDueInputParts("2026-07-04T06:59:00.000Z"), {
+      dueDate: "2026-07-03",
+      dueTime: ""
+    });
+    assert.deepEqual(assignmentDueInputParts("2026-12-15T17:30:00.000Z"), {
+      dueDate: "2026-12-15",
+      dueTime: "09:30"
+    });
+    assert.deepEqual(assignmentDueInputParts(undefined), {
+      dueDate: "",
+      dueTime: ""
+    });
+    assert.equal(formatAssignmentDeadline("2026-07-04T06:59:00.000Z"), "Jul 3, 2026");
+    assert.equal(
+      formatAssignmentDeadline("2026-12-15T17:30:00.000Z"),
+      "Dec 15, 2026 · 9:30 AM"
+    );
+  });
+
   it("labels deadlines across day and year boundaries", () => {
     const now = new Date(2026, 11, 31, 12);
     assert.deepEqual(getDueState(new Date(2026, 11, 30, 23).toISOString(), now), {

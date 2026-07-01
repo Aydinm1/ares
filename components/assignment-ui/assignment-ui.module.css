@@ -571,7 +571,7 @@
   overflow: hidden;
   min-height: 76px;
   max-height: 160px;
-  grid-template-columns: 24px minmax(0, 1fr) minmax(100px, auto);
+  grid-template-columns: 24px minmax(0, 1fr) minmax(100px, auto) 30px;
   align-items: center;
   gap: 12px;
   padding: 11px 18px;
@@ -593,6 +593,32 @@
 
 .assignmentRow:hover {
   background: #f8faff;
+}
+
+.rowEditButton {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 7px;
+  color: var(--assignment-muted);
+  background: transparent;
+  cursor: pointer;
+  opacity: 0.55;
+}
+
+.assignmentRow:hover .rowEditButton,
+.rowEditButton:focus-visible {
+  color: var(--assignment-blue);
+  background: var(--assignment-blue-soft);
+  opacity: 1;
+}
+
+.rowEditButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.25;
 }
 
 .assignmentRow[data-completed="true"] {
@@ -1288,13 +1314,18 @@
 
   .assignmentRow {
     min-height: 84px;
-    grid-template-columns: 26px minmax(0, 1fr);
+    grid-template-columns: 26px minmax(0, 1fr) 30px;
     padding: 13px 14px;
   }
 
   .dueBlock {
     grid-column: 2;
     text-align: left;
+  }
+
+  .rowEditButton {
+    grid-column: 3;
+    grid-row: 1 / span 2;
   }
 
   .dueExact {

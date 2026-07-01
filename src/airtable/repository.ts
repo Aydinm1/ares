@@ -1,7 +1,7 @@
-import type { Assignment, Course } from "../domain/types.js";
+import type { Assignment, AssignmentUpdate, Course } from "../domain/types.js";
 import { AirtableClient } from "./client.js";
 import {
-  assignmentCompletionToAirtable,
+  assignmentUpdateToAirtable,
   mapAssignment,
   mapCourse,
   mapGeneralEducationRequirement,
@@ -48,14 +48,11 @@ export class SchoolRepository {
     return records.map(mapAssignment);
   }
 
-  async updateAssignmentCompletion(
-    recordId: string,
-    status: "submitted" | "not_started"
-  ): Promise<Assignment> {
+  async updateAssignment(recordId: string, update: AssignmentUpdate): Promise<Assignment> {
     const record = await this.client.update<Record<string, unknown>>(
       tableRef("assignments"),
       recordId,
-      assignmentCompletionToAirtable(status)
+      assignmentUpdateToAirtable(update)
     );
     return mapAssignment(record);
   }

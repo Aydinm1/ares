@@ -1,5 +1,14 @@
 import type { Assignment, Course } from "../domain/index.js";
 
+export interface AssignmentEditorUpdate {
+  title?: string;
+  courseId?: string | null;
+  dueDate?: string | null;
+  dueTime?: string | null;
+  pointsPossible?: number | null;
+  weekLabel?: string | null;
+}
+
 export async function loadAssignments(): Promise<Assignment[]> {
   const response = await fetchJson<{ assignments: Assignment[] }>("/api/assignments");
   return response.assignments;
@@ -22,6 +31,21 @@ export async function updateAssignmentCompletion(
       body: JSON.stringify({
         status: completed ? "submitted" : "not_started"
       })
+    }
+  );
+  return response.assignment;
+}
+
+export async function updateAssignmentDetails(
+  id: string,
+  update: AssignmentEditorUpdate
+): Promise<Assignment> {
+  const response = await fetchJson<{ assignment: Assignment }>(
+    `/api/assignments/${encodeURIComponent(id)}`,
+    {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(update)
     }
   );
   return response.assignment;
