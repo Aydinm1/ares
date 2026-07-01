@@ -10,8 +10,7 @@
 }
 
 .quickCaptureButton,
-.iconButton,
-.deleteButton {
+.iconButton {
   display: grid;
   place-items: center;
   padding: 0;
@@ -29,14 +28,12 @@
 }
 
 .quickCaptureButton:hover,
-.iconButton:hover,
-.deleteButton:hover {
+.iconButton:hover {
   color: var(--assignment-blue);
   background: var(--assignment-blue-soft);
 }
 
-.modalBackdrop,
-.confirmBackdrop {
+.modalBackdrop {
   position: fixed;
   z-index: 120;
   inset: 0;
@@ -50,8 +47,7 @@
   background: rgb(24 28 32 / 30%);
 }
 
-.captureDialog,
-.confirmDialog {
+.captureDialog {
   position: absolute;
   z-index: 1;
   top: 50%;
@@ -141,8 +137,7 @@
 }
 
 .captureButton,
-.secondaryButton,
-.dangerButton {
+.secondaryButton {
   display: inline-flex;
   min-height: 36px;
   align-items: center;
@@ -168,24 +163,20 @@
   background: #ffffff;
 }
 
-.dangerButton {
-  border: 1px solid var(--assignment-danger);
-  color: #ffffff;
-  background: var(--assignment-danger);
-}
-
 .captureButton:disabled,
-.secondaryButton:disabled,
-.dangerButton:disabled {
+.secondaryButton:disabled {
   cursor: not-allowed;
   opacity: 0.55;
 }
 
 .captureError {
-  margin: 0;
   color: var(--assignment-danger);
   font-size: 11px;
   font-weight: 600;
+}
+
+.composer > .captureError {
+  margin: 0;
 }
 
 .captureToast {
@@ -207,167 +198,157 @@
   font-weight: 700;
 }
 
-.capturePanel,
-.inboxPanel {
-  overflow: hidden;
-  border: 1px solid var(--assignment-border);
-  border-radius: 12px;
-  background: #ffffff;
-}
-
-.capturePanel {
-  margin-bottom: 20px;
-}
-
-.capturePanelHeader,
-.inboxPanelHeader {
-  display: flex;
-  min-height: 54px;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 18px;
-  border-bottom: 1px solid var(--assignment-border);
-}
-
-.capturePanelHeader h2,
-.inboxPanelHeader h2 {
-  margin: 0;
-  font-size: 14px;
-}
-
-.inboxPanelHeader span {
+.intakeCanvas {
   display: grid;
-  min-width: 24px;
-  height: 24px;
+  min-height: calc(100dvh - 118px);
   place-items: center;
-  border-radius: 12px;
-  color: var(--assignment-blue);
-  background: var(--assignment-blue-soft);
-  font-size: 11px;
-  font-weight: 700;
+  padding: 24px;
 }
 
-.inboxList {
-  display: grid;
+.intakeContent {
+  width: min(100%, 680px);
+  transform: translateY(-5vh);
 }
 
-.inboxItem {
-  display: grid;
-  min-height: 72px;
-  grid-template-columns: minmax(0, 1fr) 32px;
-  align-items: center;
-  gap: 16px;
-  padding: 14px 18px;
-  border-bottom: 1px solid var(--assignment-border);
-}
-
-.inboxItem:last-child {
-  border-bottom: 0;
-}
-
-.inboxItem:hover {
-  background: #f8faff;
-}
-
-.inboxItem p {
-  margin: 0;
+.intakeContent h1 {
+  margin: 0 0 24px;
   color: var(--assignment-text);
-  font-size: 13px;
+  font-size: 30px;
   font-weight: 600;
-  line-height: 1.45;
-  white-space: pre-wrap;
-}
-
-.inboxItem time {
-  display: block;
-  margin-top: 5px;
-  color: var(--assignment-muted);
-  font-size: 10px;
-}
-
-.deleteButton {
-  width: 32px;
-  height: 32px;
-  border-radius: 7px;
-}
-
-.confirmDialog {
-  width: min(420px, calc(100% - 32px));
-  padding: 20px;
-}
-
-.confirmDialog h2 {
-  margin: 0;
-  font-size: 18px;
-}
-
-.confirmDialog p {
-  margin: 10px 0 18px;
-  color: var(--assignment-muted);
-  font-size: 12px;
-  line-height: 1.5;
-}
-
-.confirmDialog > div {
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-}
-
-.inboxState {
-  display: grid;
-  min-height: 220px;
-  place-items: center;
-  align-content: center;
-  gap: 8px;
-  padding: 28px;
+  line-height: 1.2;
   text-align: center;
 }
 
-.inboxState > span {
+.intakeComposer {
   display: grid;
-  width: 40px;
-  height: 40px;
-  place-items: center;
-  border-radius: 50%;
-  color: var(--assignment-blue);
-  background: var(--assignment-blue-soft);
+  gap: 0;
 }
 
-.inboxState h3,
-.inboxState p {
-  margin: 0;
+.intakeField {
+  position: relative;
+  display: grid;
+  min-height: 58px;
+  align-items: center;
+  border: 1px solid var(--assignment-border-strong);
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 2px 12px rgb(24 28 32 / 7%);
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease;
 }
 
-.inboxState h3 {
+.intakeField:focus-within {
+  border-color: var(--assignment-blue);
+  box-shadow:
+    0 0 0 3px rgb(0 91 192 / 10%),
+    0 3px 14px rgb(24 28 32 / 8%);
+}
+
+.intakeField label {
+  display: grid;
+  min-width: 0;
+}
+
+.intakeField textarea {
+  width: 100%;
+  min-height: 28px;
+  max-height: 240px;
+  overflow-y: auto;
+  resize: none;
+  padding: 16px 58px 16px 18px;
+  border: 0;
+  outline: 0;
+  color: var(--assignment-text);
+  background: transparent;
+  font: inherit;
   font-size: 15px;
+  line-height: 24px;
 }
 
-.inboxState p {
-  color: var(--assignment-muted);
-  font-size: 12px;
+.intakeField textarea::placeholder {
+  color: #777e8b;
 }
 
-.skeletonList {
+.intakeSubmit {
+  position: absolute;
+  right: 11px;
+  bottom: 11px;
   display: grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  color: #ffffff;
+  background: var(--assignment-blue);
+  cursor: pointer;
+  transition:
+    background 140ms ease,
+    opacity 140ms ease,
+    transform 140ms ease;
 }
 
-.skeletonRow {
-  min-height: 72px;
-  border-bottom: 1px solid var(--assignment-border);
-  background:
-    linear-gradient(#e7ebf1 0 0) 18px 20px / 55% 10px no-repeat,
-    linear-gradient(#f0f2f6 0 0) 18px 43px / 100px 8px no-repeat;
+.intakeSubmit:hover:not(:disabled) {
+  background: var(--assignment-blue-hover);
+  transform: translateY(-1px);
+}
+
+.intakeSubmit:disabled {
+  color: var(--assignment-muted);
+  background: #e3e7ee;
+  cursor: default;
+}
+
+.intakeFeedback {
+  display: flex;
+  min-height: 28px;
+  align-items: center;
+  justify-content: center;
+  padding-top: 7px;
+}
+
+.captureConfirmation {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--assignment-success);
+  font-size: 12px;
+  font-weight: 600;
+  animation: confirmationIn 160ms ease-out;
+}
+
+.savingIcon {
+  animation: spin 800ms linear infinite;
 }
 
 .quickCaptureButton:focus-visible,
 .iconButton:focus-visible,
-.deleteButton:focus-visible,
 .captureButton:focus-visible,
 .secondaryButton:focus-visible,
-.dangerButton:focus-visible {
+.intakeSubmit:focus-visible {
   outline: 3px solid rgb(0 91 192 / 20%);
   outline-offset: 2px;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes confirmationIn {
+  from {
+    opacity: 0;
+    transform: translateY(3px);
+  }
+}
+
+@media (max-width: 900px) {
+  .intakeCanvas {
+    min-height: calc(100dvh - 108px);
+  }
 }
 
 @media (max-width: 620px) {
@@ -385,5 +366,35 @@
 
   .composerHint {
     max-width: 90px;
+  }
+
+  .intakeCanvas {
+    min-height: calc(100dvh - 100px);
+    padding: 16px 0;
+  }
+
+  .intakeContent {
+    transform: translateY(-4vh);
+  }
+
+  .intakeContent h1 {
+    margin-bottom: 20px;
+    font-size: 26px;
+  }
+
+  .intakeField {
+    border-radius: 14px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .intakeField,
+  .intakeSubmit {
+    transition: none;
+  }
+
+  .captureConfirmation,
+  .savingIcon {
+    animation: none;
   }
 }

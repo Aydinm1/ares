@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
-import { Check, Inbox, Send, X } from "lucide-react";
+import { Check, Inbox, LoaderCircle, Send, X } from "lucide-react";
 import { createInboxItem } from "../../src/app/apiClient";
 import type { InboxItem } from "../../src/domain";
 import styles from "./inbox.module.css";
@@ -13,6 +13,8 @@ interface CaptureComposerProps {
   onCaptured: (item: InboxItem) => void;
   onCancel?: () => void;
   submitLabel?: string;
+  variant?: "dialog" | "intake";
+  submitOnEnter?: boolean;
 }
 
 export function CaptureComposer({
@@ -22,9 +24,12 @@ export function CaptureComposer({
   onCaptured,
   onCancel,
   submitLabel = "Capture",
+  variant = "dialog",
+  submitOnEnter = false,
 }: CaptureComposerProps) {
   const [text, setText] = useState(initialText);
   const [saving, setSaving] = useState(false);
+  const [confirmed, setConfirmed] = useState(false);
   const [error, setError] = useState<string>();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -36,8 +41,15 @@ export function CaptureComposer({
     const textarea = textareaRef.current;
     if (!textarea) return;
     textarea.style.height = "auto";
-    textarea.style.height = `${Math.min(textarea.scrollHeight, 240)}px`;
-  }, [text]);
+    const minimumHeight = variant === "intake" ? 28 : 88;
+    textarea.style.height = `${Math.max(minimumHeight, Math.min(textarea.scrollHeight, 240))}px`;
+  }, [text, variant]);
+
+  useEffect(() => {
+    if (!confirmed) return;
+    const timeout = window.setTimeout(() => setConfirmed(false), 1600);
+    return () => window.clearTimeout(timeout);
+  }, [confirmed]);
 
   const submit = async () => {
     const normalized = text.trim();
@@ -49,6 +61,10 @@ export function CaptureComposer({
       setText("");
       onTextChange?.("");
       onCaptured(item);
+      if (variant === "intake") {
+        setConfirmed(true);
+        window.requestAnimationFrame(() => textareaRef.current?.focus());
+      }
     } catch (captureError) {
       setError(captureError instanceof Error ? captureError.message : "Capture could not be saved.");
     } finally {
@@ -62,11 +78,65 @@ export function CaptureComposer({
   };
 
   const handleKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
-    if (event.key === "Enter" && (event.metaKey || event.ctrlKey)) {
+    if (event.nativeEvent.isComposing || event.key !== "Enter") return;
+    const shouldSubmit = submitOnEnter
+      ? !event.shiftKey
+      : event.metaKey || event.ctrlKey;
+    if (shouldSubmit) {
       event.preventDefault();
       void submit();
     }
   };
+
+  if (variant === "intake") {
+    return (
+      <form className={styles.intakeComposer} onSubmit={handleSubmit}>
+        <div className={styles.intakeField}>
+          <label>
+            <span className={styles.visuallyHidden}>Capture text</span>
+            <textarea
+              ref={textareaRef}
+              rows={1}
+              maxLength={2000}
+              value={text}
+              placeholder="Capture a thought..."
+              onChange={(event) => {
+                const nextText = event.currentTarget.value;
+                setText(nextText);
+                setConfirmed(false);
+                onTextChange?.(nextText);
+              }}
+              onKeyDown={handleKeyDown}
+              disabled={saving}
+            />
+          </label>
+          <button
+            className={styles.intakeSubmit}
+            type="submit"
+            disabled={!text.trim() || saving}
+            aria-label={saving ? "Saving capture" : "Capture thought"}
+            title={saving ? "Saving capture" : "Capture thought"}
+          >
+            {saving ? (
+              <LoaderCircle className={styles.savingIcon} size={17} aria-hidden="true" />
+            ) : (
+              <Send size={17} aria-hidden="true" />
+            )}
+          </button>
+        </div>
+        <div className={styles.intakeFeedback} aria-live="polite">
+          {error ? (
+            <span className={styles.captureError} role="alert">{error}</span>
+          ) : confirmed ? (
+            <span className={styles.captureConfirmation}>
+              <Check size={14} aria-hidden="true" />
+              Captured
+            </span>
+          ) : null}
+        </div>
+      </form>
+    );
+  }
 
   return (
     <form className={styles.composer} onSubmit={handleSubmit}>

@@ -115,10 +115,12 @@ Assignments, 4 Year Plan, and Inbox are the primary destinations.
 - Quick capture is available from the shared header outside the Inbox page.
 - The capture dialog uses an expanding textarea, visible submit action, and
   `Cmd/Ctrl+Enter` keyboard submission.
-- The Inbox page keeps capture above a single unprocessed list.
-- Captures are plain text with quiet relative timestamps; no cards, tags,
-  categories, or triage controls appear in the initial workflow.
-- Permanent deletion requires confirmation.
+- The Inbox page is pure intake: a centered “What’s on your mind?” prompt and
+  one compact composer on an otherwise open canvas.
+- The page composer starts at one line, grows with its content, submits with
+  Enter, and inserts a newline with Shift+Enter.
+- Successful capture clears and refocuses the composer after a brief
+  confirmation. The page does not list, categorize, process, or delete items.
 
 ## 4 Year Plan
 
