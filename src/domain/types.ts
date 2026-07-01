@@ -74,3 +74,10 @@ export interface AssignmentUpdate {
   pointsPossible?: number | null;
   weekLabel?: string | null;
 }
+
+export interface InboxItem {
+  id: AirtableRecordId;
+  text: string;
+  createdAt: string;
+  processed: boolean;
+}

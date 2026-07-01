@@ -38,8 +38,8 @@ priority over building tooling for recruiting.
 - [ ] Back up the current Airtable base
 - [ ] Rename the base for the broader Personal OS
 - [ ] Define common ID, lifecycle, timestamp, and archive conventions
-- [ ] Create the three-field Inbox Items table
-- [ ] Build five-second capture with only text input and automatic creation time
+- [x] Create the three-field Inbox Items table
+- [x] Build five-second capture with only text input and automatic creation time
 - [ ] Create Areas and Projects tables
 - [ ] Add a compact Project list with create, status, and archive actions
 

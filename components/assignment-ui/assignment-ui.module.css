@@ -70,6 +70,12 @@
   gap: 4px;
 }
 
+.topbarActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .mobileNavItem {
   display: grid;
   width: 34px;

@@ -6,7 +6,8 @@ import type {
   Course,
   CourseStatus,
   GeneralEducationRequirement,
-  GradeCategory
+  GradeCategory,
+  InboxItem
 } from "../domain/types.js";
 import type { AirtableRecord } from "./client.js";
 import { fields } from "./schema.js";
@@ -89,6 +90,26 @@ export function mapAssignment(record: AirtableRecord<AnyFields>): Assignment {
     typeLabel,
     weekLabel: stringValue(value[fields.assignments.weekLabel]),
     createdAt: record.createdTime
+  };
+}
+
+export function mapInboxItem(record: AirtableRecord<AnyFields>): InboxItem {
+  return {
+    id: record.id,
+    text: stringValue(record.fields[fields.inboxItems.text])?.trim() || "Untitled capture",
+    createdAt:
+      stringValue(record.fields[fields.inboxItems.createdAt]) ??
+      record.createdTime ??
+      new Date(0).toISOString(),
+    processed: record.fields[fields.inboxItems.processed] === true
+  };
+}
+
+export function inboxItemToAirtable(text: string, createdAt: string): AnyFields {
+  return {
+    [fields.inboxItems.text]: text,
+    [fields.inboxItems.createdAt]: createdAt,
+    [fields.inboxItems.processed]: false
   };
 }
 

@@ -3,9 +3,11 @@ import assert from "node:assert/strict";
 import {
   assignmentCompletionToAirtable,
   assignmentUpdateToAirtable,
+  inboxItemToAirtable,
   mapAssignment,
   mapCourse,
-  mapGeneralEducationRequirement
+  mapGeneralEducationRequirement,
+  mapInboxItem
 } from "../src/airtable/mappers.js";
 import { fields } from "../src/airtable/schema.js";
 
@@ -33,6 +35,33 @@ test("maps course history fields from Airtable", () => {
     geRequirementUsedIds: ["recGE"],
     creditHours: 3
   });
+});
+
+test("maps and serializes Inbox Items", () => {
+  assert.deepEqual(
+    mapInboxItem({
+      id: "recInbox",
+      fields: {
+        [fields.inboxItems.text]: "Capture this",
+        [fields.inboxItems.createdAt]: "2026-06-30T18:00:00.000Z",
+        [fields.inboxItems.processed]: false
+      }
+    }),
+    {
+      id: "recInbox",
+      text: "Capture this",
+      createdAt: "2026-06-30T18:00:00.000Z",
+      processed: false
+    }
+  );
+  assert.deepEqual(
+    inboxItemToAirtable("Capture this", "2026-06-30T18:00:00.000Z"),
+    {
+      [fields.inboxItems.text]: "Capture this",
+      [fields.inboxItems.createdAt]: "2026-06-30T18:00:00.000Z",
+      [fields.inboxItems.processed]: false
+    }
+  );
 });
 
 test("maps readable general education requirement records", () => {

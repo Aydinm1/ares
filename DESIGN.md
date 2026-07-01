@@ -73,7 +73,7 @@ page chrome must continue using the shared tokens.
 ## Application Shell
 
 Desktop uses a fixed `204px` navigation rail and a fluid content region.
-Assignments and 4 Year Plan are the only primary destinations.
+Assignments, 4 Year Plan, and Inbox are the primary destinations.
 
 - The sidebar and mobile header share the Academic Precision brand.
 - Active navigation uses the blue-soft background and blue icon/text.
@@ -109,6 +109,16 @@ Assignments and 4 Year Plan are the only primary destinations.
   multiple assignments on one date remain unambiguous.
 - On mobile, List and Calendar use a segmented switch rather than rendering
   both cramped side by side.
+
+## Inbox
+
+- Quick capture is available from the shared header outside the Inbox page.
+- The capture dialog uses an expanding textarea, visible submit action, and
+  `Cmd/Ctrl+Enter` keyboard submission.
+- The Inbox page keeps capture above a single unprocessed list.
+- Captures are plain text with quiet relative timestamps; no cards, tags,
+  categories, or triage controls appear in the initial workflow.
+- Permanent deletion requires confirmation.
 
 ## 4 Year Plan
 

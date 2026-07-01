@@ -1,4 +1,4 @@
-import type { Assignment, Course } from "../domain/index.js";
+import type { Assignment, Course, InboxItem } from "../domain/index.js";
 
 export interface AssignmentEditorUpdate {
   title?: string;
@@ -17,6 +17,26 @@ export async function loadAssignments(): Promise<Assignment[]> {
 export async function loadCourses(): Promise<Course[]> {
   const response = await fetchJson<{ courses: Course[] }>("/api/courses");
   return response.courses;
+}
+
+export async function loadInboxItems(): Promise<InboxItem[]> {
+  const response = await fetchJson<{ items: InboxItem[] }>("/api/inbox");
+  return response.items;
+}
+
+export async function createInboxItem(text: string): Promise<InboxItem> {
+  const response = await fetchJson<{ item: InboxItem }>("/api/inbox", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ text })
+  });
+  return response.item;
+}
+
+export async function deleteInboxItem(id: string): Promise<void> {
+  await fetchJson<{ deleted: true }>(`/api/inbox/${encodeURIComponent(id)}`, {
+    method: "DELETE"
+  });
 }
 
 export async function updateAssignmentCompletion(

@@ -1,13 +1,15 @@
-import type { Assignment, AssignmentUpdate, Course } from "../domain/types.js";
+import type { Assignment, AssignmentUpdate, Course, InboxItem } from "../domain/types.js";
 import { AirtableClient } from "./client.js";
 import {
   assignmentUpdateToAirtable,
+  inboxItemToAirtable,
   mapAssignment,
   mapCourse,
   mapGeneralEducationRequirement,
-  mapGradeCategory
+  mapGradeCategory,
+  mapInboxItem
 } from "./mappers.js";
-import { tableRef } from "./schema.js";
+import { fields, tableRef } from "./schema.js";
 
 export class SchoolRepository {
   constructor(private readonly client = new AirtableClient()) {}
@@ -55,5 +57,30 @@ export class SchoolRepository {
       assignmentUpdateToAirtable(update)
     );
     return mapAssignment(record);
+  }
+
+  async listInboxItems(): Promise<InboxItem[]> {
+    const query = new URLSearchParams();
+    query.set("filterByFormula", "NOT({Processed})");
+    query.set("sort[0][field]", fields.inboxItems.createdAt);
+    query.set("sort[0][direction]", "desc");
+    const records = await this.client.list<Record<string, unknown>>(
+      tableRef("inboxItems"),
+      query
+    );
+    return records.map(mapInboxItem);
+  }
+
+  async createInboxItem(text: string): Promise<InboxItem> {
+    const createdAt = new Date().toISOString();
+    const record = await this.client.create<Record<string, unknown>>(
+      tableRef("inboxItems"),
+      inboxItemToAirtable(text, createdAt)
+    );
+    return mapInboxItem(record);
+  }
+
+  async deleteInboxItem(recordId: string): Promise<void> {
+    await this.client.delete(tableRef("inboxItems"), recordId);
   }
 }

@@ -47,6 +47,20 @@ export class AirtableClient {
     });
   }
 
+  async create<TFields>(table: string, fields: Partial<TFields>): Promise<AirtableRecord<TFields>> {
+    return this.request<AirtableRecord<TFields>>(this.tableUrl(table), {
+      method: "POST",
+      body: JSON.stringify({ fields })
+    });
+  }
+
+  async delete(table: string, recordId: string): Promise<void> {
+    await this.request<{ id: string; deleted: boolean }>(
+      `${this.tableUrl(table)}/${encodeURIComponent(recordId)}`,
+      { method: "DELETE" }
+    );
+  }
+
   private tableUrl(table: string): string {
     return `${this.apiBase}/${this.baseId}/${encodeURIComponent(table)}`;
   }

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, type CSSProperties, type ReactNode } from "react";
 import Link from "next/link";
+import { InboxQuickCapture } from "../inbox/InboxCapture";
 import styles from "./assignment-ui.module.css";
 
 export type AssignmentDueTone = "overdue" | "today" | "soon" | "normal" | "undated";
@@ -13,6 +14,7 @@ export interface AssignmentUiIcons {
   brand: ReactNode;
   assignments: ReactNode;
   courses: ReactNode;
+  inbox: ReactNode;
   calendar: ReactNode;
   list: ReactNode;
   previous: ReactNode;
@@ -63,8 +65,8 @@ export interface CourseFilterOption {
 
 interface AssignmentShellProps {
   brandName?: string;
-  activeNav: "assignments" | "courses";
-  icons: Pick<AssignmentUiIcons, "brand" | "assignments" | "courses">;
+  activeNav: "assignments" | "courses" | "inbox";
+  icons: Pick<AssignmentUiIcons, "brand" | "assignments" | "courses" | "inbox">;
   children: ReactNode;
 }
 
@@ -83,24 +85,35 @@ export function AssignmentShell({
           </span>
           <span className={styles.brandName}>{brandName}</span>
         </div>
-        <nav className={styles.mobileNav} aria-label="Mobile navigation">
-          <Link
-            className={`${styles.mobileNavItem} ${activeNav === "assignments" ? styles.mobileNavItemActive : ""}`}
-            href="/"
-            aria-label="Assignments"
-            aria-current={activeNav === "assignments" ? "page" : undefined}
-          >
-            {icons.assignments}
-          </Link>
-          <Link
-            className={`${styles.mobileNavItem} ${activeNav === "courses" ? styles.mobileNavItemActive : ""}`}
-            href="/courses"
-            aria-label="4 Year Plan"
-            aria-current={activeNav === "courses" ? "page" : undefined}
-          >
-            {icons.courses}
-          </Link>
-        </nav>
+        <div className={styles.topbarActions}>
+          {activeNav !== "inbox" ? <InboxQuickCapture /> : null}
+          <nav className={styles.mobileNav} aria-label="Mobile navigation">
+            <Link
+              className={`${styles.mobileNavItem} ${activeNav === "assignments" ? styles.mobileNavItemActive : ""}`}
+              href="/"
+              aria-label="Assignments"
+              aria-current={activeNav === "assignments" ? "page" : undefined}
+            >
+              {icons.assignments}
+            </Link>
+            <Link
+              className={`${styles.mobileNavItem} ${activeNav === "courses" ? styles.mobileNavItemActive : ""}`}
+              href="/courses"
+              aria-label="4 Year Plan"
+              aria-current={activeNav === "courses" ? "page" : undefined}
+            >
+              {icons.courses}
+            </Link>
+            <Link
+              className={`${styles.mobileNavItem} ${activeNav === "inbox" ? styles.mobileNavItemActive : ""}`}
+              href="/inbox"
+              aria-label="Inbox"
+              aria-current={activeNav === "inbox" ? "page" : undefined}
+            >
+              {icons.inbox}
+            </Link>
+          </nav>
+        </div>
       </header>
       <div className={styles.body}>
         <aside className={styles.sidebar} aria-label="Primary navigation">
@@ -124,6 +137,16 @@ export function AssignmentShell({
               {icons.courses}
             </span>
             <span>4 Year Plan</span>
+          </Link>
+          <Link
+            className={`${styles.navItem} ${activeNav === "inbox" ? styles.navItemActive : ""}`}
+            href="/inbox"
+            aria-current={activeNav === "inbox" ? "page" : undefined}
+          >
+            <span className={styles.navIcon} aria-hidden="true">
+              {icons.inbox}
+            </span>
+            <span>Inbox</span>
           </Link>
           <div className={styles.sidebarFooter}>
             Airtable is the source of truth for academic records.

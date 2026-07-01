@@ -67,11 +67,20 @@ const expectedSchema: ExpectedTable[] = [
       { id: "fldAZvY3fCDuMp8gZ", name: "General Assignment Type", type: "singleSelect" },
       { id: "fldk4t3tyOGLZ1ncx", name: "Week", type: "singleSelect" }
     ]
+  },
+  {
+    id: tables.inboxItems.id,
+    name: tables.inboxItems.name,
+    fields: [
+      { id: "fldXAwX2jCPSsc5mx", name: "Text", type: "multilineText" },
+      { id: "fldGB45UhXXCHgwv3", name: "Created At", type: "dateTime" },
+      { id: "fld6uRZAHwr5Vj3Ni", name: "Processed", type: "checkbox" }
+    ]
   }
 ];
 
 test(
-  "live Airtable schema matches the assignment workspace contract",
+  "live Airtable schema matches the application contract",
   { skip: !process.env.AIRTABLE_API_KEY },
   async () => {
     const baseId = process.env.AIRTABLE_BASE_ID || AIRTABLE_BASE_ID;

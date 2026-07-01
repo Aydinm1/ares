@@ -1,0 +1,389 @@
+.visuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.quickCaptureButton,
+.iconButton,
+.deleteButton {
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  color: var(--assignment-muted);
+  background: transparent;
+  cursor: pointer;
+}
+
+.quickCaptureButton {
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--assignment-border);
+  border-radius: 8px;
+}
+
+.quickCaptureButton:hover,
+.iconButton:hover,
+.deleteButton:hover {
+  color: var(--assignment-blue);
+  background: var(--assignment-blue-soft);
+}
+
+.modalBackdrop,
+.confirmBackdrop {
+  position: fixed;
+  z-index: 120;
+  inset: 0;
+}
+
+.modalScrim {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  border: 0;
+  background: rgb(24 28 32 / 30%);
+}
+
+.captureDialog,
+.confirmDialog {
+  position: absolute;
+  z-index: 1;
+  top: 50%;
+  left: 50%;
+  width: min(520px, calc(100% - 32px));
+  overflow: hidden;
+  border: 1px solid var(--assignment-border);
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 18px 52px rgb(24 28 32 / 20%);
+  transform: translate(-50%, -50%);
+}
+
+.captureDialogHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 17px 18px;
+  border-bottom: 1px solid var(--assignment-border);
+}
+
+.captureDialogHeader p {
+  margin: 0 0 3px;
+  color: var(--assignment-blue);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.captureDialogHeader h2 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.iconButton {
+  width: 32px;
+  height: 32px;
+  border-radius: 7px;
+}
+
+.composer {
+  display: grid;
+  gap: 10px;
+  padding: 16px;
+}
+
+.composerField textarea {
+  width: 100%;
+  min-height: 88px;
+  max-height: 240px;
+  overflow-y: auto;
+  resize: none;
+  padding: 12px;
+  border: 1px solid var(--assignment-border-strong);
+  border-radius: 8px;
+  color: var(--assignment-text);
+  background: #ffffff;
+  font: inherit;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.composerField textarea:focus {
+  border-color: var(--assignment-blue);
+  outline: 3px solid rgb(0 91 192 / 12%);
+}
+
+.composerFooter,
+.composerActions {
+  display: flex;
+  align-items: center;
+}
+
+.composerFooter {
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.composerActions {
+  gap: 8px;
+}
+
+.composerHint {
+  color: var(--assignment-muted);
+  font-size: 10px;
+}
+
+.captureButton,
+.secondaryButton,
+.dangerButton {
+  display: inline-flex;
+  min-height: 36px;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 0 13px;
+  border-radius: 7px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.captureButton {
+  border: 1px solid var(--assignment-blue);
+  color: #ffffff;
+  background: var(--assignment-blue);
+}
+
+.secondaryButton {
+  border: 1px solid var(--assignment-border-strong);
+  color: var(--assignment-text);
+  background: #ffffff;
+}
+
+.dangerButton {
+  border: 1px solid var(--assignment-danger);
+  color: #ffffff;
+  background: var(--assignment-danger);
+}
+
+.captureButton:disabled,
+.secondaryButton:disabled,
+.dangerButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.captureError {
+  margin: 0;
+  color: var(--assignment-danger);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.captureToast {
+  position: fixed;
+  z-index: 140;
+  right: 20px;
+  bottom: 20px;
+  display: inline-flex;
+  min-height: 40px;
+  align-items: center;
+  gap: 8px;
+  padding: 0 14px;
+  border: 1px solid #acd7bb;
+  border-radius: 8px;
+  color: #185c35;
+  background: #effaf3;
+  box-shadow: 0 8px 24px rgb(24 28 32 / 14%);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.capturePanel,
+.inboxPanel {
+  overflow: hidden;
+  border: 1px solid var(--assignment-border);
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+.capturePanel {
+  margin-bottom: 20px;
+}
+
+.capturePanelHeader,
+.inboxPanelHeader {
+  display: flex;
+  min-height: 54px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--assignment-border);
+}
+
+.capturePanelHeader h2,
+.inboxPanelHeader h2 {
+  margin: 0;
+  font-size: 14px;
+}
+
+.inboxPanelHeader span {
+  display: grid;
+  min-width: 24px;
+  height: 24px;
+  place-items: center;
+  border-radius: 12px;
+  color: var(--assignment-blue);
+  background: var(--assignment-blue-soft);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.inboxList {
+  display: grid;
+}
+
+.inboxItem {
+  display: grid;
+  min-height: 72px;
+  grid-template-columns: minmax(0, 1fr) 32px;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--assignment-border);
+}
+
+.inboxItem:last-child {
+  border-bottom: 0;
+}
+
+.inboxItem:hover {
+  background: #f8faff;
+}
+
+.inboxItem p {
+  margin: 0;
+  color: var(--assignment-text);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.45;
+  white-space: pre-wrap;
+}
+
+.inboxItem time {
+  display: block;
+  margin-top: 5px;
+  color: var(--assignment-muted);
+  font-size: 10px;
+}
+
+.deleteButton {
+  width: 32px;
+  height: 32px;
+  border-radius: 7px;
+}
+
+.confirmDialog {
+  width: min(420px, calc(100% - 32px));
+  padding: 20px;
+}
+
+.confirmDialog h2 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.confirmDialog p {
+  margin: 10px 0 18px;
+  color: var(--assignment-muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.confirmDialog > div {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.inboxState {
+  display: grid;
+  min-height: 220px;
+  place-items: center;
+  align-content: center;
+  gap: 8px;
+  padding: 28px;
+  text-align: center;
+}
+
+.inboxState > span {
+  display: grid;
+  width: 40px;
+  height: 40px;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--assignment-blue);
+  background: var(--assignment-blue-soft);
+}
+
+.inboxState h3,
+.inboxState p {
+  margin: 0;
+}
+
+.inboxState h3 {
+  font-size: 15px;
+}
+
+.inboxState p {
+  color: var(--assignment-muted);
+  font-size: 12px;
+}
+
+.skeletonList {
+  display: grid;
+}
+
+.skeletonRow {
+  min-height: 72px;
+  border-bottom: 1px solid var(--assignment-border);
+  background:
+    linear-gradient(#e7ebf1 0 0) 18px 20px / 55% 10px no-repeat,
+    linear-gradient(#f0f2f6 0 0) 18px 43px / 100px 8px no-repeat;
+}
+
+.quickCaptureButton:focus-visible,
+.iconButton:focus-visible,
+.deleteButton:focus-visible,
+.captureButton:focus-visible,
+.secondaryButton:focus-visible,
+.dangerButton:focus-visible {
+  outline: 3px solid rgb(0 91 192 / 20%);
+  outline-offset: 2px;
+}
+
+@media (max-width: 620px) {
+  .captureDialog {
+    top: auto;
+    bottom: 0;
+    width: 100%;
+    border-radius: 14px 14px 0 0;
+    transform: translateX(-50%);
+  }
+
+  .composerFooter {
+    align-items: flex-end;
+  }
+
+  .composerHint {
+    max-width: 90px;
+  }
+}

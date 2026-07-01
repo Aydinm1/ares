@@ -15,19 +15,22 @@ Airtable now, not duplicate the future domain model.
 | Current name | `Assignment Tracker` |
 | Base ID | `appVy9thv2l5e9JKv` |
 | Metadata inspected | 2026-06-29 |
-| Live tables | 5 |
+| Live tables | 6 |
 
 The architecture roadmap proposes renaming this base for the broader Personal
 OS. That rename has not happened yet.
 
 ## Application Contract
 
-The current app exposes three Airtable-backed operations:
+The current app exposes these Airtable-backed operations:
 
 ```text
 GET   /api/assignments
 GET   /api/courses
 PATCH /api/assignments/:id
+GET   /api/inbox
+POST  /api/inbox
+DELETE /api/inbox/:id
 ```
 
 The PATCH operation accepts a strict partial update for Assignment Name,
@@ -146,6 +149,20 @@ Table ID: `tbllXlXa7oKsoFMae`
 | Screenshot | `fldeJUkqebFYf436h` | `multipleAttachments` | Assignment evidence |
 | Daily Plans | `fldGXp3Gr3UMD4byK` | `singleLineText` | Legacy placeholder; not a linked table |
 
+## Inbox Items
+
+Table ID: `tblpTfEK98iyHCaEb`
+
+| Field | Field ID | Airtable type | Application role |
+| --- | --- | --- | --- |
+| Text | `fldXAwX2jCPSsc5mx` | `multilineText` | Required capture content |
+| Created At | `fldGB45UhXXCHgwv3` | `dateTime` | Set automatically by the server |
+| Processed | `fld6uRZAHwr5Vj3Ni` | `checkbox` | Always false until Inbox Review exists |
+
+The current Inbox workflow lists unprocessed records newest-first, creates
+captures, and permanently deletes mistaken captures. It does not process or
+convert records.
+
 ## Category Weights
 
 Table ID: `tblXC0Vug7xyPFZqW`
@@ -220,16 +237,19 @@ The logical definitions and dependencies for future entities live in
 [`architecture.md`](architecture.md). The implementation order is tracked in
 [`../todo.md`](../todo.md).
 
-The next approved schema-planning sequence is:
+Implemented after the original academic schema:
+
+- Inbox Items and five-second capture.
+
+The remaining approved schema-planning sequence is:
 
 1. Back up the base and rename it for the Personal OS.
 2. Establish common immutable ID, lifecycle, timestamp, and archive fields.
-3. Add the minimal Inbox Items table and capture workflow.
-4. Add Areas and Projects.
-5. Add Work Items.
-6. Add Activities and Sessions.
-7. Add Organizations, minimal People, and Career Opportunities.
-8. Add Habits only after Session logging works.
+3. Add Areas and Projects.
+4. Add Work Items.
+5. Add Activities and Sessions.
+6. Add Organizations, minimal People, and Career Opportunities.
+7. Add Habits only after Session logging works.
 
 Phase 5 may add a Portfolio Case Studies table after Experiences, Bullets, and
 Artifacts exist. Portfolio and Resume Versions do not receive tables: Portfolio

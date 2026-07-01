@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import {
   validateAssignmentCompletionWrite,
   validateAssignmentWrite,
+  validateInboxCapture,
   ValidationError
 } from "../src/validation/domain.js";
 
@@ -24,6 +25,19 @@ test("accepts only completion statuses and rejects extra fields", () => {
     ValidationError
   );
   assert.throws(() => validateAssignmentCompletionWrite(null), ValidationError);
+});
+
+test("validates low-friction Inbox captures", () => {
+  assert.equal(validateInboxCapture({ text: "  Remember this  " }), "Remember this");
+  for (const value of [
+    null,
+    {},
+    { text: "   " },
+    { text: "Valid", processed: true },
+    { text: "x".repeat(2001) }
+  ]) {
+    assert.throws(() => validateInboxCapture(value), ValidationError);
+  }
 });
 
 test("validates and normalizes editable assignment fields", () => {

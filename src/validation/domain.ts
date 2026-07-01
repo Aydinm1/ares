@@ -8,6 +8,24 @@ export class ValidationError extends Error {
   }
 }
 
+export function validateInboxCapture(value: unknown): string {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    throw new ValidationError(["Request body must be an object."]);
+  }
+  const payload = value as Record<string, unknown>;
+  const issues: string[] = [];
+  if (Object.keys(payload).some((key) => key !== "text")) {
+    issues.push("Only text can be supplied.");
+  }
+  if (typeof payload.text !== "string" || payload.text.trim().length === 0) {
+    issues.push("text must be a non-empty string.");
+  } else if (payload.text.trim().length > 2000) {
+    issues.push("text must be 2,000 characters or fewer.");
+  }
+  if (issues.length) throw new ValidationError(issues);
+  return (payload.text as string).trim();
+}
+
 const ASSIGNMENT_UPDATE_FIELDS = new Set([
   "title",
   "courseId",
