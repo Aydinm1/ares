@@ -17,13 +17,21 @@ export interface AssignmentEditorUpdate {
   weekLabel?: string | null;
 }
 
-export async function loadAssignments(): Promise<Assignment[]> {
-  const response = await fetchJson<{ assignments: Assignment[] }>("/api/assignments");
+export interface LoadOptions {
+  refresh?: boolean;
+}
+
+export async function loadAssignments(options: LoadOptions = {}): Promise<Assignment[]> {
+  const response = await fetchJson<{ assignments: Assignment[] }>(
+    apiUrl("/api/assignments", options)
+  );
   return response.assignments;
 }
 
-export async function loadCourses(): Promise<Course[]> {
-  const response = await fetchJson<{ courses: Course[] }>("/api/courses");
+export async function loadCourses(options: LoadOptions = {}): Promise<Course[]> {
+  const response = await fetchJson<{ courses: Course[] }>(
+    apiUrl("/api/courses", options)
+  );
   return response.courses;
 }
 
@@ -162,4 +170,10 @@ async function fetchJson<T>(url: string, init?: RequestInit): Promise<T> {
   } catch {
     throw new ApiClientError("The server returned an invalid response.", response.status);
   }
+}
+
+function apiUrl(path: string, options: LoadOptions): string {
+  if (!options.refresh) return path;
+  const params = new URLSearchParams({ refresh: "1" });
+  return `${path}?${params.toString()}`;
 }

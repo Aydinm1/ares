@@ -12,6 +12,14 @@ export function getRepository(): SchoolRepository {
   return repository;
 }
 
+export function clearRepositoryReadCache(): void {
+  repository?.clearReadCache();
+}
+
+export function shouldRefreshCache(request: Request): boolean {
+  return new URL(request.url).searchParams.get("refresh") === "1";
+}
+
 export async function readJson(request: Request): Promise<unknown> {
   const text = await request.text();
   return text ? JSON.parse(text) : {};

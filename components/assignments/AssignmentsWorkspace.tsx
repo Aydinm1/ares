@@ -27,7 +27,6 @@ import {
   WorkspaceHeader,
   WorkspaceNotice,
   type AssignmentCalendarDay,
-  type AssignmentCompletionFeedback,
   type AssignmentListItem,
   type AssignmentMobileView,
   type AssignmentSyncState,
@@ -84,8 +83,6 @@ const icons: AssignmentUiIcons = {
 };
 
 const EMPTY_STATE = createOptimisticCompletionState([]);
-const COMPLETION_CONFIRM_MS = 600;
-const COMPLETION_EXIT_MS = 220;
 
 export function AssignmentsWorkspace() {
   const [completionState, setCompletionState] = useState<OptimisticCompletionState>(EMPTY_STATE);
@@ -108,66 +105,20 @@ export function AssignmentsWorkspace() {
   const [drawerState, setDrawerState] = useState<AssignmentDrawerState>();
   const [editorSaving, setEditorSaving] = useState(false);
   const [editorError, setEditorError] = useState<string>();
-  const [completionFeedbackById, setCompletionFeedbackById] = useState<
-    Readonly<Record<string, AssignmentCompletionFeedback | undefined>>
-  >({});
-  const completionFeedbackTimersRef = useRef(
-    new Map<string, ReturnType<typeof setTimeout>>(),
-  );
-
-  const clearCompletionFeedback = useCallback((assignmentId: string) => {
-    const timer = completionFeedbackTimersRef.current.get(assignmentId);
-    if (timer) clearTimeout(timer);
-    completionFeedbackTimersRef.current.delete(assignmentId);
-    setCompletionFeedbackById((current) => {
-      if (current[assignmentId] === undefined) return current;
-      const next = { ...current };
-      delete next[assignmentId];
-      return next;
-    });
-  }, []);
-
-  const scheduleCompletionFeedback = useCallback((assignmentId: string) => {
-    clearCompletionFeedback(assignmentId);
-    setCompletionFeedbackById((current) => ({
-      ...current,
-      [assignmentId]: "confirmed",
-    }));
-
-    const confirmationTimer = setTimeout(() => {
-      setCompletionFeedbackById((current) => ({
-        ...current,
-        [assignmentId]: "exiting",
-      }));
-      const exitTimer = setTimeout(() => {
-        completionFeedbackTimersRef.current.delete(assignmentId);
-        setCompletionFeedbackById((current) => {
-          const next = { ...current };
-          delete next[assignmentId];
-          return next;
-        });
-        setDrawerState((current) =>
-          current?.kind === "editor" && current.assignmentId === assignmentId
-            ? undefined
-            : current
-        );
-      }, COMPLETION_EXIT_MS);
-      completionFeedbackTimersRef.current.set(assignmentId, exitTimer);
-    }, COMPLETION_CONFIRM_MS);
-
-    completionFeedbackTimersRef.current.set(assignmentId, confirmationTimer);
-  }, [clearCompletionFeedback]);
 
   const replaceCompletionState = useCallback((next: OptimisticCompletionState) => {
     completionStateRef.current = next;
     setCompletionState(next);
   }, []);
 
-  const loadWorkspace = useCallback(async () => {
+  const loadWorkspace = useCallback(async (options: { refresh?: boolean } = {}) => {
     setSyncState("syncing");
     if (!hasLoadedRef.current) setLoadError(undefined);
     try {
-      const [assignments, nextCourses] = await Promise.all([loadAssignments(), loadCourses()]);
+      const [assignments, nextCourses] = await Promise.all([
+        loadAssignments(options),
+        loadCourses(options),
+      ]);
       replaceCompletionState(createOptimisticCompletionState(assignments));
       setCourses(nextCourses);
       hasLoadedRef.current = true;
@@ -192,16 +143,6 @@ export function AssignmentsWorkspace() {
   useEffect(() => {
     void loadWorkspace();
   }, [loadWorkspace]);
-
-  useEffect(
-    () => () => {
-      for (const timer of completionFeedbackTimersRef.current.values()) {
-        clearTimeout(timer);
-      }
-      completionFeedbackTimersRef.current.clear();
-    },
-    [],
-  );
 
   useEffect(() => {
     const intervalId = window.setInterval(() => setSyncClock(new Date()), 60_000);
@@ -244,12 +185,8 @@ export function AssignmentsWorkspace() {
   }, [refreshLocalDate]);
 
   const retainedCompletedIds = useMemo(
-    () =>
-      new Set([
-        ...Object.keys(completionState.pending),
-        ...Object.keys(completionFeedbackById),
-      ]),
-    [completionFeedbackById, completionState.pending],
+    () => new Set<string>(),
+    [],
   );
   const inProgressCourseIds = useMemo(
     () =>
@@ -288,11 +225,9 @@ export function AssignmentsWorkspace() {
       toListItems(
         visibleAssignments,
         courses,
-        completionState,
-        completionFeedbackById,
         today,
       ),
-    [completionFeedbackById, completionState, courses, today, visibleAssignments],
+    [courses, today, visibleAssignments],
   );
   const rowItemById = useMemo(() => new Map(rowItems.map((item) => [item.id, item])), [rowItems]);
   const calendarDays = useMemo(
@@ -324,7 +259,6 @@ export function AssignmentsWorkspace() {
   const handleCompletionChange = useCallback(
     async (assignmentId: string, completed: boolean) => {
       setMutationError(undefined);
-      if (!completed) clearCompletionFeedback(assignmentId);
       let change;
       try {
         change = beginCompletionChange(completionStateRef.current, assignmentId, completed);
@@ -336,7 +270,6 @@ export function AssignmentsWorkspace() {
       replaceCompletionState(change.state);
       try {
         const serverAssignment = await updateAssignmentCompletion(assignmentId, completed);
-        if (completed) scheduleCompletionFeedback(assignmentId);
         replaceCompletionState(
           commitCompletionChange(completionStateRef.current, change.mutation, serverAssignment),
         );
@@ -345,7 +278,6 @@ export function AssignmentsWorkspace() {
         setSyncClock(syncedAt);
         setSyncState("synced");
       } catch (error) {
-        clearCompletionFeedback(assignmentId);
         replaceCompletionState(rollbackCompletionChange(completionStateRef.current, change.mutation));
         setMutationError(
           error instanceof Error
@@ -354,7 +286,7 @@ export function AssignmentsWorkspace() {
         );
       }
     },
-    [clearCompletionFeedback, replaceCompletionState, scheduleCompletionFeedback],
+    [replaceCompletionState],
   );
 
   const handleEntrySelect = useCallback((assignmentId: string, returnDateKey?: string) => {
@@ -420,7 +352,7 @@ export function AssignmentsWorkspace() {
         syncLabel={syncLabel}
         syncActionLabel={syncState === "syncing" ? "Syncing" : "Sync now"}
         icons={{ calendar: icons.calendar, sync: icons.sync }}
-        onSync={() => void loadWorkspace()}
+        onSync={() => void loadWorkspace({ refresh: true })}
       />
 
       {mutationError ? (
@@ -456,7 +388,7 @@ export function AssignmentsWorkspace() {
             onHideCompletedChange={setHideCompleted}
             onCompletionChange={(id, completed) => void handleCompletionChange(id, completed)}
             onEdit={handleEntrySelect}
-            onRetry={() => void loadWorkspace()}
+            onRetry={() => void loadWorkspace({ refresh: true })}
           />
         }
         calendarPanel={
@@ -488,7 +420,7 @@ export function AssignmentsWorkspace() {
                 setDrawerState({ kind: "agenda", dateKey: day.key });
               }
             }}
-            onRetry={() => void loadWorkspace()}
+            onRetry={() => void loadWorkspace({ refresh: true })}
           />
         }
       />
@@ -517,10 +449,6 @@ export function AssignmentsWorkspace() {
 function toListItems(
   assignments: readonly Assignment[],
   courses: readonly Course[],
-  completionState: OptimisticCompletionState,
-  completionFeedbackById: Readonly<
-    Record<string, AssignmentCompletionFeedback | undefined>
-  >,
   now: Date,
 ): AssignmentListItem[] {
   return buildAssignmentRowViewModels(assignments, courses, now).map((viewModel) => ({
@@ -532,8 +460,7 @@ function toListItems(
     dueExact: formatAssignmentDeadline(viewModel.assignment.dueAt),
     dueTone: viewModel.dueTone,
     completed: viewModel.completed,
-    saving: completionState.pending[viewModel.assignment.id] !== undefined,
-    completionFeedback: completionFeedbackById[viewModel.assignment.id],
+    saving: false,
   }));
 }
 

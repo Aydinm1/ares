@@ -25,43 +25,60 @@ import {
 } from "./mappers.js";
 import { fields, tableRef } from "./schema.js";
 
+const READ_CACHE_TTL_MS = 30_000;
+
+interface CacheEntry<T> {
+  expiresAt: number;
+  value: Promise<T>;
+}
+
+export interface ReadOptions {
+  refresh?: boolean;
+}
+
 export class SchoolRepository {
+  private readonly cache = new Map<string, CacheEntry<unknown>>();
+
   constructor(private readonly client = new AirtableClient()) {}
 
-  async listCourses(): Promise<Course[]> {
-    const [courseRecords, categoryRecords, generalEducationRecords] = await Promise.all([
-      this.client.list<Record<string, unknown>>(tableRef("courses")),
-      this.client.list<Record<string, unknown>>(tableRef("gradeCategories")),
-      this.client.list<Record<string, unknown>>(tableRef("generalEducation"))
-    ]);
-    const categories = categoryRecords.map(mapGradeCategory);
-    const generalEducationById = new Map(
-      generalEducationRecords
-        .map(mapGeneralEducationRequirement)
-        .map((requirement) => [requirement.id, requirement])
-    );
+  async listCourses(options: ReadOptions = {}): Promise<Course[]> {
+    return this.readCached("courses", options, async () => {
+      const [courseRecords, categoryRecords, generalEducationRecords] = await Promise.all([
+        this.client.list<Record<string, unknown>>(tableRef("courses")),
+        this.client.list<Record<string, unknown>>(tableRef("gradeCategories")),
+        this.client.list<Record<string, unknown>>(tableRef("generalEducation"))
+      ]);
+      const categories = categoryRecords.map(mapGradeCategory);
+      const generalEducationById = new Map(
+        generalEducationRecords
+          .map(mapGeneralEducationRequirement)
+          .map((requirement) => [requirement.id, requirement])
+      );
 
-    return courseRecords.map((record) => {
-      const course = mapCourse(record);
-      const courseCategories = categories.filter((category) => category.courseId === course.id);
-      return {
-        ...course,
-        geRequirementsUsed: course.geRequirementUsedIds?.flatMap((id) => {
-          const requirement = generalEducationById.get(id);
-          return requirement ? [requirement] : [];
-        }),
-        gradePolicy: {
-          courseId: course.id,
-          categories: courseCategories,
-          usesWeightedCategories: courseCategories.length > 0
-        }
-      };
+      return courseRecords.map((record) => {
+        const course = mapCourse(record);
+        const courseCategories = categories.filter((category) => category.courseId === course.id);
+        return {
+          ...course,
+          geRequirementsUsed: course.geRequirementUsedIds?.flatMap((id) => {
+            const requirement = generalEducationById.get(id);
+            return requirement ? [requirement] : [];
+          }),
+          gradePolicy: {
+            courseId: course.id,
+            categories: courseCategories,
+            usesWeightedCategories: courseCategories.length > 0
+          }
+        };
+      });
     });
   }
 
-  async listAssignments(): Promise<Assignment[]> {
-    const records = await this.client.list<Record<string, unknown>>(tableRef("assignments"));
-    return records.map(mapAssignment);
+  async listAssignments(options: ReadOptions = {}): Promise<Assignment[]> {
+    return this.readCached("assignments", options, async () => {
+      const records = await this.client.list<Record<string, unknown>>(tableRef("assignments"));
+      return records.map(mapAssignment);
+    });
   }
 
   async updateAssignment(recordId: string, update: AssignmentUpdate): Promise<Assignment> {
@@ -70,7 +87,16 @@ export class SchoolRepository {
       recordId,
       assignmentUpdateToAirtable(update)
     );
+    this.invalidateAssignments();
     return mapAssignment(record);
+  }
+
+  invalidateAssignments(): void {
+    this.cache.delete("assignments");
+  }
+
+  clearReadCache(): void {
+    this.cache.clear();
   }
 
   async listInboxItems(): Promise<InboxItem[]> {
@@ -167,5 +193,24 @@ export class SchoolRepository {
       `{${fields.habitCheckIns.key}}="${habitId}:${date}"`
     );
     return this.client.list<Record<string, unknown>>(tableRef("habitCheckIns"), query);
+  }
+
+  private readCached<T>(
+    key: string,
+    options: ReadOptions,
+    load: () => Promise<T>
+  ): Promise<T> {
+    const now = Date.now();
+    const cached = this.cache.get(key) as CacheEntry<T> | undefined;
+    if (!options.refresh && cached && cached.expiresAt > now) {
+      return cached.value;
+    }
+
+    const value = load().catch((error) => {
+      if (this.cache.get(key)?.value === value) this.cache.delete(key);
+      throw error;
+    });
+    this.cache.set(key, { expiresAt: now + READ_CACHE_TTL_MS, value });
+    return value;
   }
 }

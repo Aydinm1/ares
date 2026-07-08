@@ -664,8 +664,8 @@
 }
 
 .completionBox:checked {
-  border-color: var(--assignment-blue);
-  background: var(--assignment-blue);
+  border-color: var(--assignment-success);
+  background: var(--assignment-success);
 }
 
 .completionBox:checked::after {

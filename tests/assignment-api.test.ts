@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { GET as getAssignments } from "../app/api/assignments/route.js";
 import { PATCH } from "../app/api/assignments/[id]/route.js";
 import { GET as getCourses } from "../app/api/courses/route.js";
+import { clearRepositoryReadCache } from "../app/api/_lib/schoolRoutes.js";
 import {
   ApiClientError,
   loadAssignments,
@@ -19,6 +20,7 @@ process.env.AIRTABLE_API_KEY = "test-key";
 
 test.afterEach(() => {
   globalThis.fetch = originalFetch;
+  clearRepositoryReadCache();
 });
 
 test.after(() => {
@@ -95,8 +97,8 @@ test("assignment and course GET routes return mapped Airtable records", async ()
     return Response.json({ records: [] });
   };
 
-  const assignmentsResponse = await getAssignments();
-  const coursesResponse = await getCourses();
+  const assignmentsResponse = await getAssignments(new Request("http://localhost/api/assignments"));
+  const coursesResponse = await getCourses(new Request("http://localhost/api/courses"));
 
   assert.equal(assignmentsResponse.status, 200);
   assert.equal(coursesResponse.status, 200);
@@ -110,6 +112,117 @@ test("assignment and course GET routes return mapped Airtable records", async ()
       .courses[0]?.name,
     "Writing"
   );
+});
+
+test("assignment GET uses cached Airtable reads until refresh is requested", async () => {
+  let assignmentReads = 0;
+  globalThis.fetch = async (input) => {
+    const url = String(input);
+    assert.ok(url.includes(encodeURIComponent(tableRef("assignments"))));
+    assignmentReads += 1;
+    return Response.json({
+      records: [{
+        id: `recAssignment${assignmentReads}`,
+        fields: {
+          [fields.assignments.title]: `Essay ${assignmentReads}`,
+          [fields.assignments.completed]: false
+        }
+      }]
+    });
+  };
+
+  const first = await getAssignments(new Request("http://localhost/api/assignments"));
+  const second = await getAssignments(new Request("http://localhost/api/assignments"));
+  const refreshed = await getAssignments(
+    new Request("http://localhost/api/assignments?refresh=1")
+  );
+
+  assert.equal(first.status, 200);
+  assert.equal(second.status, 200);
+  assert.equal(refreshed.status, 200);
+  assert.equal(assignmentReads, 2);
+  assert.equal(
+    (await second.json() as { assignments: Array<{ title: string }> }).assignments[0]?.title,
+    "Essay 1"
+  );
+  assert.equal(
+    (await refreshed.json() as { assignments: Array<{ title: string }> }).assignments[0]?.title,
+    "Essay 2"
+  );
+});
+
+test("course GET caches the multi-table Airtable read", async () => {
+  let courseReads = 0;
+  globalThis.fetch = async (input) => {
+    const url = String(input);
+    if (url.includes(encodeURIComponent(tableRef("courses")))) {
+      courseReads += 1;
+      return Response.json({
+        records: [{
+          id: `recCourse${courseReads}`,
+          fields: {
+            [fields.courses.name]: `Writing ${courseReads}`,
+            [fields.courses.quarterTaken]: "Fall 2024"
+          }
+        }]
+      });
+    }
+    return Response.json({ records: [] });
+  };
+
+  const first = await getCourses(new Request("http://localhost/api/courses"));
+  const second = await getCourses(new Request("http://localhost/api/courses"));
+
+  assert.equal(first.status, 200);
+  assert.equal(second.status, 200);
+  assert.equal(courseReads, 1);
+  assert.equal(
+    (await second.json() as { courses: Array<{ name: string }> }).courses[0]?.name,
+    "Writing 1"
+  );
+});
+
+test("assignment PATCH invalidates cached assignment reads", async () => {
+  let assignmentReads = 0;
+  globalThis.fetch = async (input, init) => {
+    const url = String(input);
+    assert.ok(url.includes(encodeURIComponent(tableRef("assignments"))));
+    if (init?.method === "PATCH") {
+      return Response.json({
+        id: "recAssignment",
+        fields: {
+          [fields.assignments.title]: "Essay",
+          [fields.assignments.completed]: true
+        }
+      });
+    }
+    assignmentReads += 1;
+    return Response.json({
+      records: [{
+        id: "recAssignment",
+        fields: {
+          [fields.assignments.title]: `Essay ${assignmentReads}`,
+          [fields.assignments.completed]: false
+        }
+      }]
+    });
+  };
+
+  assert.equal((await getAssignments(new Request("http://localhost/api/assignments"))).status, 200);
+  assert.equal((await getAssignments(new Request("http://localhost/api/assignments"))).status, 200);
+  assert.equal(assignmentReads, 1);
+
+  const patchResponse = await PATCH(
+    new Request("http://localhost/api/assignments/recAssignment", {
+      method: "PATCH",
+      body: JSON.stringify({ status: "submitted" })
+    }),
+    { params: Promise.resolve({ id: "recAssignment" }) }
+  );
+  assert.equal(patchResponse.status, 200);
+
+  assert.equal((await getAssignments(new Request("http://localhost/api/assignments"))).status, 200);
+  assert.equal(assignmentReads, 2);
 });
 
 test("assignment PATCH updates editable Airtable fields", async () => {
@@ -158,7 +271,7 @@ test("assignment PATCH updates editable Airtable fields", async () => {
 test("assignment GET exposes Airtable failures as a non-2xx response", async () => {
   globalThis.fetch = async () => new Response("unavailable", { status: 503 });
 
-  const response = await getAssignments();
+  const response = await getAssignments(new Request("http://localhost/api/assignments"));
 
   assert.equal(response.status, 500);
   assert.match(
