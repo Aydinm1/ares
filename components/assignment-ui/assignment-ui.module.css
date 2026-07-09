@@ -421,6 +421,7 @@
   display: flex;
   width: auto;
   align-items: center;
+  flex-wrap: wrap;
   justify-content: flex-end;
   gap: 10px;
 }
@@ -576,7 +577,7 @@
   overflow: hidden;
   min-height: 76px;
   max-height: 160px;
-  grid-template-columns: 24px minmax(0, 1fr) minmax(100px, auto) 30px;
+  grid-template-columns: 24px minmax(0, 1fr) minmax(100px, auto) 30px 30px;
   align-items: center;
   gap: 12px;
   padding: 11px 18px;
@@ -751,6 +752,12 @@
 .completedLabel {
   flex: 0 0 auto;
   color: var(--assignment-success);
+  font-weight: 700;
+}
+
+.hiddenLabel {
+  flex: 0 0 auto;
+  color: var(--assignment-muted);
   font-weight: 700;
 }
 
@@ -1319,7 +1326,7 @@
 
   .assignmentRow {
     min-height: 84px;
-    grid-template-columns: 26px minmax(0, 1fr) 30px;
+    grid-template-columns: 26px minmax(0, 1fr) 30px 30px;
     padding: 13px 14px;
   }
 
@@ -1329,8 +1336,15 @@
   }
 
   .rowEditButton {
-    grid-column: 3;
     grid-row: 1 / span 2;
+  }
+
+  .rowVisibilityButton {
+    grid-column: 3;
+  }
+
+  .rowEditButton:not(.rowVisibilityButton) {
+    grid-column: 4;
   }
 
   .dueExact {

@@ -8,6 +8,8 @@ import {
   CircleAlert,
   CircleCheckBig,
   Filter,
+  Eye,
+  EyeOff,
   Inbox,
   List,
   ListTodo,
@@ -34,6 +36,7 @@ import {
 } from "../assignment-ui";
 import {
   beginCompletionChange,
+  beginAssignmentChange,
   buildAssignmentRowViewModels,
   buildMonthGrid,
   commitCompletionChange,
@@ -56,6 +59,7 @@ import {
   loadCourses,
   updateAssignmentCompletion,
   updateAssignmentDetails,
+  updateAssignmentVisibility,
   type AssignmentEditorUpdate,
 } from "../../src/app/apiClient";
 import type { Assignment, Course } from "../../src/domain";
@@ -77,6 +81,8 @@ const icons: AssignmentUiIcons = {
   sync: <RefreshCw size={16} strokeWidth={2} />,
   filter: <Filter size={17} strokeWidth={2} />,
   edit: <Pencil size={15} strokeWidth={2} />,
+  show: <Eye size={15} strokeWidth={2} />,
+  hide: <EyeOff size={15} strokeWidth={2} />,
   close: <X size={17} strokeWidth={2} />,
   empty: <Inbox size={19} strokeWidth={2} />,
   error: <CircleAlert size={19} strokeWidth={2} />,
@@ -97,6 +103,7 @@ export function AssignmentsWorkspace() {
   const [mutationError, setMutationError] = useState<string>();
   const [selectedCourseId, setSelectedCourseId] = useState("all");
   const [hideCompleted, setHideCompleted] = useState(true);
+  const [showHidden, setShowHidden] = useState(false);
   const [visibleMonth, setVisibleMonth] = useState(() => monthForToday());
   const [today, setToday] = useState(() => new Date());
   const todayRef = useRef(today);
@@ -198,7 +205,31 @@ export function AssignmentsWorkspace() {
     [courses],
   );
 
-  const visibleAssignments = useMemo(
+  const visibleListAssignments = useMemo(
+    () =>
+      sortAssignments(
+        filterAssignments(completionState.assignments, {
+          courseId: selectedCourseId,
+          hideCompleted,
+          hideHiddenFromList: !showHidden,
+          completedCourseIds: inProgressCourseIds,
+          retainedCompletedIds,
+        }),
+        courses,
+        { completedFirst: !hideCompleted },
+      ),
+    [
+      completionState.assignments,
+      courses,
+      hideCompleted,
+      inProgressCourseIds,
+      retainedCompletedIds,
+      selectedCourseId,
+      showHidden,
+    ],
+  );
+
+  const visibleCalendarAssignments = useMemo(
     () =>
       sortAssignments(
         filterAssignments(completionState.assignments, {
@@ -223,16 +254,28 @@ export function AssignmentsWorkspace() {
   const rowItems = useMemo(
     () =>
       toListItems(
-        visibleAssignments,
+        visibleListAssignments,
         courses,
         today,
       ),
-    [courses, today, visibleAssignments],
+    [courses, today, visibleListAssignments],
   );
-  const rowItemById = useMemo(() => new Map(rowItems.map((item) => [item.id, item])), [rowItems]);
+  const calendarItems = useMemo(
+    () =>
+      toListItems(
+        visibleCalendarAssignments,
+        courses,
+        today,
+      ),
+    [courses, today, visibleCalendarAssignments],
+  );
+  const calendarItemById = useMemo(
+    () => new Map(calendarItems.map((item) => [item.id, item])),
+    [calendarItems],
+  );
   const calendarDays = useMemo(
-    () => toCalendarDays(visibleMonth, visibleAssignments, rowItemById, today),
-    [rowItemById, today, visibleAssignments, visibleMonth],
+    () => toCalendarDays(visibleMonth, visibleCalendarAssignments, calendarItemById, today),
+    [calendarItemById, today, visibleCalendarAssignments, visibleMonth],
   );
   const courseOptions = useMemo(
     () =>
@@ -253,7 +296,7 @@ export function AssignmentsWorkspace() {
       ? calendarDays.find((day) => day.key === drawerState.dateKey)
       : undefined;
   const activeCount = completionState.assignments.filter(
-    (assignment) => assignment.status !== "submitted",
+    (assignment) => assignment.status !== "submitted" && assignment.hiddenFromList !== true,
   ).length;
 
   const handleCompletionChange = useCallback(
@@ -283,6 +326,39 @@ export function AssignmentsWorkspace() {
           error instanceof Error
             ? `Completion was not saved: ${error.message}`
             : "Completion was not saved. The previous state was restored.",
+        );
+      }
+    },
+    [replaceCompletionState],
+  );
+
+  const handleHiddenChange = useCallback(
+    async (assignmentId: string, hiddenFromList: boolean) => {
+      setMutationError(undefined);
+      let change;
+      try {
+        change = beginAssignmentChange(completionStateRef.current, assignmentId, { hiddenFromList });
+      } catch (error) {
+        setMutationError(error instanceof Error ? error.message : "This assignment could not be updated.");
+        return;
+      }
+
+      replaceCompletionState(change.state);
+      try {
+        const serverAssignment = await updateAssignmentVisibility(assignmentId, hiddenFromList);
+        replaceCompletionState(
+          commitCompletionChange(completionStateRef.current, change.mutation, serverAssignment),
+        );
+        const syncedAt = new Date();
+        setLastSyncedAt(syncedAt);
+        setSyncClock(syncedAt);
+        setSyncState("synced");
+      } catch (error) {
+        replaceCompletionState(rollbackCompletionChange(completionStateRef.current, change.mutation));
+        setMutationError(
+          error instanceof Error
+            ? `Assignment visibility was not saved: ${error.message}`
+            : "Assignment visibility was not saved. The previous state was restored.",
         );
       }
     },
@@ -375,18 +451,23 @@ export function AssignmentsWorkspace() {
             courses={courseOptions}
             selectedCourseId={selectedCourseId}
             hideCompleted={hideCompleted}
+            showHidden={showHidden}
             loading={loading}
             error={loadError}
             icons={{
               filter: icons.filter,
               edit: icons.edit,
+              show: icons.show,
+              hide: icons.hide,
               empty: icons.empty,
               error: icons.error,
               sync: icons.sync,
             }}
             onCourseChange={setSelectedCourseId}
             onHideCompletedChange={setHideCompleted}
+            onShowHiddenChange={setShowHidden}
             onCompletionChange={(id, completed) => void handleCompletionChange(id, completed)}
+            onHiddenChange={(id, hiddenFromList) => void handleHiddenChange(id, hiddenFromList)}
             onEdit={handleEntrySelect}
             onRetry={() => void loadWorkspace({ refresh: true })}
           />
@@ -460,6 +541,7 @@ function toListItems(
     dueExact: formatAssignmentDeadline(viewModel.assignment.dueAt),
     dueTone: viewModel.dueTone,
     completed: viewModel.completed,
+    hiddenFromList: viewModel.assignment.hiddenFromList,
     saving: false,
   }));
 }

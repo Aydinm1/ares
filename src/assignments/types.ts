@@ -22,6 +22,7 @@ export interface MonthGridDay {
 export interface AssignmentFilters {
   courseId?: "all" | string;
   hideCompleted?: boolean;
+  hideHiddenFromList?: boolean;
   completedCourseIds?: ReadonlySet<string>;
   retainedCompletedIds?: ReadonlySet<string>;
 }

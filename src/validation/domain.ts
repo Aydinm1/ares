@@ -33,7 +33,8 @@ const ASSIGNMENT_UPDATE_FIELDS = new Set([
   "dueTime",
   "pointsPossible",
   "weekLabel",
-  "status"
+  "status",
+  "hiddenFromList"
 ]);
 const ASSIGNMENT_WEEKS = new Set([
   "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "Finals"
@@ -170,6 +171,13 @@ export function validateAssignmentWrite(value: unknown): AssignmentUpdate {
       issues.push("status must be submitted or not_started.");
     } else {
       update.status = payload.status;
+    }
+  }
+  if ("hiddenFromList" in payload) {
+    if (typeof payload.hiddenFromList !== "boolean") {
+      issues.push("hiddenFromList must be a boolean.");
+    } else {
+      update.hiddenFromList = payload.hiddenFromList;
     }
   }
   if ("pointsPossible" in payload) {

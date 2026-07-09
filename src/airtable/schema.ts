@@ -30,6 +30,7 @@ export const fields = {
     pointsEarned: "Points Earned",
     pointsPossible: "Points Possible",
     completed: "Completed",
+    hiddenFromList: "Hidden from List",
     gradeCategory: "Category Weights",
     typeLabel: "General Assignment Type",
     weekLabel: "Week"

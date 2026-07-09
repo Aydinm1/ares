@@ -24,6 +24,8 @@ export interface AssignmentUiIcons {
   sync: ReactNode;
   filter: ReactNode;
   edit: ReactNode;
+  show: ReactNode;
+  hide: ReactNode;
   close: ReactNode;
   empty: ReactNode;
   error: ReactNode;
@@ -38,6 +40,7 @@ export interface AssignmentListItem {
   dueExact?: string;
   dueTone: AssignmentDueTone;
   completed: boolean;
+  hiddenFromList?: boolean;
   saving?: boolean;
   completionFeedback?: AssignmentCompletionFeedback;
 }
@@ -331,12 +334,15 @@ interface AssignmentPanelProps {
   courses: CourseFilterOption[];
   selectedCourseId: string;
   hideCompleted: boolean;
+  showHidden: boolean;
   loading?: boolean;
   error?: string;
-  icons: Pick<AssignmentUiIcons, "filter" | "edit" | "empty" | "error" | "sync">;
+  icons: Pick<AssignmentUiIcons, "filter" | "edit" | "show" | "hide" | "empty" | "error" | "sync">;
   onCourseChange: (courseId: string) => void;
   onHideCompletedChange: (hideCompleted: boolean) => void;
+  onShowHiddenChange: (showHidden: boolean) => void;
   onCompletionChange: (assignmentId: string, completed: boolean) => void;
+  onHiddenChange: (assignmentId: string, hiddenFromList: boolean) => void;
   onEdit: (assignmentId: string) => void;
   onRetry: () => void;
 }
@@ -346,12 +352,15 @@ export function AssignmentPanel({
   courses,
   selectedCourseId,
   hideCompleted,
+  showHidden,
   loading = false,
   error,
   icons,
   onCourseChange,
   onHideCompletedChange,
+  onShowHiddenChange,
   onCompletionChange,
+  onHiddenChange,
   onEdit,
   onRetry,
 }: AssignmentPanelProps) {
@@ -393,6 +402,15 @@ export function AssignmentPanel({
               onChange={(event) => onHideCompletedChange(event.currentTarget.checked)}
             />
             Hide completed
+          </label>
+          <label className={styles.toggleLabel}>
+            <input
+              className={styles.toggle}
+              type="checkbox"
+              checked={showHidden}
+              onChange={(event) => onShowHiddenChange(event.currentTarget.checked)}
+            />
+            Show hidden
           </label>
           <details className={styles.filterMenu} ref={filterMenuRef}>
             <summary
@@ -451,8 +469,8 @@ export function AssignmentPanel({
           icon={icons.empty}
           title="No assignments to show"
           copy={
-            hideCompleted
-              ? "There is no active work in this view. Reveal completed assignments or choose another course."
+            hideCompleted || !showHidden
+              ? "There is no active work in this view. Reveal completed or hidden assignments, or choose another course."
               : "Assignments added in Airtable will appear here."
           }
         />
@@ -465,7 +483,10 @@ export function AssignmentPanel({
                 key={item.id}
                 item={item}
                 editIcon={icons.edit}
+                hideIcon={icons.hide}
+                showIcon={icons.show}
                 onCompletionChange={onCompletionChange}
+                onHiddenChange={onHiddenChange}
                 onEdit={onEdit}
               />
             ))}
@@ -482,18 +503,33 @@ export function AssignmentPanel({
 interface AssignmentRowProps {
   item: AssignmentListItem;
   editIcon: ReactNode;
+  hideIcon: ReactNode;
+  showIcon: ReactNode;
   onCompletionChange: (assignmentId: string, completed: boolean) => void;
+  onHiddenChange: (assignmentId: string, hiddenFromList: boolean) => void;
   onEdit: (assignmentId: string) => void;
 }
 
-export function AssignmentRow({ item, editIcon, onCompletionChange, onEdit }: AssignmentRowProps) {
+export function AssignmentRow({
+  item,
+  editIcon,
+  hideIcon,
+  showIcon,
+  onCompletionChange,
+  onHiddenChange,
+  onEdit,
+}: AssignmentRowProps) {
   const courseColor = { "--course-color": item.courseColor } as CSSProperties;
+  const hiddenToggleLabel = item.hiddenFromList
+    ? `Show ${item.title} in list`
+    : `Hide ${item.title} from list`;
 
   return (
     <div
       className={styles.assignmentRow}
       data-assignment-id={item.id}
       data-completed={item.completed}
+      data-hidden={item.hiddenFromList === true}
       data-saving={item.saving === true}
       data-feedback={item.completionFeedback}
       style={courseColor}
@@ -519,6 +555,8 @@ export function AssignmentRow({ item, editIcon, onCompletionChange, onEdit }: As
             <span className={styles.savingLabel} role="status">Saving...</span>
           ) : item.completionFeedback ? (
             <span className={styles.completedLabel} role="status">Completed</span>
+          ) : item.hiddenFromList ? (
+            <span className={styles.hiddenLabel}>Hidden</span>
           ) : null}
         </span>
       </div>
@@ -528,6 +566,18 @@ export function AssignmentRow({ item, editIcon, onCompletionChange, onEdit }: As
         </span>
         {item.dueExact ? <span className={styles.dueExact}>{item.dueExact}</span> : null}
       </div>
+      <button
+        className={`${styles.rowEditButton} ${styles.rowVisibilityButton}`}
+        type="button"
+        aria-label={hiddenToggleLabel}
+        title={hiddenToggleLabel}
+        disabled={item.saving || item.completionFeedback !== undefined}
+        onClick={() => onHiddenChange(item.id, item.hiddenFromList !== true)}
+      >
+        <span className={styles.buttonIcon} aria-hidden="true">
+          {item.hiddenFromList ? showIcon : hideIcon}
+        </span>
+      </button>
       <button
         className={styles.rowEditButton}
         type="button"
@@ -676,15 +726,21 @@ function CalendarDay({ day, selected, onSelect }: CalendarDayProps) {
 interface MobileAssignmentDetailProps {
   item?: AssignmentListItem;
   closeIcon: ReactNode;
+  hideIcon: ReactNode;
+  showIcon: ReactNode;
   onClose: () => void;
   onCompletionChange: (assignmentId: string, completed: boolean) => void;
+  onHiddenChange: (assignmentId: string, hiddenFromList: boolean) => void;
 }
 
 export function MobileAssignmentDetail({
   item,
   closeIcon,
+  hideIcon,
+  showIcon,
   onClose,
   onCompletionChange,
+  onHiddenChange,
 }: MobileAssignmentDetailProps) {
   if (!item) return null;
 
@@ -740,6 +796,17 @@ export function MobileAssignmentDetail({
                 ? "Mark as incomplete"
                 : "Mark as complete"}
         </label>
+        <button
+          className={styles.secondaryButton}
+          type="button"
+          disabled={item.saving || item.completionFeedback !== undefined}
+          onClick={() => onHiddenChange(item.id, item.hiddenFromList !== true)}
+        >
+          <span className={styles.buttonIcon} aria-hidden="true">
+            {item.hiddenFromList ? showIcon : hideIcon}
+          </span>
+          {item.hiddenFromList ? "Show in list" : "Hide from list"}
+        </button>
       </section>
     </div>
   );

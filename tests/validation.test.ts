@@ -21,6 +21,9 @@ test("accepts only completion statuses and rejects extra fields", () => {
     validateAssignmentCompletionWrite({ status: "not_started" }),
     "not_started"
   );
+  assert.deepEqual(validateAssignmentWrite({ hiddenFromList: true }), {
+    hiddenFromList: true
+  });
   assert.throws(
     () => validateAssignmentCompletionWrite({ status: "graded" }),
     ValidationError
@@ -29,6 +32,7 @@ test("accepts only completion statuses and rejects extra fields", () => {
     () => validateAssignmentCompletionWrite({ status: "submitted", title: "Do not mutate me" }),
     ValidationError
   );
+  assert.throws(() => validateAssignmentWrite({ hiddenFromList: "true" }), ValidationError);
   assert.throws(() => validateAssignmentCompletionWrite(null), ValidationError);
 });
 

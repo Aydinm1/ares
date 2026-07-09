@@ -92,6 +92,7 @@ export function mapAssignment(record: AirtableRecord<AnyFields>): Assignment {
     pointsPossible: numberValue(value[fields.assignments.pointsPossible]),
     typeLabel,
     weekLabel: stringValue(value[fields.assignments.weekLabel]),
+    hiddenFromList: value[fields.assignments.hiddenFromList] === true,
     createdAt: record.createdTime
   };
 }
@@ -200,6 +201,9 @@ export function assignmentUpdateToAirtable(update: AssignmentUpdate): AnyFields 
   }
   if (update.weekLabel !== undefined) {
     fieldsToUpdate[fields.assignments.weekLabel] = update.weekLabel;
+  }
+  if (update.hiddenFromList !== undefined) {
+    fieldsToUpdate[fields.assignments.hiddenFromList] = update.hiddenFromList;
   }
   return fieldsToUpdate;
 }

@@ -39,8 +39,10 @@ DELETE /api/habits/:id/check-ins/:date
 ```
 
 The PATCH operation accepts a strict partial update for Assignment Name,
-Courses, Due Date, Points Possible, Week, or Completed. Completion maps checked
-to domain status `submitted` and unchecked to `not_started`.
+Courses, Due Date, Points Possible, Week, Completed, or Hidden from List.
+Completion maps checked to domain status `submitted` and unchecked to
+`not_started`. Hidden from List keeps unfinished assignments out of the default
+list without marking them complete.
 
 Editor requests send a Pacific local `dueDate` with an optional `dueTime`.
 Date-only deadlines are stored at 11:59 PM in `America/Los_Angeles`; the app
@@ -147,6 +149,7 @@ Table ID: `tbllXlXa7oKsoFMae`
 | Points Earned | `fld4rCP4y8j3ulO0Y` | `number` | `Assignment.pointsEarned` |
 | Points Possible | `fldAWln49fynQWzFv` | `number` | `Assignment.pointsPossible` |
 | Completed | `fldA1MTcA1wh0GLA4` | `checkbox` | Completion write |
+| Hidden from List | `fldWDpMsq76I8xYq7` | `checkbox` | `Assignment.hiddenFromList`; hides unfinished work from the list only |
 | Category Weights | `fld33ksNpJYirqrfm` | `multipleRecordLinks` | Links `tblXC0Vug7xyPFZqW` |
 | General Assignment Type | `fldAZvY3fCDuMp8gZ` | `singleSelect` | Maps to assignment category/type |
 | Week | `fldk4t3tyOGLZ1ncx` | `singleSelect` | `Assignment.weekLabel` |

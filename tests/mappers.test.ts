@@ -140,6 +140,7 @@ test("maps Airtable assignment completion and category", () => {
       [fields.assignments.title]: "Problem Set 1",
       [fields.assignments.course]: ["recCourse"],
       [fields.assignments.completed]: true,
+      [fields.assignments.hiddenFromList]: true,
       [fields.assignments.typeLabel]: "Problem Set"
     }
   });
@@ -147,6 +148,7 @@ test("maps Airtable assignment completion and category", () => {
   assert.equal(assignment.status, "submitted");
   assert.equal(assignment.category, "problem_set");
   assert.equal(assignment.courseId, "recCourse");
+  assert.equal(assignment.hiddenFromList, true);
 });
 
 test("maps unchecked and empty assignment checkboxes as not started", () => {
@@ -179,14 +181,16 @@ test("serializes editable assignment fields without touching omitted fields", ()
       courseId: "recCourse",
       dueAt: null,
       pointsPossible: 25,
-      weekLabel: null
+      weekLabel: null,
+      hiddenFromList: true
     }),
     {
       [fields.assignments.title]: "Revised essay",
       [fields.assignments.course]: ["recCourse"],
       [fields.assignments.dueAt]: null,
       [fields.assignments.pointsPossible]: 25,
-      [fields.assignments.weekLabel]: null
+      [fields.assignments.weekLabel]: null,
+      [fields.assignments.hiddenFromList]: true
     }
   );
   assert.deepEqual(assignmentUpdateToAirtable({ courseId: null }), {

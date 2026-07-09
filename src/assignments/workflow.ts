@@ -30,6 +30,7 @@ export function filterAssignments(
   const courseId = filters.courseId ?? "all";
   return assignments.filter(
     (assignment) =>
+      (!filters.hideHiddenFromList || assignment.hiddenFromList !== true) &&
       (
         !isCompleted(assignment) ||
         filters.retainedCompletedIds?.has(assignment.id) === true ||
@@ -133,6 +134,17 @@ export function beginCompletionChange(
   assignmentId: string,
   completed: boolean
 ): { state: OptimisticCompletionState; mutation: CompletionMutation } {
+  return beginAssignmentChange(state, assignmentId, {
+    status: completed ? "submitted" : "not_started"
+  });
+}
+
+/** Applies an optimistic assignment patch and returns a revision token for settlement. */
+export function beginAssignmentChange(
+  state: OptimisticCompletionState,
+  assignmentId: string,
+  patch: Partial<Assignment>
+): { state: OptimisticCompletionState; mutation: CompletionMutation } {
   const prior = state.assignments.find((assignment) => assignment.id === assignmentId);
   if (!prior) throw new Error(`Unknown assignment: ${assignmentId}`);
   const revision = (state.revisions[assignmentId] ?? 0) + 1;
@@ -141,7 +153,7 @@ export function beginCompletionChange(
     state: {
       assignments: state.assignments.map((assignment) =>
         assignment.id === assignmentId
-          ? { ...assignment, status: completed ? "submitted" : "not_started" }
+          ? { ...assignment, ...patch }
           : assignment
       ),
       revisions: { ...state.revisions, [assignmentId]: revision },

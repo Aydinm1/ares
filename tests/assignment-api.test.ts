@@ -9,7 +9,8 @@ import {
   loadAssignments,
   loadCourses,
   updateAssignmentCompletion,
-  updateAssignmentDetails
+  updateAssignmentDetails,
+  updateAssignmentVisibility
 } from "../src/app/apiClient.js";
 import { fields, tableRef } from "../src/airtable/schema.js";
 
@@ -64,7 +65,8 @@ test("completion PATCH updates only Airtable Completed and returns the assignmen
       id: "rec/one",
       title: "Essay",
       status: "submitted",
-      category: "other"
+      category: "other",
+      hiddenFromList: false
     }
   });
 });
@@ -268,6 +270,64 @@ test("assignment PATCH updates editable Airtable fields", async () => {
   });
 });
 
+test("assignment PATCH updates hidden-from-list without completing work", async () => {
+  let requestBody: unknown;
+  globalThis.fetch = async (_input, init) => {
+    requestBody = JSON.parse(String(init?.body));
+    return Response.json({
+      id: "recAssignment",
+      fields: {
+        [fields.assignments.title]: "Essay",
+        [fields.assignments.completed]: false,
+        [fields.assignments.hiddenFromList]: true
+      }
+    });
+  };
+
+  const response = await PATCH(
+    new Request("http://localhost/api/assignments/recAssignment", {
+      method: "PATCH",
+      body: JSON.stringify({ hiddenFromList: true })
+    }),
+    { params: Promise.resolve({ id: "recAssignment" }) }
+  );
+
+  assert.equal(response.status, 200);
+  assert.deepEqual(requestBody, {
+    fields: { [fields.assignments.hiddenFromList]: true }
+  });
+  assert.deepEqual(await response.json(), {
+    assignment: {
+      id: "recAssignment",
+      title: "Essay",
+      status: "not_started",
+      category: "other",
+      hiddenFromList: true
+    }
+  });
+});
+
+test("workspace API client serializes assignment visibility updates", async () => {
+  globalThis.fetch = async (input, init) => {
+    assert.equal(String(input), "/api/assignments/recAssignment");
+    assert.equal(init?.method, "PATCH");
+    assert.deepEqual(JSON.parse(String(init?.body)), {
+      hiddenFromList: false
+    });
+    return Response.json({
+      assignment: {
+        id: "recAssignment",
+        title: "Essay",
+        status: "not_started",
+        category: "other",
+        hiddenFromList: false
+      }
+    });
+  };
+
+  assert.equal((await updateAssignmentVisibility("recAssignment", false)).hiddenFromList, false);
+});
+
 test("assignment GET exposes Airtable failures as a non-2xx response", async () => {
   globalThis.fetch = async () => new Response("unavailable", { status: 503 });
 
@@ -355,7 +415,8 @@ test("workspace API client serializes assignment editor updates", async () => {
         id: "recAssignment",
         title: "Revised essay",
         status: "not_started",
-        category: "paper"
+        category: "paper",
+        hiddenFromList: false
       }
     });
   };

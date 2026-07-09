@@ -63,6 +63,7 @@ export interface Assignment {
   typeLabel?: string;
   weekLabel?: string;
   notes?: string;
+  hiddenFromList?: boolean;
   createdAt?: string;
 }
 
@@ -73,6 +74,7 @@ export interface AssignmentUpdate {
   status?: "submitted" | "not_started";
   pointsPossible?: number | null;
   weekLabel?: string | null;
+  hiddenFromList?: boolean;
 }
 
 export interface InboxItem {

@@ -58,6 +58,7 @@ const expectedSchema: ExpectedTable[] = [
       { id: "fld4rCP4y8j3ulO0Y", name: "Points Earned", type: "number" },
       { id: "fldAWln49fynQWzFv", name: "Points Possible", type: "number" },
       { id: "fldA1MTcA1wh0GLA4", name: "Completed", type: "checkbox" },
+      { id: "fldWDpMsq76I8xYq7", name: "Hidden from List", type: "checkbox" },
       {
         id: "fld33ksNpJYirqrfm",
         name: "Category Weights",

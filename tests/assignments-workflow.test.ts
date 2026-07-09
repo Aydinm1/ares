@@ -3,6 +3,7 @@ import { describe, it } from "node:test";
 import type { Assignment, Course } from "../src/domain/types.js";
 import {
   beginCompletionChange,
+  beginAssignmentChange,
   assignmentDueInputParts,
   buildAssignmentRowViewModels,
   buildMonthGrid,
@@ -95,6 +96,20 @@ describe("assignment filtering and ordering", () => {
         retainedCompletedIds: new Set(["done"])
       }).map(({ id }) => id),
       ["undated", "done", "z-title", "a-title", "other-course"]
+    );
+    assert.deepEqual(
+      filterAssignments([
+        assignment("visible"),
+        assignment("hidden", { hiddenFromList: true })
+      ], { hideHiddenFromList: true }).map(({ id }) => id),
+      ["visible"]
+    );
+    assert.deepEqual(
+      filterAssignments([
+        assignment("visible"),
+        assignment("hidden", { hiddenFromList: true })
+      ], { hideHiddenFromList: false }).map(({ id }) => id),
+      ["visible", "hidden"]
     );
   });
 
@@ -222,6 +237,19 @@ describe("optimistic completion", () => {
     const committed = commitCompletionChange(started.state, started.mutation, server);
     assert.equal(committed.assignments[0], server);
     assert.equal(committed.pending.a, undefined);
+  });
+
+  it("applies and rolls back hidden-from-list changes", () => {
+    const original = assignment("a");
+    const started = beginAssignmentChange(
+      createOptimisticCompletionState([original]),
+      "a",
+      { hiddenFromList: true }
+    );
+    assert.equal(started.state.assignments[0]?.hiddenFromList, true);
+
+    const rolledBack = rollbackCompletionChange(started.state, started.mutation);
+    assert.equal(rolledBack.assignments[0], original);
   });
 
   it("rolls back to the exact prior object", () => {

@@ -15,6 +15,7 @@ export interface AssignmentEditorUpdate {
   dueTime?: string | null;
   pointsPossible?: number | null;
   weekLabel?: string | null;
+  hiddenFromList?: boolean;
 }
 
 export interface LoadOptions {
@@ -110,6 +111,21 @@ export async function updateAssignmentCompletion(
       body: JSON.stringify({
         status: completed ? "submitted" : "not_started"
       })
+    }
+  );
+  return response.assignment;
+}
+
+export async function updateAssignmentVisibility(
+  id: string,
+  hiddenFromList: boolean
+): Promise<Assignment> {
+  const response = await fetchJson<{ assignment: Assignment }>(
+    `/api/assignments/${encodeURIComponent(id)}`,
+    {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ hiddenFromList })
     }
   );
   return response.assignment;
