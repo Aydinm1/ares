@@ -65,9 +65,9 @@
 
 .brandName {
   overflow: hidden;
-  font-size: 18px;
-  font-weight: 500;
-  letter-spacing: 0.22em;
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -628,6 +628,11 @@
 }
 
 .assignmentRow[data-completed="true"] {
+  color: var(--assignment-muted);
+  background: #fafbfc;
+}
+
+.assignmentRow[data-completed="true"]:hover {
   color: var(--assignment-muted);
   background: #fafbfc;
 }
