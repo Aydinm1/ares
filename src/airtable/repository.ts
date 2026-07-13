@@ -129,22 +129,33 @@ export class SchoolRepository {
     habitQuery.set("filterByFormula", `{${fields.habits.status}}="Active"`);
     habitQuery.set("sort[0][field]", fields.habits.createdAt);
     habitQuery.set("sort[0][direction]", "asc");
-    const checkInQuery = new URLSearchParams();
-    checkInQuery.set(
-      "filterByFormula",
-      `AND({${fields.habitCheckIns.date}}>="${weekStart}",{${fields.habitCheckIns.date}}<="${weekEnd}")`
-    );
-    const [habitRecords, checkInRecords] = await Promise.all([
+    const [habitRecords, allCheckInRecords] = await Promise.all([
       this.client.list<Record<string, unknown>>(tableRef("habits"), habitQuery),
-      this.client.list<Record<string, unknown>>(tableRef("habitCheckIns"), checkInQuery)
+      this.client.list<Record<string, unknown>>(tableRef("habitCheckIns"))
     ]);
     const habits = habitRecords
       .map(mapHabit)
       .filter((habit) => habit.createdAt.slice(0, 10) <= weekEnd);
     const habitIds = new Set(habits.map((habit) => habit.id));
+    const allCheckIns = allCheckInRecords
+      .map(mapHabitCheckIn)
+      .filter((item) => habitIds.has(item.habitId));
+    const totalKeys = new Set<string>();
+    const totalCounts = new Map<string, number>();
+    for (const checkIn of allCheckIns) {
+      const key = `${checkIn.habitId}:${checkIn.date}`;
+      if (totalKeys.has(key)) continue;
+      totalKeys.add(key);
+      totalCounts.set(checkIn.habitId, (totalCounts.get(checkIn.habitId) ?? 0) + 1);
+    }
+    const totals = habits.map((habit) => ({
+      habitId: habit.id,
+      completedSessions: totalCounts.get(habit.id) ?? 0
+    }));
     return {
       habits,
-      checkIns: checkInRecords.map(mapHabitCheckIn).filter((item) => habitIds.has(item.habitId)),
+      checkIns: allCheckIns.filter((item) => item.date >= weekStart && item.date <= weekEnd),
+      totals,
       weekStart,
       weekEnd
     };

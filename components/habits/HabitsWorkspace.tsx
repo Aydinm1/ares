@@ -51,6 +51,21 @@ const icons = {
   courses: <GraduationCap size={19} strokeWidth={2} />,
 };
 
+function formatSessionTotal(total: number): string {
+  return `${total} ${total === 1 ? "session" : "sessions"} completed`;
+}
+
+function adjustHabitTotal(week: HabitWeek, habitId: string, delta: number): HabitWeek {
+  const found = week.totals.some((total) => total.habitId === habitId);
+  const totals = found
+    ? week.totals.map((total) => total.habitId === habitId
+        ? { ...total, completedSessions: Math.max(0, total.completedSessions + delta) }
+        : total
+      )
+    : [...week.totals, { habitId, completedSessions: Math.max(0, delta) }];
+  return { ...week, totals };
+}
+
 type HabitDialogState =
   | { mode: "create" }
   | { mode: "edit"; habit: Habit }
@@ -64,6 +79,7 @@ export function HabitsWorkspace() {
   const [week, setWeek] = useState<HabitWeek>({
     habits: [],
     checkIns: [],
+    totals: [],
     weekStart,
     weekEnd: addDaysToDateKey(weekStart, 6),
   });
@@ -122,18 +138,22 @@ export function HabitsWorkspace() {
     () => new Set(week.checkIns.map((item) => `${item.habitId}:${item.date}`)),
     [week.checkIns],
   );
+  const totalsByHabit = useMemo(
+    () => new Map(week.totals.map((total) => [total.habitId, total.completedSessions])),
+    [week.totals],
+  );
 
   const toggleDay = async (habit: Habit, date: string) => {
     const cellKey = `${habit.id}:${date}`;
     if (date > todayKey || pendingCells.has(cellKey)) return;
     const wasCompleted = completedKeys.has(cellKey);
     const targetCompleted = !wasCompleted;
-    const previousCheckIns = week.checkIns;
+    const previousWeek = week;
     const requestedWeek = weekStart;
 
     setActionError(undefined);
     setPendingCells((current) => new Set(current).add(cellKey));
-    setWeek((current) => ({
+    setWeek((current) => adjustHabitTotal({
       ...current,
       checkIns: targetCompleted
         ? [
@@ -148,7 +168,7 @@ export function HabitsWorkspace() {
         : current.checkIns.filter(
             (item) => !(item.habitId === habit.id && item.date === date),
           ),
-    }));
+    }, habit.id, targetCompleted ? 1 : -1));
 
     try {
       const checkIn = await setHabitCheckIn(habit.id, date, targetCompleted);
@@ -162,7 +182,7 @@ export function HabitsWorkspace() {
       }
     } catch (error) {
       if (activeWeekStart.current === requestedWeek) {
-        setWeek((current) => ({ ...current, checkIns: previousCheckIns }));
+        setWeek(previousWeek);
         setActionError(
           error instanceof Error ? error.message : "The habit update could not be saved.",
         );
@@ -186,7 +206,11 @@ export function HabitsWorkspace() {
     } else {
       const saved = await createHabit(name, targetDaysPerWeek);
       if (saved.createdAt.slice(0, 10) <= week.weekEnd) {
-        setWeek((current) => ({ ...current, habits: [...current.habits, saved] }));
+        setWeek((current) => ({
+          ...current,
+          habits: [...current.habits, saved],
+          totals: [...current.totals, { habitId: saved.id, completedSessions: 0 }],
+        }));
       }
     }
     setDialog(undefined);
@@ -200,6 +224,7 @@ export function HabitsWorkspace() {
         ...current,
         habits: current.habits.filter((habit) => habit.id !== archiveTarget.id),
         checkIns: current.checkIns.filter((item) => item.habitId !== archiveTarget.id),
+        totals: current.totals.filter((total) => total.habitId !== archiveTarget.id),
       }));
       setArchiveTarget(undefined);
     } catch (error) {
@@ -296,6 +321,7 @@ export function HabitsWorkspace() {
         ) : null}
         {!loading && !loadError ? week.habits.map((habit) => {
           const completed = week.checkIns.filter((item) => item.habitId === habit.id).length;
+          const sessionTotal = totalsByHabit.get(habit.id) ?? 0;
           return (
             <article className={styles.habitRow} key={habit.id}>
               <div className={styles.habitInfo}>
@@ -303,6 +329,7 @@ export function HabitsWorkspace() {
                 <div>
                   <strong>{completed} of {habit.targetDaysPerWeek}</strong>
                   <span>Target {habit.targetDaysPerWeek} days/week</span>
+                  <span>{formatSessionTotal(sessionTotal)}</span>
                 </div>
               </div>
               <div className={styles.dayGrid}>

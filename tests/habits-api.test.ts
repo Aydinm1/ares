@@ -27,7 +27,7 @@ test.after(() => {
   else process.env.AIRTABLE_API_KEY = originalApiKey;
 });
 
-test("Habit week GET requests active habits and bounded check-ins", async () => {
+test("Habit week GET returns active habits, weekly check-ins, and all-time totals", async () => {
   globalThis.fetch = async (input, init) => {
     const url = new URL(String(input));
     assert.equal(init?.method, "GET");
@@ -43,22 +43,55 @@ test("Habit week GET requests active habits and bounded check-ins", async () => 
         }
       }] });
     }
-    assert.match(url.searchParams.get("filterByFormula") ?? "", /2026-06-29/);
-    assert.match(url.searchParams.get("filterByFormula") ?? "", /2026-07-05/);
-    return Response.json({ records: [{
-      id: "recCheck",
-      fields: {
-        [fields.habitCheckIns.habit]: ["recHabit"],
-        [fields.habitCheckIns.date]: "2026-07-01",
-        [fields.habitCheckIns.createdAt]: "2026-07-01T12:00:00.000Z"
+    assert.ok(url.pathname.endsWith(`/${tableRef("habitCheckIns")}`));
+    assert.equal(url.searchParams.get("filterByFormula"), null);
+    return Response.json({ records: [
+      {
+        id: "recCheck",
+        fields: {
+          [fields.habitCheckIns.habit]: ["recHabit"],
+          [fields.habitCheckIns.date]: "2026-07-01",
+          [fields.habitCheckIns.createdAt]: "2026-07-01T12:00:00.000Z"
+        }
+      },
+      {
+        id: "recOlder",
+        fields: {
+          [fields.habitCheckIns.habit]: ["recHabit"],
+          [fields.habitCheckIns.date]: "2026-06-20",
+          [fields.habitCheckIns.createdAt]: "2026-06-20T12:00:00.000Z"
+        }
+      },
+      {
+        id: "recDuplicateOlder",
+        fields: {
+          [fields.habitCheckIns.habit]: ["recHabit"],
+          [fields.habitCheckIns.date]: "2026-06-20",
+          [fields.habitCheckIns.createdAt]: "2026-06-20T13:00:00.000Z"
+        }
+      },
+      {
+        id: "recOtherHabit",
+        fields: {
+          [fields.habitCheckIns.habit]: ["recOther"],
+          [fields.habitCheckIns.date]: "2026-07-01",
+          [fields.habitCheckIns.createdAt]: "2026-07-01T12:00:00.000Z"
+        }
       }
-    }] });
+    ] });
   };
   const response = await GET(new Request("http://localhost/api/habits?weekStart=2026-06-29"));
   assert.equal(response.status, 200);
-  const body = await response.json() as { week: { habits: unknown[]; checkIns: unknown[] } };
+  const body = await response.json() as {
+    week: {
+      habits: unknown[];
+      checkIns: unknown[];
+      totals: Array<{ habitId: string; completedSessions: number }>;
+    };
+  };
   assert.equal(body.week.habits.length, 1);
   assert.equal(body.week.checkIns.length, 1);
+  assert.deepEqual(body.week.totals, [{ habitId: "recHabit", completedSessions: 2 }]);
 });
 
 test("Habit create and update serialize strict fields", async () => {
@@ -120,7 +153,7 @@ test("Habit API client serializes week, definition, and check-in operations", as
     });
     if (String(input).startsWith("/api/habits?")) {
       return Response.json({ week: {
-        habits: [], checkIns: [], weekStart: "2026-06-29", weekEnd: "2026-07-05"
+        habits: [], checkIns: [], totals: [], weekStart: "2026-06-29", weekEnd: "2026-07-05"
       } });
     }
     if (init?.method === "PUT") {

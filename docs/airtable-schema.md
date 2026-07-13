@@ -38,6 +38,10 @@ PUT   /api/habits/:id/check-ins/:date
 DELETE /api/habits/:id/check-ins/:date
 ```
 
+`GET /api/habits` returns the visible week plus per-habit all-time totals in
+`week.totals[]`, where `completedSessions` counts distinct dated Habit
+Check-ins for that habit.
+
 The PATCH operation accepts a strict partial update for Assignment Name,
 Courses, Due Date, Points Possible, Week, Completed, or Hidden from List.
 Completion maps checked to domain status `submitted` and unchecked to

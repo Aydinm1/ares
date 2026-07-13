@@ -101,9 +101,15 @@ export interface HabitCheckIn {
   createdAt: string;
 }
 
+export interface HabitTotal {
+  habitId: AirtableRecordId;
+  completedSessions: number;
+}
+
 export interface HabitWeek {
   habits: Habit[];
   checkIns: HabitCheckIn[];
+  totals: HabitTotal[];
   weekStart: string;
   weekEnd: string;
 }
