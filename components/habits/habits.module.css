@@ -186,7 +186,7 @@
   display: flex;
   align-items: baseline;
   flex-wrap: wrap;
-  gap: 14px;
+  gap: 7px 10px;
   margin-top: 7px;
 }
 
@@ -198,6 +198,19 @@
 .habitInfo span {
   color: var(--assignment-muted);
   font-size: 11px;
+}
+
+.sessionTotal {
+  display: inline-flex;
+  min-height: 22px;
+  align-items: center;
+  padding: 0 8px;
+  border: 1px solid rgb(22 132 71 / 22%);
+  border-radius: 999px;
+  color: var(--assignment-success) !important;
+  background: #eef8f2;
+  font-weight: 700;
+  white-space: nowrap;
 }
 
 .dayGrid {
@@ -634,9 +647,15 @@
   }
 
   .habitInfo > div {
-    display: grid;
-    gap: 3px;
+    display: flex;
+    gap: 5px 8px;
     margin-top: 5px;
+  }
+
+  .sessionTotal {
+    min-height: 20px;
+    padding-inline: 7px;
+    font-size: 10px;
   }
 
   .dayGrid {

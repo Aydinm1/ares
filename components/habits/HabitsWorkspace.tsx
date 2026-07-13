@@ -52,7 +52,7 @@ const icons = {
 };
 
 function formatSessionTotal(total: number): string {
-  return `${total} ${total === 1 ? "session" : "sessions"} completed`;
+  return `${total} ${total === 1 ? "session" : "sessions"}`;
 }
 
 function adjustHabitTotal(week: HabitWeek, habitId: string, delta: number): HabitWeek {
@@ -329,7 +329,7 @@ export function HabitsWorkspace() {
                 <div>
                   <strong>{completed} of {habit.targetDaysPerWeek}</strong>
                   <span>Target {habit.targetDaysPerWeek} days/week</span>
-                  <span>{formatSessionTotal(sessionTotal)}</span>
+                  <span className={styles.sessionTotal}>{formatSessionTotal(sessionTotal)}</span>
                 </div>
               </div>
               <div className={styles.dayGrid}>
