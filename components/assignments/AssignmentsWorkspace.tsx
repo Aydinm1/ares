@@ -29,6 +29,7 @@ import {
   WorkspaceHeader,
   WorkspaceNotice,
   type AssignmentCalendarDay,
+  type AssignmentCompletionFeedback,
   type AssignmentListItem,
   type AssignmentMobileView,
   type AssignmentSyncState,
@@ -89,10 +90,21 @@ const icons: AssignmentUiIcons = {
 };
 
 const EMPTY_STATE = createOptimisticCompletionState([]);
+const COMPLETION_CONFIRM_MS = 1500;
+const COMPLETION_EXIT_MS = 220;
+
+type CompletionFeedbackTimers = {
+  confirm?: ReturnType<typeof setTimeout>;
+  exit?: ReturnType<typeof setTimeout>;
+};
 
 export function AssignmentsWorkspace() {
   const [completionState, setCompletionState] = useState<OptimisticCompletionState>(EMPTY_STATE);
   const completionStateRef = useRef(completionState);
+  const [completionFeedbackById, setCompletionFeedbackById] = useState<
+    Record<string, AssignmentCompletionFeedback | undefined>
+  >({});
+  const completionFeedbackTimers = useRef(new Map<string, CompletionFeedbackTimers>());
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
   const [syncState, setSyncState] = useState<AssignmentSyncState>("syncing");
@@ -118,6 +130,45 @@ export function AssignmentsWorkspace() {
     setCompletionState(next);
   }, []);
 
+  const clearCompletionFeedback = useCallback((assignmentId: string) => {
+    const timers = completionFeedbackTimers.current.get(assignmentId);
+    if (timers?.confirm) clearTimeout(timers.confirm);
+    if (timers?.exit) clearTimeout(timers.exit);
+    completionFeedbackTimers.current.delete(assignmentId);
+    setCompletionFeedbackById((current) => {
+      if (current[assignmentId] === undefined) return current;
+      const next = { ...current };
+      delete next[assignmentId];
+      return next;
+    });
+  }, []);
+
+  const clearAllCompletionFeedback = useCallback(() => {
+    for (const timers of completionFeedbackTimers.current.values()) {
+      if (timers.confirm) clearTimeout(timers.confirm);
+      if (timers.exit) clearTimeout(timers.exit);
+    }
+    completionFeedbackTimers.current.clear();
+    setCompletionFeedbackById({});
+  }, []);
+
+  const startCompletionFeedback = useCallback((assignmentId: string) => {
+    clearCompletionFeedback(assignmentId);
+    setCompletionFeedbackById((current) => ({ ...current, [assignmentId]: "confirmed" }));
+
+    const confirm = setTimeout(() => {
+      setCompletionFeedbackById((current) => {
+        if (current[assignmentId] !== "confirmed") return current;
+        return { ...current, [assignmentId]: "exiting" };
+      });
+
+      const exit = setTimeout(() => clearCompletionFeedback(assignmentId), COMPLETION_EXIT_MS);
+      completionFeedbackTimers.current.set(assignmentId, { exit });
+    }, COMPLETION_CONFIRM_MS);
+
+    completionFeedbackTimers.current.set(assignmentId, { confirm });
+  }, [clearCompletionFeedback]);
+
   const loadWorkspace = useCallback(async (options: { refresh?: boolean } = {}) => {
     setSyncState("syncing");
     if (!hasLoadedRef.current) setLoadError(undefined);
@@ -126,6 +177,7 @@ export function AssignmentsWorkspace() {
         loadAssignments(options),
         loadCourses(options),
       ]);
+      clearAllCompletionFeedback();
       replaceCompletionState(createOptimisticCompletionState(assignments));
       setCourses(nextCourses);
       hasLoadedRef.current = true;
@@ -145,7 +197,9 @@ export function AssignmentsWorkspace() {
     } finally {
       setLoading(false);
     }
-  }, [replaceCompletionState]);
+  }, [clearAllCompletionFeedback, replaceCompletionState]);
+
+  useEffect(() => () => clearAllCompletionFeedback(), [clearAllCompletionFeedback]);
 
   useEffect(() => {
     void loadWorkspace();
@@ -192,8 +246,13 @@ export function AssignmentsWorkspace() {
   }, [refreshLocalDate]);
 
   const retainedCompletedIds = useMemo(
-    () => new Set<string>(),
-    [],
+    () =>
+      new Set(
+        Object.entries(completionFeedbackById)
+          .filter(([, feedback]) => feedback !== undefined)
+          .map(([assignmentId]) => assignmentId),
+      ),
+    [completionFeedbackById],
   );
   const inProgressCourseIds = useMemo(
     () =>
@@ -257,8 +316,9 @@ export function AssignmentsWorkspace() {
         visibleListAssignments,
         courses,
         today,
+        completionFeedbackById,
       ),
-    [courses, today, visibleListAssignments],
+    [completionFeedbackById, courses, today, visibleListAssignments],
   );
   const calendarItems = useMemo(
     () =>
@@ -266,8 +326,9 @@ export function AssignmentsWorkspace() {
         visibleCalendarAssignments,
         courses,
         today,
+        completionFeedbackById,
       ),
-    [courses, today, visibleCalendarAssignments],
+    [completionFeedbackById, courses, today, visibleCalendarAssignments],
   );
   const calendarItemById = useMemo(
     () => new Map(calendarItems.map((item) => [item.id, item])),
@@ -302,6 +363,8 @@ export function AssignmentsWorkspace() {
   const handleCompletionChange = useCallback(
     async (assignmentId: string, completed: boolean) => {
       setMutationError(undefined);
+      const shouldShowFeedback = completed && hideCompleted;
+      clearCompletionFeedback(assignmentId);
       let change;
       try {
         change = beginCompletionChange(completionStateRef.current, assignmentId, completed);
@@ -311,6 +374,7 @@ export function AssignmentsWorkspace() {
       }
 
       replaceCompletionState(change.state);
+      if (shouldShowFeedback) startCompletionFeedback(assignmentId);
       try {
         const serverAssignment = await updateAssignmentCompletion(assignmentId, completed);
         replaceCompletionState(
@@ -321,6 +385,7 @@ export function AssignmentsWorkspace() {
         setSyncClock(syncedAt);
         setSyncState("synced");
       } catch (error) {
+        clearCompletionFeedback(assignmentId);
         replaceCompletionState(rollbackCompletionChange(completionStateRef.current, change.mutation));
         setMutationError(
           error instanceof Error
@@ -329,7 +394,7 @@ export function AssignmentsWorkspace() {
         );
       }
     },
-    [replaceCompletionState],
+    [clearCompletionFeedback, hideCompleted, replaceCompletionState, startCompletionFeedback],
   );
 
   const handleHiddenChange = useCallback(
@@ -531,6 +596,7 @@ function toListItems(
   assignments: readonly Assignment[],
   courses: readonly Course[],
   now: Date,
+  completionFeedbackById: Readonly<Record<string, AssignmentCompletionFeedback | undefined>>,
 ): AssignmentListItem[] {
   return buildAssignmentRowViewModels(assignments, courses, now).map((viewModel) => ({
     id: viewModel.assignment.id,
@@ -543,6 +609,7 @@ function toListItems(
     completed: viewModel.completed,
     hiddenFromList: viewModel.assignment.hiddenFromList,
     saving: false,
+    completionFeedback: completionFeedbackById[viewModel.assignment.id],
   }));
 }
 
