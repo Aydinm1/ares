@@ -1,6 +1,11 @@
 import type {
   Assignment,
   AssignmentUpdate,
+  Competency,
+  CompetencyFocus,
+  CompetencyFocusUpdate,
+  CompetencyOverview,
+  CompetencyUpdate,
   Course,
   Habit,
   HabitCheckIn,
@@ -11,11 +16,17 @@ import type {
 import { AirtableClient } from "./client.js";
 import {
   assignmentUpdateToAirtable,
+  competencyFocusToAirtable,
+  competencyFocusUpdateToAirtable,
+  competencyToAirtable,
+  competencyUpdateToAirtable,
   habitCheckInToAirtable,
   habitToAirtable,
   habitUpdateToAirtable,
   inboxItemToAirtable,
   mapAssignment,
+  mapCompetency,
+  mapCompetencyFocus,
   mapCourse,
   mapGeneralEducationRequirement,
   mapGradeCategory,
@@ -27,6 +38,7 @@ import { fields, tableRef } from "./schema.js";
 
 const READ_CACHE_TTL_MS = 30_000;
 const HABIT_ORDER_STEP = 1000;
+const COMPETENCY_ORDER_STEP = 1000;
 
 interface CacheEntry<T> {
   expiresAt: number;
@@ -123,6 +135,110 @@ export class SchoolRepository {
 
   async deleteInboxItem(recordId: string): Promise<void> {
     await this.client.delete(tableRef("inboxItems"), recordId);
+  }
+
+  async listCompetencyOverview(): Promise<CompetencyOverview[]> {
+    const competencyQuery = new URLSearchParams();
+    competencyQuery.set("filterByFormula", `{${fields.competencies.status}}!="Archived"`);
+    const [competencyRecords, focusRecords] = await Promise.all([
+      this.client.list<Record<string, unknown>>(tableRef("competencies"), competencyQuery),
+      this.client.list<Record<string, unknown>>(tableRef("competencyFocuses"))
+    ]);
+    const competencies = competencyRecords.map(mapCompetency).sort(compareCompetencies);
+    const competencyIds = new Set(competencies.map((competency) => competency.id));
+    const focuses = focusRecords
+      .map(mapCompetencyFocus)
+      .filter((focus) => competencyIds.has(focus.competencyId));
+    const focusesByCompetency = new Map<string, CompetencyFocus[]>();
+    for (const focus of focuses) {
+      const current = focusesByCompetency.get(focus.competencyId) ?? [];
+      current.push(focus);
+      focusesByCompetency.set(focus.competencyId, current);
+    }
+
+    return competencies.map((competency) => {
+      const competencyFocuses = focusesByCompetency.get(competency.id) ?? [];
+      const currentFocus = competencyFocuses
+        .filter((focus) => !focus.endedAt)
+        .sort((a, b) => b.startedAt.localeCompare(a.startedAt))[0];
+      const historicalFocuses = competencyFocuses
+        .filter((focus) => focus.endedAt)
+        .sort((a, b) => b.startedAt.localeCompare(a.startedAt));
+      return { competency, currentFocus, historicalFocuses };
+    });
+  }
+
+  async createCompetency(
+    name: string,
+    category?: string,
+    vision?: string,
+    description?: string
+  ): Promise<Competency> {
+    const createdAt = new Date().toISOString();
+    const record = await this.client.create<Record<string, unknown>>(
+      tableRef("competencies"),
+      competencyToAirtable(name, category, vision, description, createdAt, Date.parse(createdAt))
+    );
+    return mapCompetency(record);
+  }
+
+  async updateCompetency(recordId: string, update: CompetencyUpdate): Promise<Competency> {
+    const record = await this.client.update<Record<string, unknown>>(
+      tableRef("competencies"),
+      recordId,
+      competencyUpdateToAirtable(update)
+    );
+    return mapCompetency(record);
+  }
+
+  async reorderCompetencies(competencyIds: string[]): Promise<void> {
+    await Promise.all(
+      competencyIds.map((competencyId, index) =>
+        this.client.update<Record<string, unknown>>(tableRef("competencies"), competencyId, {
+          [fields.competencies.sortOrder]: (index + 1) * COMPETENCY_ORDER_STEP
+        })
+      )
+    );
+  }
+
+  async createCompetencyFocus(
+    competencyId: string,
+    title: string,
+    startedAt: string,
+    notes?: string
+  ): Promise<CompetencyFocus> {
+    const focusRecords = await this.client.list<Record<string, unknown>>(
+      tableRef("competencyFocuses")
+    );
+    const openFocuses = focusRecords
+      .map(mapCompetencyFocus)
+      .filter((focus) => focus.competencyId === competencyId && !focus.endedAt);
+    await Promise.all(
+      openFocuses.map((focus) =>
+        this.client.update<Record<string, unknown>>(tableRef("competencyFocuses"), focus.id, {
+          [fields.competencyFocuses.endedAt]: startedAt
+        })
+      )
+    );
+
+    const createdAt = new Date().toISOString();
+    const record = await this.client.create<Record<string, unknown>>(
+      tableRef("competencyFocuses"),
+      competencyFocusToAirtable(competencyId, title, startedAt, notes, createdAt)
+    );
+    return mapCompetencyFocus(record);
+  }
+
+  async updateCompetencyFocus(
+    recordId: string,
+    update: CompetencyFocusUpdate
+  ): Promise<CompetencyFocus> {
+    const record = await this.client.update<Record<string, unknown>>(
+      tableRef("competencyFocuses"),
+      recordId,
+      competencyFocusUpdateToAirtable(update)
+    );
+    return mapCompetencyFocus(record);
   }
 
   async listHabitWeek(weekStart: string, weekEnd: string): Promise<HabitWeek> {
@@ -242,6 +358,27 @@ function compareHabitsByOrder(a: Habit, b: Habit): number {
   const orderDiff = habitOrderValue(a) - habitOrderValue(b);
   if (orderDiff !== 0) return orderDiff;
   return a.createdAt.localeCompare(b.createdAt);
+}
+
+function compareCompetencies(a: Competency, b: Competency): number {
+  const statusDiff = competencyStatusRank(a.status) - competencyStatusRank(b.status);
+  if (statusDiff !== 0) return statusDiff;
+  const orderDiff = competencyOrderValue(a) - competencyOrderValue(b);
+  if (orderDiff !== 0) return orderDiff;
+  return a.name.localeCompare(b.name);
+}
+
+function competencyStatusRank(status: Competency["status"]): number {
+  if (status === "current") return 0;
+  if (status === "dormant") return 1;
+  if (status === "someday") return 2;
+  return 3;
+}
+
+function competencyOrderValue(competency: Competency): number {
+  if (competency.sortOrder !== undefined) return competency.sortOrder;
+  const createdTime = Date.parse(competency.createdAt);
+  return Number.isFinite(createdTime) ? createdTime : Number.MAX_SAFE_INTEGER;
 }
 
 function habitOrderValue(habit: Habit): number {

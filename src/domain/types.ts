@@ -121,3 +121,50 @@ export interface HabitUpdate {
   status?: HabitStatus;
   sortOrder?: number;
 }
+
+export type CompetencyStatus = "current" | "dormant" | "someday" | "archived";
+
+export interface Competency {
+  id: AirtableRecordId;
+  name: string;
+  category?: string;
+  status: CompetencyStatus;
+  vision?: string;
+  description?: string;
+  sortOrder?: number;
+  createdAt: string;
+}
+
+export interface CompetencyFocus {
+  id: AirtableRecordId;
+  competencyId: AirtableRecordId;
+  title: string;
+  startedAt: string;
+  endedAt?: string;
+  notes?: string;
+  endReason?: string;
+  createdAt: string;
+}
+
+export interface CompetencyOverview {
+  competency: Competency;
+  currentFocus?: CompetencyFocus;
+  historicalFocuses: CompetencyFocus[];
+}
+
+export interface CompetencyUpdate {
+  name?: string;
+  category?: string | null;
+  status?: CompetencyStatus;
+  vision?: string | null;
+  description?: string | null;
+  sortOrder?: number;
+}
+
+export interface CompetencyFocusUpdate {
+  title?: string;
+  startedAt?: string;
+  endedAt?: string;
+  notes?: string | null;
+  endReason?: string | null;
+}

@@ -3,6 +3,11 @@ import assert from "node:assert/strict";
 import {
   validateAssignmentCompletionWrite,
   validateAssignmentWrite,
+  validateCompetencyCreate,
+  validateCompetencyFocusCreate,
+  validateCompetencyFocusUpdate,
+  validateCompetencyOrder,
+  validateCompetencyUpdate,
   validateHabitCreate,
   validateHabitCheckInDate,
   validateHabitDate,
@@ -94,6 +99,55 @@ test("validates habit definitions and week dates", () => {
     ValidationError
   );
   assert.throws(() => validateHabitWeekStart("2026-07-01"), ValidationError);
+});
+
+test("validates competencies and focus timelines", () => {
+  assert.deepEqual(validateCompetencyCreate({
+    name: "  Piano  ",
+    category: "Creative",
+    vision: "Play expressively."
+  }), {
+    name: "Piano",
+    category: "Creative",
+    vision: "Play expressively.",
+    description: undefined
+  });
+  assert.deepEqual(validateCompetencyUpdate({ status: "dormant", vision: null }), {
+    status: "dormant",
+    vision: null
+  });
+  assert.deepEqual(validateCompetencyOrder({
+    competencyIds: ["recSkill000000000", "recOther000000000"]
+  }), ["recSkill000000000", "recOther000000000"]);
+  assert.deepEqual(validateCompetencyFocusCreate({
+    title: "  Chord Vocabulary  ",
+    startedAt: "2026-07-13",
+    notes: "ii-V-I"
+  }), {
+    title: "Chord Vocabulary",
+    startedAt: "2026-07-13",
+    notes: "ii-V-I"
+  });
+  assert.deepEqual(validateCompetencyFocusUpdate({
+    endedAt: "2026-09-18",
+    endReason: "Ready to shift."
+  }), {
+    endedAt: "2026-09-18",
+    endReason: "Ready to shift."
+  });
+  for (const value of [
+    {},
+    { name: "", category: "Creative" },
+    { name: "Piano", status: "current" },
+    { name: "Piano", sortOrder: 1000 }
+  ]) {
+    assert.throws(() => validateCompetencyCreate(value), ValidationError);
+  }
+  assert.throws(() => validateCompetencyUpdate({ status: "active" }), ValidationError);
+  assert.throws(() => validateCompetencyOrder({ competencyIds: ["bad"] }), ValidationError);
+  assert.throws(() => validateCompetencyFocusCreate({ title: "Piano", startedAt: "2026-02-30" }), ValidationError);
+  assert.throws(() => validateCompetencyFocusCreate({ title: "Piano", startedAt: "2026-07-13", endedAt: "2026-07-14" }), ValidationError);
+  assert.throws(() => validateCompetencyFocusUpdate({ startedAt: "2026-09-18", endedAt: "2026-07-13" }), ValidationError);
 });
 
 test("validates and normalizes editable assignment fields", () => {

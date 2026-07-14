@@ -3,6 +3,11 @@ import type {
   AssignmentUpdate,
   AssignmentCategory,
   AssignmentStatus,
+  Competency,
+  CompetencyFocus,
+  CompetencyFocusUpdate,
+  CompetencyStatus,
+  CompetencyUpdate,
   Course,
   CourseStatus,
   GeneralEducationRequirement,
@@ -182,6 +187,108 @@ export function habitCheckInToAirtable(
     [fields.habitCheckIns.date]: date,
     [fields.habitCheckIns.createdAt]: createdAt
   };
+}
+
+function competencyStatusFromAirtable(value: unknown): CompetencyStatus {
+  if (value === "Dormant") return "dormant";
+  if (value === "Someday") return "someday";
+  if (value === "Archived") return "archived";
+  return "current";
+}
+
+function competencyStatusToAirtable(status: CompetencyStatus): string {
+  if (status === "dormant") return "Dormant";
+  if (status === "someday") return "Someday";
+  if (status === "archived") return "Archived";
+  return "Current";
+}
+
+export function mapCompetency(record: AirtableRecord<AnyFields>): Competency {
+  return {
+    id: record.id,
+    name: stringValue(record.fields[fields.competencies.name])?.trim() || "Untitled competency",
+    category: stringValue(record.fields[fields.competencies.category]),
+    status: competencyStatusFromAirtable(record.fields[fields.competencies.status]),
+    vision: stringValue(record.fields[fields.competencies.vision]),
+    description: stringValue(record.fields[fields.competencies.description]),
+    sortOrder: numberValue(record.fields[fields.competencies.sortOrder]),
+    createdAt:
+      stringValue(record.fields[fields.competencies.createdAt]) ??
+      record.createdTime ??
+      new Date(0).toISOString()
+  };
+}
+
+export function competencyToAirtable(
+  name: string,
+  category: string | undefined,
+  vision: string | undefined,
+  description: string | undefined,
+  createdAt: string,
+  sortOrder: number
+): AnyFields {
+  return {
+    [fields.competencies.name]: name,
+    [fields.competencies.category]: category ?? null,
+    [fields.competencies.status]: "Current",
+    [fields.competencies.vision]: vision ?? null,
+    [fields.competencies.description]: description ?? null,
+    [fields.competencies.sortOrder]: sortOrder,
+    [fields.competencies.createdAt]: createdAt
+  };
+}
+
+export function competencyUpdateToAirtable(update: CompetencyUpdate): AnyFields {
+  const result: AnyFields = {};
+  if (update.name !== undefined) result[fields.competencies.name] = update.name;
+  if (update.category !== undefined) result[fields.competencies.category] = update.category;
+  if (update.status !== undefined) result[fields.competencies.status] = competencyStatusToAirtable(update.status);
+  if (update.vision !== undefined) result[fields.competencies.vision] = update.vision;
+  if (update.description !== undefined) result[fields.competencies.description] = update.description;
+  if (update.sortOrder !== undefined) result[fields.competencies.sortOrder] = update.sortOrder;
+  return result;
+}
+
+export function mapCompetencyFocus(record: AirtableRecord<AnyFields>): CompetencyFocus {
+  return {
+    id: record.id,
+    competencyId: firstLinkedId(record.fields[fields.competencyFocuses.competency]) ?? "",
+    title: stringValue(record.fields[fields.competencyFocuses.title])?.trim() || "Untitled focus",
+    startedAt: stringValue(record.fields[fields.competencyFocuses.startedAt]) ?? "",
+    endedAt: stringValue(record.fields[fields.competencyFocuses.endedAt]),
+    notes: stringValue(record.fields[fields.competencyFocuses.notes]),
+    endReason: stringValue(record.fields[fields.competencyFocuses.endReason]),
+    createdAt:
+      stringValue(record.fields[fields.competencyFocuses.createdAt]) ??
+      record.createdTime ??
+      new Date(0).toISOString()
+  };
+}
+
+export function competencyFocusToAirtable(
+  competencyId: string,
+  title: string,
+  startedAt: string,
+  notes: string | undefined,
+  createdAt: string
+): AnyFields {
+  return {
+    [fields.competencyFocuses.competency]: [competencyId],
+    [fields.competencyFocuses.title]: title,
+    [fields.competencyFocuses.startedAt]: startedAt,
+    [fields.competencyFocuses.notes]: notes ?? null,
+    [fields.competencyFocuses.createdAt]: createdAt
+  };
+}
+
+export function competencyFocusUpdateToAirtable(update: CompetencyFocusUpdate): AnyFields {
+  const result: AnyFields = {};
+  if (update.title !== undefined) result[fields.competencyFocuses.title] = update.title;
+  if (update.startedAt !== undefined) result[fields.competencyFocuses.startedAt] = update.startedAt;
+  if (update.endedAt !== undefined) result[fields.competencyFocuses.endedAt] = update.endedAt;
+  if (update.notes !== undefined) result[fields.competencyFocuses.notes] = update.notes;
+  if (update.endReason !== undefined) result[fields.competencyFocuses.endReason] = update.endReason;
+  return result;
 }
 
 export function assignmentCompletionToAirtable(

@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   CalendarDays,
+  Compass,
   ChevronLeft,
   ChevronRight,
   CircleAlert,
@@ -74,6 +75,7 @@ const icons: AssignmentUiIcons = {
   courses: <GraduationCap size={19} strokeWidth={2} />,
   intake: <Inbox size={19} strokeWidth={2} />,
   habits: <CircleCheckBig size={19} strokeWidth={2} />,
+  competencies: <Compass size={19} strokeWidth={2} />,
   calendar: <CalendarDays size={17} strokeWidth={2} />,
   list: <List size={17} strokeWidth={2} />,
   previous: <ChevronLeft size={18} strokeWidth={2} />,
@@ -480,6 +482,7 @@ export function AssignmentsWorkspace() {
         courses: icons.courses,
         intake: icons.intake,
         habits: icons.habits,
+        competencies: icons.competencies,
       }}
     >
       <WorkspaceHeader

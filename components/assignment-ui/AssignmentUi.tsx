@@ -16,6 +16,7 @@ export interface AssignmentUiIcons {
   courses: ReactNode;
   intake: ReactNode;
   habits: ReactNode;
+  competencies: ReactNode;
   calendar: ReactNode;
   list: ReactNode;
   previous: ReactNode;
@@ -69,8 +70,8 @@ export interface CourseFilterOption {
 
 interface AssignmentShellProps {
   brandName?: string;
-  activeNav: "intake" | "habits" | "assignments" | "courses";
-  icons: Pick<AssignmentUiIcons, "intake" | "habits" | "assignments" | "courses">;
+  activeNav: "intake" | "habits" | "competencies" | "assignments" | "courses";
+  icons: Pick<AssignmentUiIcons, "intake" | "habits" | "competencies" | "assignments" | "courses">;
   children: ReactNode;
 }
 
@@ -114,6 +115,14 @@ export function AssignmentShell({
               {icons.habits}
             </Link>
             <Link
+              className={`${styles.mobileNavItem} ${activeNav === "competencies" ? styles.mobileNavItemActive : ""}`}
+              href="/competencies"
+              aria-label="Identity"
+              aria-current={activeNav === "competencies" ? "page" : undefined}
+            >
+              {icons.competencies}
+            </Link>
+            <Link
               className={`${styles.mobileNavItem} ${activeNav === "assignments" ? styles.mobileNavItemActive : ""}`}
               href="/assignments"
               aria-label="Assignments"
@@ -154,6 +163,16 @@ export function AssignmentShell({
               {icons.habits}
             </span>
             <span>Habits</span>
+          </Link>
+          <Link
+            className={`${styles.navItem} ${activeNav === "competencies" ? styles.navItemActive : ""}`}
+            href="/competencies"
+            aria-current={activeNav === "competencies" ? "page" : undefined}
+          >
+            <span className={styles.navIcon} aria-hidden="true">
+              {icons.competencies}
+            </span>
+            <span>Identity</span>
           </Link>
           <Link
             className={`${styles.navItem} ${activeNav === "assignments" ? styles.navItemActive : ""}`}

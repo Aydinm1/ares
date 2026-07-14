@@ -360,18 +360,39 @@ and email drafts or meeting notes are Documents.
 
 #### Competency
 
-A future lifetime capability taxonomy. Activities represent behavior;
-Competencies represent growth. When the module is justified, Activities and
-Competencies use a many-to-many relationship because one behavior may develop
-several capabilities.
+A lifetime capability, craft, or way of being the user intentionally wants to
+cultivate. Competencies answer "Who am I becoming?" They are independent from
+Life Areas because a capability such as writing, programming, leadership, or
+basketball can matter across school, career, personal projects, relationships,
+and health.
 
-Status may be `active`, `seasonal`, `dormant`, or `someday`. Current and target
-levels begin as narrative, evidence-backed descriptions rather than a
-universal numeric scale. Cadence belongs to Habit, not Competency.
+| Field | Requirement |
+| --- | --- |
+| `name` | Required |
+| `category` | Optional flexible grouping |
+| `status` | `current`, `dormant`, `someday`, or `archived` |
+| `vision` | Optional long-term direction |
+| `description` | Optional |
 
-Competencies are documented now but Activities have no Competency fields in
-the initial model. Do not create a table or UI until Activity and Session data
-reveal useful categories.
+Competencies do not use XP, ranks, levels, universal progress bars, or AI
+summaries in the MVP.
+
+#### Competency Focus
+
+One bounded season of attention within a Competency.
+
+| Field | Requirement |
+| --- | --- |
+| `competencyId` | Required |
+| `title` | Required |
+| `startedAt` | Required local date |
+| `endedAt` | Optional local date; empty means current |
+| `notes` | Optional |
+| `endReason` | Optional reflection when stopping or switching |
+
+Returning to the same subject creates a new Focus record with the same title
+rather than reopening the old historical period. Focus timelines are sorted by
+chronology, not manual order.
 
 ## Read Models
 

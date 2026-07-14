@@ -16,6 +16,7 @@ import {
   ChevronRight,
   CircleAlert,
   CircleCheckBig,
+  Compass,
   GraduationCap,
   Inbox,
   ListTodo,
@@ -50,6 +51,7 @@ const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const icons = {
   intake: <Inbox size={19} strokeWidth={2} />,
   habits: <CircleCheckBig size={19} strokeWidth={2} />,
+  competencies: <Compass size={19} strokeWidth={2} />,
   assignments: <ListTodo size={19} strokeWidth={2} />,
   courses: <GraduationCap size={19} strokeWidth={2} />,
 };

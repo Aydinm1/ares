@@ -103,6 +103,37 @@ const expectedSchema: ExpectedTable[] = [
       { id: "fldTgiR19mBkjO2Qd", name: "Date", type: "date" },
       { id: "fldYkG614nyOBbXLB", name: "Created At", type: "dateTime" }
     ]
+  },
+  {
+    id: tables.competencies.id,
+    name: tables.competencies.name,
+    fields: [
+      { id: "fldLPaOYlV8q9PMHr", name: "Name", type: "singleLineText" },
+      { id: "fldJGN1g8f8bOnOXz", name: "Category", type: "singleLineText" },
+      { id: "fldpNIekqsZz8q8XM", name: "Status", type: "singleSelect" },
+      { id: "fld9z397rfbXr8oqC", name: "Vision", type: "multilineText" },
+      { id: "fldALMslaKuA4dWdV", name: "Description", type: "multilineText" },
+      { id: "fldGc8wPgPaEDw8xE", name: "Sort Order", type: "number" },
+      { id: "fldOfW4VwMGeHP0oe", name: "Created At", type: "dateTime" }
+    ]
+  },
+  {
+    id: tables.competencyFocuses.id,
+    name: tables.competencyFocuses.name,
+    fields: [
+      { id: "fldGMCdIXafvlAof4", name: "Title", type: "singleLineText" },
+      {
+        id: "fldG2ACQs6YOHuHZ8",
+        name: "Competency",
+        type: "multipleRecordLinks",
+        linkedTableId: tables.competencies.id
+      },
+      { id: "fld6hhx7mMvdEYFCL", name: "Started At", type: "date" },
+      { id: "fldRoJQK32UGOjuHl", name: "Ended At", type: "date" },
+      { id: "fld9fLJmasqyggusr", name: "Notes", type: "multilineText" },
+      { id: "fldy9bK3IHuyRMAqv", name: "End Reason", type: "multilineText" },
+      { id: "fldeQ5Wa62LgKui5O", name: "Created At", type: "dateTime" }
+    ]
   }
 ];
 

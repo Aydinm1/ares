@@ -3,11 +3,17 @@ import assert from "node:assert/strict";
 import {
   assignmentCompletionToAirtable,
   assignmentUpdateToAirtable,
+  competencyFocusToAirtable,
+  competencyFocusUpdateToAirtable,
+  competencyToAirtable,
+  competencyUpdateToAirtable,
   habitCheckInToAirtable,
   habitToAirtable,
   habitUpdateToAirtable,
   inboxItemToAirtable,
   mapAssignment,
+  mapCompetency,
+  mapCompetencyFocus,
   mapCourse,
   mapGeneralEducationRequirement,
   mapHabit,
@@ -124,6 +130,97 @@ test("maps and serializes habits and dated check-ins", () => {
       [fields.habitCheckIns.createdAt]: "2026-07-01T18:00:00.000Z"
     }
   );
+});
+
+test("maps and serializes competencies and focuses", () => {
+  assert.deepEqual(mapCompetency({
+    id: "recCompetency",
+    fields: {
+      [fields.competencies.name]: "Piano",
+      [fields.competencies.category]: "Creative",
+      [fields.competencies.status]: "Dormant",
+      [fields.competencies.vision]: "Play expressively.",
+      [fields.competencies.description]: "Long-term craft.",
+      [fields.competencies.sortOrder]: 1000,
+      [fields.competencies.createdAt]: "2026-07-14T12:00:00.000Z"
+    }
+  }), {
+    id: "recCompetency",
+    name: "Piano",
+    category: "Creative",
+    status: "dormant",
+    vision: "Play expressively.",
+    description: "Long-term craft.",
+    sortOrder: 1000,
+    createdAt: "2026-07-14T12:00:00.000Z"
+  });
+  assert.deepEqual(
+    competencyToAirtable(
+      "Piano",
+      "Creative",
+      "Play expressively.",
+      "Long-term craft.",
+      "2026-07-14T12:00:00.000Z",
+      1000
+    ),
+    {
+      [fields.competencies.name]: "Piano",
+      [fields.competencies.category]: "Creative",
+      [fields.competencies.status]: "Current",
+      [fields.competencies.vision]: "Play expressively.",
+      [fields.competencies.description]: "Long-term craft.",
+      [fields.competencies.sortOrder]: 1000,
+      [fields.competencies.createdAt]: "2026-07-14T12:00:00.000Z"
+    }
+  );
+  assert.deepEqual(competencyUpdateToAirtable({ status: "someday", vision: null }), {
+    [fields.competencies.status]: "Someday",
+    [fields.competencies.vision]: null
+  });
+  assert.deepEqual(mapCompetencyFocus({
+    id: "recFocus",
+    fields: {
+      [fields.competencyFocuses.competency]: ["recCompetency"],
+      [fields.competencyFocuses.title]: "Chord Vocabulary",
+      [fields.competencyFocuses.startedAt]: "2026-07-13",
+      [fields.competencyFocuses.endedAt]: "2026-09-18",
+      [fields.competencyFocuses.notes]: "ii-V-I progressions",
+      [fields.competencyFocuses.endReason]: "Shifted to improvisation.",
+      [fields.competencyFocuses.createdAt]: "2026-07-14T12:00:00.000Z"
+    }
+  }), {
+    id: "recFocus",
+    competencyId: "recCompetency",
+    title: "Chord Vocabulary",
+    startedAt: "2026-07-13",
+    endedAt: "2026-09-18",
+    notes: "ii-V-I progressions",
+    endReason: "Shifted to improvisation.",
+    createdAt: "2026-07-14T12:00:00.000Z"
+  });
+  assert.deepEqual(
+    competencyFocusToAirtable(
+      "recCompetency",
+      "Chord Vocabulary",
+      "2026-07-13",
+      "ii-V-I progressions",
+      "2026-07-14T12:00:00.000Z"
+    ),
+    {
+      [fields.competencyFocuses.competency]: ["recCompetency"],
+      [fields.competencyFocuses.title]: "Chord Vocabulary",
+      [fields.competencyFocuses.startedAt]: "2026-07-13",
+      [fields.competencyFocuses.notes]: "ii-V-I progressions",
+      [fields.competencyFocuses.createdAt]: "2026-07-14T12:00:00.000Z"
+    }
+  );
+  assert.deepEqual(competencyFocusUpdateToAirtable({
+    endedAt: "2026-09-18",
+    endReason: "Shifted to improvisation."
+  }), {
+    [fields.competencyFocuses.endedAt]: "2026-09-18",
+    [fields.competencyFocuses.endReason]: "Shifted to improvisation."
+  });
 });
 
 test("maps readable general education requirement records", () => {

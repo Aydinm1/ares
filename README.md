@@ -7,6 +7,7 @@ A focused academic workspace backed by Airtable.
 - `/` shows assignments in a list and calendar.
 - `/assignments` redirects to `/`.
 - `/courses` shows 13 quarters across four academic years.
+- `/competencies` shows the Identity layer and focus timelines.
 - Assignment completion writes immediately to Airtable and can be reversed.
 
 ## Setup

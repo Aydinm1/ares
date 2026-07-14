@@ -1,5 +1,10 @@
 import type {
   Assignment,
+  Competency,
+  CompetencyFocus,
+  CompetencyFocusUpdate,
+  CompetencyOverview,
+  CompetencyUpdate,
   Course,
   Habit,
   HabitCheckIn,
@@ -54,6 +59,78 @@ export async function deleteInboxItem(id: string): Promise<void> {
   await fetchJson<{ deleted: true }>(`/api/inbox/${encodeURIComponent(id)}`, {
     method: "DELETE"
   });
+}
+
+export async function loadCompetencies(): Promise<CompetencyOverview[]> {
+  const response = await fetchJson<{ competencies: CompetencyOverview[] }>("/api/competencies");
+  return response.competencies;
+}
+
+export async function createCompetency(input: {
+  name: string;
+  category?: string;
+  vision?: string;
+  description?: string;
+}): Promise<Competency> {
+  const response = await fetchJson<{ competency: Competency }>("/api/competencies", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(input)
+  });
+  return response.competency;
+}
+
+export async function updateCompetency(
+  id: string,
+  update: CompetencyUpdate
+): Promise<Competency> {
+  const response = await fetchJson<{ competency: Competency }>(
+    `/api/competencies/${encodeURIComponent(id)}`,
+    {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(update)
+    }
+  );
+  return response.competency;
+}
+
+export async function reorderCompetencies(competencyIds: string[]): Promise<void> {
+  await fetchJson<{ ok: true }>("/api/competencies/order", {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ competencyIds })
+  });
+}
+
+export async function createCompetencyFocus(
+  competencyId: string,
+  input: { title: string; startedAt: string; notes?: string }
+): Promise<CompetencyFocus> {
+  const response = await fetchJson<{ focus: CompetencyFocus }>(
+    `/api/competencies/${encodeURIComponent(competencyId)}/focuses`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(input)
+    }
+  );
+  return response.focus;
+}
+
+export async function updateCompetencyFocus(
+  id: string,
+  update: CompetencyFocusUpdate
+): Promise<CompetencyFocus> {
+  const response = await fetchJson<{ focus: CompetencyFocus }>(
+    `/api/focuses/${encodeURIComponent(id)}`,
+    {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(update)
+    }
+  );
+  return response.focus;
 }
 
 export async function loadHabitWeek(weekStart: string): Promise<HabitWeek> {

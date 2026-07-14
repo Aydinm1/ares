@@ -1,5 +1,11 @@
 import { formatInTimeZone, fromZonedTime } from "date-fns-tz";
-import type { AssignmentUpdate, HabitUpdate } from "../domain/types.js";
+import type {
+  AssignmentUpdate,
+  CompetencyFocusUpdate,
+  CompetencyStatus,
+  CompetencyUpdate,
+  HabitUpdate
+} from "../domain/types.js";
 
 export class ValidationError extends Error {
   constructor(public readonly issues: string[]) {
@@ -44,6 +50,22 @@ const LOCAL_DATE = /^\d{4}-\d{2}-\d{2}$/;
 const LOCAL_TIME = /^(?:[01]\d|2[0-3]):[0-5]\d$/;
 const ACADEMIC_TIME_ZONE = "America/Los_Angeles";
 const HABIT_WRITE_FIELDS = new Set(["name", "targetDaysPerWeek", "status", "sortOrder"]);
+const COMPETENCY_STATUSES = new Set(["current", "dormant", "someday", "archived"]);
+const COMPETENCY_WRITE_FIELDS = new Set([
+  "name",
+  "category",
+  "status",
+  "vision",
+  "description",
+  "sortOrder"
+]);
+const FOCUS_WRITE_FIELDS = new Set([
+  "title",
+  "startedAt",
+  "endedAt",
+  "notes",
+  "endReason"
+]);
 
 export function validateHabitCreate(value: unknown): {
   name: string;
@@ -109,6 +131,52 @@ export function validateHabitWeekStart(value: string | null): string {
   return value;
 }
 
+export function validateCompetencyCreate(value: unknown): {
+  name: string;
+  category?: string;
+  vision?: string;
+  description?: string;
+} {
+  const update = validateCompetencyPayload(value, false);
+  if (!update.name) {
+    throw new ValidationError(["name is required."]);
+  }
+  return {
+    name: update.name,
+    category: update.category ?? undefined,
+    vision: update.vision ?? undefined,
+    description: update.description ?? undefined
+  };
+}
+
+export function validateCompetencyUpdate(value: unknown): CompetencyUpdate {
+  return validateCompetencyPayload(value, true);
+}
+
+export function validateCompetencyOrder(value: unknown): string[] {
+  return validateRecordOrder(value, "competencyIds");
+}
+
+export function validateCompetencyFocusCreate(value: unknown): {
+  title: string;
+  startedAt: string;
+  notes?: string;
+} {
+  const update = validateCompetencyFocusPayload(value, false);
+  if (!update.title || !update.startedAt) {
+    throw new ValidationError(["title and startedAt are required."]);
+  }
+  return {
+    title: update.title,
+    startedAt: update.startedAt,
+    notes: update.notes ?? undefined
+  };
+}
+
+export function validateCompetencyFocusUpdate(value: unknown): CompetencyFocusUpdate {
+  return validateCompetencyFocusPayload(value, true);
+}
+
 function validateHabitPayload(value: unknown, partial: boolean): HabitUpdate {
   if (!value || typeof value !== "object" || Array.isArray(value)) {
     throw new ValidationError(["Request body must be an object."]);
@@ -165,6 +233,151 @@ function validateHabitPayload(value: unknown, partial: boolean): HabitUpdate {
   }
   if (issues.length) throw new ValidationError(issues);
   return update;
+}
+
+function validateCompetencyPayload(value: unknown, partial: boolean): CompetencyUpdate {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    throw new ValidationError(["Request body must be an object."]);
+  }
+  const payload = value as Record<string, unknown>;
+  const keys = Object.keys(payload);
+  const issues: string[] = [];
+  if (keys.length === 0) issues.push("At least one field must be supplied.");
+  if (keys.some((key) => !COMPETENCY_WRITE_FIELDS.has(key))) {
+    issues.push("Request contains fields that cannot be changed.");
+  }
+  if (!partial && keys.some((key) => key === "status" || key === "sortOrder")) {
+    issues.push("status and sortOrder cannot be supplied when creating a competency.");
+  }
+  const update: CompetencyUpdate = {};
+  if ("name" in payload) {
+    if (typeof payload.name !== "string" || !payload.name.trim()) {
+      issues.push("name must be a non-empty string.");
+    } else if (payload.name.trim().length > 120) {
+      issues.push("name must be 120 characters or fewer.");
+    } else {
+      update.name = payload.name.trim();
+    }
+  }
+  for (const field of ["category", "vision", "description"] as const) {
+    if (field in payload) {
+      const value = payload[field];
+      if (value === null) {
+        update[field] = null;
+      } else if (typeof value !== "string") {
+        issues.push(`${field} must be a string or null.`);
+      } else if (value.trim().length > (field === "category" ? 80 : 2000)) {
+        issues.push(`${field} is too long.`);
+      } else {
+        update[field] = value.trim() || null;
+      }
+    }
+  }
+  if ("status" in payload) {
+    if (typeof payload.status !== "string" || !COMPETENCY_STATUSES.has(payload.status)) {
+      issues.push("status must be current, dormant, someday, or archived.");
+    } else {
+      update.status = payload.status as CompetencyStatus;
+    }
+  }
+  if ("sortOrder" in payload) {
+    if (
+      typeof payload.sortOrder !== "number" ||
+      !Number.isInteger(payload.sortOrder) ||
+      payload.sortOrder < 0
+    ) {
+      issues.push("sortOrder must be a non-negative integer.");
+    } else {
+      update.sortOrder = payload.sortOrder;
+    }
+  }
+  if (issues.length) throw new ValidationError(issues);
+  return update;
+}
+
+function validateCompetencyFocusPayload(
+  value: unknown,
+  partial: boolean
+): CompetencyFocusUpdate {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    throw new ValidationError(["Request body must be an object."]);
+  }
+  const payload = value as Record<string, unknown>;
+  const keys = Object.keys(payload);
+  const issues: string[] = [];
+  if (keys.length === 0) issues.push("At least one field must be supplied.");
+  if (keys.some((key) => !FOCUS_WRITE_FIELDS.has(key))) {
+    issues.push("Request contains fields that cannot be changed.");
+  }
+  if (!partial && keys.some((key) => key === "endedAt" || key === "endReason")) {
+    issues.push("endedAt and endReason cannot be supplied when creating a focus.");
+  }
+  const update: CompetencyFocusUpdate = {};
+  if ("title" in payload) {
+    if (typeof payload.title !== "string" || !payload.title.trim()) {
+      issues.push("title must be a non-empty string.");
+    } else if (payload.title.trim().length > 160) {
+      issues.push("title must be 160 characters or fewer.");
+    } else {
+      update.title = payload.title.trim();
+    }
+  }
+  if ("startedAt" in payload) {
+    if (typeof payload.startedAt !== "string" || !isValidLocalDate(payload.startedAt)) {
+      issues.push("startedAt must be a valid YYYY-MM-DD date.");
+    } else {
+      update.startedAt = payload.startedAt;
+    }
+  }
+  if ("endedAt" in payload) {
+    if (typeof payload.endedAt !== "string" || !isValidLocalDate(payload.endedAt)) {
+      issues.push("endedAt must be a valid YYYY-MM-DD date.");
+    } else {
+      update.endedAt = payload.endedAt;
+    }
+  }
+  for (const field of ["notes", "endReason"] as const) {
+    if (field in payload) {
+      const fieldValue = payload[field];
+      if (fieldValue === null) {
+        update[field] = null;
+      } else if (typeof fieldValue !== "string") {
+        issues.push(`${field} must be a string or null.`);
+      } else if (fieldValue.trim().length > 2000) {
+        issues.push(`${field} must be 2,000 characters or fewer.`);
+      } else {
+        update[field] = fieldValue.trim() || null;
+      }
+    }
+  }
+  if (update.startedAt && update.endedAt && update.endedAt < update.startedAt) {
+    issues.push("endedAt cannot be before startedAt.");
+  }
+  if (issues.length) throw new ValidationError(issues);
+  return update;
+}
+
+function validateRecordOrder(value: unknown, fieldName: string): string[] {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    throw new ValidationError(["Request body must be an object."]);
+  }
+  const payload = value as Record<string, unknown>;
+  const issues: string[] = [];
+  if (Object.keys(payload).some((key) => key !== fieldName)) {
+    issues.push(`Only ${fieldName} can be supplied.`);
+  }
+  const ids = payload[fieldName];
+  if (
+    !Array.isArray(ids) ||
+    ids.length === 0 ||
+    ids.some((id) => typeof id !== "string" || !AIRTABLE_RECORD_ID.test(id))
+  ) {
+    issues.push(`${fieldName} must be a non-empty array of Airtable record IDs.`);
+  } else if (new Set(ids).size !== ids.length) {
+    issues.push(`${fieldName} must not contain duplicates.`);
+  }
+  if (issues.length) throw new ValidationError(issues);
+  return ids as string[];
 }
 
 export function validateAssignmentWrite(value: unknown): AssignmentUpdate {

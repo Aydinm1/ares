@@ -14,8 +14,8 @@ Airtable now, not duplicate the future domain model.
 | --- | --- |
 | Current name | `Assignment Tracker` |
 | Base ID | `appVy9thv2l5e9JKv` |
-| Metadata inspected | 2026-06-29 |
-| Live tables | 8 |
+| Metadata inspected | 2026-07-14 |
+| Live tables | 10 |
 
 The architecture roadmap proposes renaming this base to ARES. That rename has
 not happened yet.
@@ -36,6 +36,12 @@ POST  /api/habits
 PATCH /api/habits/:id
 PUT   /api/habits/:id/check-ins/:date
 DELETE /api/habits/:id/check-ins/:date
+GET   /api/competencies
+POST  /api/competencies
+PATCH /api/competencies/:id
+PATCH /api/competencies/order
+POST  /api/competencies/:id/focuses
+PATCH /api/focuses/:id
 ```
 
 `GET /api/habits` returns the visible week plus per-habit all-time totals in
@@ -67,6 +73,7 @@ flowchart LR
   Courses -->|Prerequisites| Courses
   Assignments -->|Category Weights| CategoryWeights
   Habits -->|dated completion| HabitCheckIns[Habit Check-ins]
+  Competencies -->|focus timeline| CompetencyFocuses[Competency Focuses]
 ```
 
 ## Courses
@@ -202,6 +209,40 @@ Table ID: `tblYMLiIEVUkQZmre`
 The application treats Habit as a single conceptual link and prevents
 duplicate habit/date check-ins. Deleting a habit in the interface archives its
 definition and preserves check-ins.
+
+## Competencies
+
+Table ID: `tblHueT6K8XC9qore`
+
+| Field | Field ID | Airtable type | Application role |
+| --- | --- | --- | --- |
+| Name | `fldLPaOYlV8q9PMHr` | `singleLineText` | Required competency name |
+| Category | `fldJGN1g8f8bOnOXz` | `singleLineText` | Flexible identity grouping |
+| Status | `fldpNIekqsZz8q8XM` | `singleSelect` | Current, Dormant, Someday, or Archived |
+| Vision | `fld9z397rfbXr8oqC` | `multilineText` | Long-term identity direction |
+| Description | `fldALMslaKuA4dWdV` | `multilineText` | Optional detail |
+| Sort Order | `fldGc8wPgPaEDw8xE` | `number` | User-controlled display order within status |
+| Created At | `fldOfW4VwMGeHP0oe` | `dateTime` | Server-set creation timestamp |
+
+Competencies are independent from Life Areas, Projects, Habits, Activities,
+and Sessions in the MVP. The Identity page hides Archived records by default.
+
+## Competency Focuses
+
+Table ID: `tblki8BjyEGdd6V1c`
+
+| Field | Field ID | Airtable type | Application role |
+| --- | --- | --- | --- |
+| Title | `fldGMCdIXafvlAof4` | `singleLineText` | Required focus title |
+| Competency | `fldG2ACQs6YOHuHZ8` | `multipleRecordLinks` | Links `tblHueT6K8XC9qore` |
+| Started At | `fld6hhx7mMvdEYFCL` | `date` | Local date the focus began |
+| Ended At | `fldRoJQK32UGOjuHl` | `date` | Local date the focus ended; empty means current |
+| Notes | `fld9fLJmasqyggusr` | `multilineText` | Optional context for the focus |
+| End Reason | `fldy9bK3IHuyRMAqv` | `multilineText` | Optional reflection when a focus stops |
+| Created At | `fldeQ5Wa62LgKui5O` | `dateTime` | Server-set creation timestamp |
+
+A Focus represents one bounded period of attention. Returning to the same
+subject creates a new Focus record rather than reopening the old one.
 
 ## Category Weights
 

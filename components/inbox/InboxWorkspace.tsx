@@ -1,6 +1,6 @@
 "use client";
 
-import { CircleCheckBig, GraduationCap, Inbox, ListTodo } from "lucide-react";
+import { CircleCheckBig, Compass, GraduationCap, Inbox, ListTodo } from "lucide-react";
 import { AssignmentShell } from "../assignment-ui";
 import { CaptureComposer } from "./InboxCapture";
 import styles from "./inbox.module.css";
@@ -10,6 +10,7 @@ const icons = {
   courses: <GraduationCap size={19} strokeWidth={2} />,
   intake: <Inbox size={19} strokeWidth={2} />,
   habits: <CircleCheckBig size={19} strokeWidth={2} />,
+  competencies: <Compass size={19} strokeWidth={2} />,
 };
 
 export function InboxWorkspace() {
