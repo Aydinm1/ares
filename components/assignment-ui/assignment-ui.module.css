@@ -1257,6 +1257,10 @@
     display: flex;
   }
 
+  .logoutButton {
+    display: none;
+  }
+
   .body {
     min-height: calc(100vh - 58px);
     display: block;
