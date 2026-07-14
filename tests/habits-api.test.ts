@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { GET, POST } from "../app/api/habits/route.js";
 import { PATCH } from "../app/api/habits/[id]/route.js";
+import { PATCH as PATCH_ORDER } from "../app/api/habits/order/route.js";
 import {
   DELETE as DELETE_CHECK_IN,
   PUT
@@ -9,6 +10,7 @@ import {
 import {
   createHabit,
   loadHabitWeek,
+  reorderHabits,
   setHabitCheckIn,
   updateHabit
 } from "../src/app/apiClient.js";
@@ -113,6 +115,27 @@ test("Habit create and update serialize strict fields", async () => {
   assert.equal(writes[1]?.[fields.habits.status], "Archived");
 });
 
+test("Habit order PATCH persists spaced sort order values", async () => {
+  const writes: Array<{ path: string; fields: Record<string, unknown> }> = [];
+  globalThis.fetch = async (input, init) => {
+    const body = JSON.parse(String(init?.body)) as { fields: Record<string, unknown> };
+    writes.push({ path: new URL(String(input)).pathname, fields: body.fields });
+    return Response.json({ id: "recHabit000000000", fields: body.fields });
+  };
+
+  const response = await PATCH_ORDER(new Request("http://localhost/api/habits/order", {
+    method: "PATCH",
+    body: JSON.stringify({
+      habitIds: ["recHabit000000000", "recOther000000000"]
+    })
+  }));
+
+  assert.equal(response.status, 200);
+  assert.deepEqual(writes.map((write) => write.fields[fields.habits.sortOrder]), [1000, 2000]);
+  assert.ok(writes[0]?.path.endsWith(`/recHabit000000000`));
+  assert.ok(writes[1]?.path.endsWith(`/recOther000000000`));
+});
+
 test("Habit check-in PUT is idempotent and DELETE removes matching records", async () => {
   let listCount = 0;
   let createCount = 0;
@@ -168,13 +191,18 @@ test("Habit API client serializes week, definition, and check-in operations", as
   await loadHabitWeek("2026-06-29");
   await createHabit("Gym", 4);
   await updateHabit("recHabit", { targetDaysPerWeek: 5 });
+  await reorderHabits(["recHabit000000000", "recOther000000000"]);
   await setHabitCheckIn("recHabit", "2026-07-01", true);
   await setHabitCheckIn("recHabit", "2026-07-01", false);
   assert.deepEqual(calls.map((call) => [call.url, call.method]), [
     ["/api/habits?weekStart=2026-06-29", undefined],
     ["/api/habits", "POST"],
     ["/api/habits/recHabit", "PATCH"],
+    ["/api/habits/order", "PATCH"],
     ["/api/habits/recHabit/check-ins/2026-07-01", "PUT"],
     ["/api/habits/recHabit/check-ins/2026-07-01", "DELETE"]
   ]);
+  assert.deepEqual(calls[3]?.body, {
+    habitIds: ["recHabit000000000", "recOther000000000"]
+  });
 });

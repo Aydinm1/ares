@@ -43,7 +43,7 @@ const AIRTABLE_RECORD_ID = /^rec[A-Za-z0-9]{14}$/;
 const LOCAL_DATE = /^\d{4}-\d{2}-\d{2}$/;
 const LOCAL_TIME = /^(?:[01]\d|2[0-3]):[0-5]\d$/;
 const ACADEMIC_TIME_ZONE = "America/Los_Angeles";
-const HABIT_WRITE_FIELDS = new Set(["name", "targetDaysPerWeek", "status"]);
+const HABIT_WRITE_FIELDS = new Set(["name", "targetDaysPerWeek", "status", "sortOrder"]);
 
 export function validateHabitCreate(value: unknown): {
   name: string;
@@ -58,6 +58,28 @@ export function validateHabitCreate(value: unknown): {
 
 export function validateHabitUpdate(value: unknown): HabitUpdate {
   return validateHabitPayload(value, true);
+}
+
+export function validateHabitOrder(value: unknown): string[] {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    throw new ValidationError(["Request body must be an object."]);
+  }
+  const payload = value as Record<string, unknown>;
+  const issues: string[] = [];
+  if (Object.keys(payload).some((key) => key !== "habitIds")) {
+    issues.push("Only habitIds can be supplied.");
+  }
+  if (
+    !Array.isArray(payload.habitIds) ||
+    payload.habitIds.length === 0 ||
+    payload.habitIds.some((id) => typeof id !== "string" || !AIRTABLE_RECORD_ID.test(id))
+  ) {
+    issues.push("habitIds must be a non-empty array of Airtable record IDs.");
+  } else if (new Set(payload.habitIds).size !== payload.habitIds.length) {
+    issues.push("habitIds must not contain duplicates.");
+  }
+  if (issues.length) throw new ValidationError(issues);
+  return payload.habitIds as string[];
 }
 
 export function validateHabitDate(value: string): string {
@@ -98,8 +120,8 @@ function validateHabitPayload(value: unknown, partial: boolean): HabitUpdate {
   if (keys.some((key) => !HABIT_WRITE_FIELDS.has(key))) {
     issues.push("Request contains fields that cannot be changed.");
   }
-  if (!partial && keys.some((key) => key === "status")) {
-    issues.push("status cannot be supplied when creating a habit.");
+  if (!partial && keys.some((key) => key === "status" || key === "sortOrder")) {
+    issues.push("status and sortOrder cannot be supplied when creating a habit.");
   }
   const update: HabitUpdate = {};
   if ("name" in payload) {
@@ -128,6 +150,17 @@ function validateHabitPayload(value: unknown, partial: boolean): HabitUpdate {
       issues.push("status must be active or archived.");
     } else {
       update.status = payload.status;
+    }
+  }
+  if ("sortOrder" in payload) {
+    if (
+      typeof payload.sortOrder !== "number" ||
+      !Number.isInteger(payload.sortOrder) ||
+      payload.sortOrder < 0
+    ) {
+      issues.push("sortOrder must be a non-negative integer.");
+    } else {
+      update.sortOrder = payload.sortOrder;
     }
   }
   if (issues.length) throw new ValidationError(issues);

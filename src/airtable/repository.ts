@@ -26,6 +26,7 @@ import {
 import { fields, tableRef } from "./schema.js";
 
 const READ_CACHE_TTL_MS = 30_000;
+const HABIT_ORDER_STEP = 1000;
 
 interface CacheEntry<T> {
   expiresAt: number;
@@ -135,7 +136,8 @@ export class SchoolRepository {
     ]);
     const habits = habitRecords
       .map(mapHabit)
-      .filter((habit) => habit.createdAt.slice(0, 10) <= weekEnd);
+      .filter((habit) => habit.createdAt.slice(0, 10) <= weekEnd)
+      .sort(compareHabitsByOrder);
     const habitIds = new Set(habits.map((habit) => habit.id));
     const allCheckIns = allCheckInRecords
       .map(mapHabitCheckIn)
@@ -165,7 +167,7 @@ export class SchoolRepository {
     const createdAt = new Date().toISOString();
     const record = await this.client.create<Record<string, unknown>>(
       tableRef("habits"),
-      habitToAirtable(name, targetDaysPerWeek, createdAt)
+      habitToAirtable(name, targetDaysPerWeek, createdAt, Date.parse(createdAt))
     );
     return mapHabit(record);
   }
@@ -177,6 +179,16 @@ export class SchoolRepository {
       habitUpdateToAirtable(update)
     );
     return mapHabit(record);
+  }
+
+  async reorderHabits(habitIds: string[]): Promise<void> {
+    await Promise.all(
+      habitIds.map((habitId, index) =>
+        this.client.update<Record<string, unknown>>(tableRef("habits"), habitId, {
+          [fields.habits.sortOrder]: (index + 1) * HABIT_ORDER_STEP
+        })
+      )
+    );
   }
 
   async setHabitCheckIn(habitId: string, date: string): Promise<HabitCheckIn> {
@@ -224,4 +236,16 @@ export class SchoolRepository {
     this.cache.set(key, { expiresAt: now + READ_CACHE_TTL_MS, value });
     return value;
   }
+}
+
+function compareHabitsByOrder(a: Habit, b: Habit): number {
+  const orderDiff = habitOrderValue(a) - habitOrderValue(b);
+  if (orderDiff !== 0) return orderDiff;
+  return a.createdAt.localeCompare(b.createdAt);
+}
+
+function habitOrderValue(habit: Habit): number {
+  if (habit.sortOrder !== undefined) return habit.sortOrder;
+  const createdTime = Date.parse(habit.createdAt);
+  return Number.isFinite(createdTime) ? createdTime : Number.MAX_SAFE_INTEGER;
 }

@@ -92,6 +92,7 @@ export interface Habit {
   targetDaysPerWeek: number;
   status: HabitStatus;
   createdAt: string;
+  sortOrder?: number;
 }
 
 export interface HabitCheckIn {
@@ -118,4 +119,5 @@ export interface HabitUpdate {
   name?: string;
   targetDaysPerWeek?: number;
   status?: HabitStatus;
+  sortOrder?: number;
 }

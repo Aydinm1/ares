@@ -76,27 +76,31 @@ test("maps and serializes habits and dated check-ins", () => {
       [fields.habits.name]: "Gym",
       [fields.habits.targetDaysPerWeek]: 4,
       [fields.habits.status]: "Active",
-      [fields.habits.createdAt]: "2026-07-01T18:00:00.000Z"
+      [fields.habits.createdAt]: "2026-07-01T18:00:00.000Z",
+      [fields.habits.sortOrder]: 1000
     }
   }), {
     id: "recHabit",
     name: "Gym",
     targetDaysPerWeek: 4,
     status: "active",
-    createdAt: "2026-07-01T18:00:00.000Z"
+    createdAt: "2026-07-01T18:00:00.000Z",
+    sortOrder: 1000
   });
   assert.deepEqual(
-    habitToAirtable("Gym", 4, "2026-07-01T18:00:00.000Z"),
+    habitToAirtable("Gym", 4, "2026-07-01T18:00:00.000Z", 1000),
     {
       [fields.habits.name]: "Gym",
       [fields.habits.targetDaysPerWeek]: 4,
       [fields.habits.status]: "Active",
-      [fields.habits.createdAt]: "2026-07-01T18:00:00.000Z"
+      [fields.habits.createdAt]: "2026-07-01T18:00:00.000Z",
+      [fields.habits.sortOrder]: 1000
     }
   );
-  assert.deepEqual(habitUpdateToAirtable({ name: "Lift", status: "archived" }), {
+  assert.deepEqual(habitUpdateToAirtable({ name: "Lift", status: "archived", sortOrder: 2000 }), {
     [fields.habits.name]: "Lift",
-    [fields.habits.status]: "Archived"
+    [fields.habits.status]: "Archived",
+    [fields.habits.sortOrder]: 2000
   });
   assert.deepEqual(mapHabitCheckIn({
     id: "recCheckIn",

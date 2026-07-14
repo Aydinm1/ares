@@ -6,6 +6,7 @@ import {
   validateHabitCreate,
   validateHabitCheckInDate,
   validateHabitDate,
+  validateHabitOrder,
   validateHabitUpdate,
   validateHabitWeekStart,
   validateInboxCapture,
@@ -60,6 +61,12 @@ test("validates habit definitions and week dates", () => {
   assert.deepEqual(validateHabitUpdate({ status: "archived" }), {
     status: "archived"
   });
+  assert.deepEqual(validateHabitUpdate({ sortOrder: 1000 }), {
+    sortOrder: 1000
+  });
+  assert.deepEqual(validateHabitOrder({
+    habitIds: ["recHabit000000000", "recOther000000000"]
+  }), ["recHabit000000000", "recOther000000000"]);
   assert.equal(validateHabitDate("2026-07-01"), "2026-07-01");
   assert.equal(
     validateHabitCheckInDate("2026-07-01", new Date("2026-07-01T20:00:00.000Z")),
@@ -72,11 +79,15 @@ test("validates habit definitions and week dates", () => {
     { name: "Gym", targetDaysPerWeek: 0 },
     { name: "Gym", targetDaysPerWeek: 8 },
     { name: "Gym", targetDaysPerWeek: 4.5 },
-    { name: "Gym", targetDaysPerWeek: 4, status: "active" }
+    { name: "Gym", targetDaysPerWeek: 4, status: "active" },
+    { name: "Gym", targetDaysPerWeek: 4, sortOrder: 1000 }
   ]) {
     assert.throws(() => validateHabitCreate(value), ValidationError);
   }
   assert.throws(() => validateHabitUpdate({ status: "paused" }), ValidationError);
+  assert.throws(() => validateHabitUpdate({ sortOrder: -1 }), ValidationError);
+  assert.throws(() => validateHabitOrder({ habitIds: ["recHabit000000000", "recHabit000000000"] }), ValidationError);
+  assert.throws(() => validateHabitOrder({ habitIds: ["bad"] }), ValidationError);
   assert.throws(() => validateHabitDate("2026-02-30"), ValidationError);
   assert.throws(
     () => validateHabitCheckInDate("2026-07-02", new Date("2026-07-01T20:00:00.000Z")),

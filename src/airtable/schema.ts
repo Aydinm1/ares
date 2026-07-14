@@ -49,7 +49,8 @@ export const fields = {
     name: "Name",
     targetDaysPerWeek: "Target Days per Week",
     status: "Status",
-    createdAt: "Created At"
+    createdAt: "Created At",
+    sortOrder: "Sort Order"
   },
   habitCheckIns: {
     key: "Key",

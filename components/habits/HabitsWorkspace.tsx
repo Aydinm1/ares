@@ -9,6 +9,8 @@ import {
   type FormEvent,
 } from "react";
 import {
+  ArrowDown,
+  ArrowUp,
   Check,
   ChevronLeft,
   ChevronRight,
@@ -28,6 +30,7 @@ import { AssignmentShell } from "../assignment-ui";
 import {
   createHabit,
   loadHabitWeek,
+  reorderHabits,
   setHabitCheckIn,
   updateHabit,
 } from "../../src/app/apiClient";
@@ -87,6 +90,7 @@ export function HabitsWorkspace() {
   const [loadError, setLoadError] = useState<string>();
   const [actionError, setActionError] = useState<string>();
   const [pendingCells, setPendingCells] = useState<Set<string>>(new Set());
+  const [reorderingHabitId, setReorderingHabitId] = useState<string>();
   const [menuHabitId, setMenuHabitId] = useState<string>();
   const [dialog, setDialog] = useState<HabitDialogState>();
   const [archiveTarget, setArchiveTarget] = useState<Habit>();
@@ -233,6 +237,33 @@ export function HabitsWorkspace() {
     }
   };
 
+  const moveHabit = async (habitId: string, direction: "up" | "down") => {
+    const currentIndex = week.habits.findIndex((habit) => habit.id === habitId);
+    const targetIndex = direction === "up" ? currentIndex - 1 : currentIndex + 1;
+    if (currentIndex < 0 || targetIndex < 0 || targetIndex >= week.habits.length) return;
+
+    const requestedWeek = weekStart;
+    const previousWeek = week;
+    const habits = [...week.habits];
+    [habits[currentIndex], habits[targetIndex]] = [habits[targetIndex]!, habits[currentIndex]!];
+
+    setActionError(undefined);
+    setMenuHabitId(undefined);
+    setReorderingHabitId(habitId);
+    setWeek((current) => ({ ...current, habits }));
+
+    try {
+      await reorderHabits(habits.map((habit) => habit.id));
+    } catch (error) {
+      if (activeWeekStart.current === requestedWeek) {
+        setWeek(previousWeek);
+        setActionError(error instanceof Error ? error.message : "Habit order could not be saved.");
+      }
+    } finally {
+      setReorderingHabitId(undefined);
+    }
+  };
+
   return (
     <AssignmentShell activeNav="habits" icons={icons}>
       <header className={styles.pageHeader}>
@@ -319,7 +350,7 @@ export function HabitsWorkspace() {
             <button type="button" onClick={() => setDialog({ mode: "create" })}>Add habit</button>
           </div>
         ) : null}
-        {!loading && !loadError ? week.habits.map((habit) => {
+        {!loading && !loadError ? week.habits.map((habit, habitIndex) => {
           const completed = week.checkIns.filter((item) => item.habitId === habit.id).length;
           const sessionTotal = totalsByHabit.get(habit.id) ?? 0;
           return (
@@ -373,6 +404,24 @@ export function HabitsWorkspace() {
                 </button>
                 {menuHabitId === habit.id ? (
                   <div className={styles.rowMenu} role="menu">
+                    <button
+                      type="button"
+                      role="menuitem"
+                      disabled={habitIndex === 0 || reorderingHabitId !== undefined}
+                      onClick={() => void moveHabit(habit.id, "up")}
+                    >
+                      <ArrowUp size={15} />
+                      Move up
+                    </button>
+                    <button
+                      type="button"
+                      role="menuitem"
+                      disabled={habitIndex === week.habits.length - 1 || reorderingHabitId !== undefined}
+                      onClick={() => void moveHabit(habit.id, "down")}
+                    >
+                      <ArrowDown size={15} />
+                      Move down
+                    </button>
                     <button type="button" role="menuitem" onClick={() => {
                       setDialog({ mode: "edit", habit });
                       setMenuHabitId(undefined);

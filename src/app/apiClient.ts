@@ -87,6 +87,14 @@ export async function updateHabit(id: string, update: HabitUpdate): Promise<Habi
   return response.habit;
 }
 
+export async function reorderHabits(habitIds: string[]): Promise<void> {
+  await fetchJson<{ ok: true }>("/api/habits/order", {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ habitIds })
+  });
+}
+
 export async function setHabitCheckIn(
   habitId: string,
   date: string,

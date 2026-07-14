@@ -186,6 +186,7 @@ Table ID: `tblnPymbsaGbAtuum`
 | Target Days per Week | `fldqp5e6dK3fI0Dec` | `number` | Integer cadence from 1 through 7 |
 | Status | `fldvQy9duk70Ya72S` | `singleSelect` | Active or Archived |
 | Created At | `fldlkupf7xJ1aGF4Y` | `dateTime` | Server-set creation timestamp |
+| Sort Order | `fldaZOaf1n7pM6gI5` | `number` | User-controlled habit display order |
 
 ## Habit Check-ins
 

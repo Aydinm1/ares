@@ -85,7 +85,8 @@ const expectedSchema: ExpectedTable[] = [
       { id: "fldH3LJ0SZ10an1Bx", name: "Name", type: "singleLineText" },
       { id: "fldqp5e6dK3fI0Dec", name: "Target Days per Week", type: "number" },
       { id: "fldvQy9duk70Ya72S", name: "Status", type: "singleSelect" },
-      { id: "fldlkupf7xJ1aGF4Y", name: "Created At", type: "dateTime" }
+      { id: "fldlkupf7xJ1aGF4Y", name: "Created At", type: "dateTime" },
+      { id: "fldaZOaf1n7pM6gI5", name: "Sort Order", type: "number" }
     ]
   },
   {

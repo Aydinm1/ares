@@ -126,20 +126,23 @@ export function mapHabit(record: AirtableRecord<AnyFields>): Habit {
     createdAt:
       stringValue(record.fields[fields.habits.createdAt]) ??
       record.createdTime ??
-      new Date(0).toISOString()
+      new Date(0).toISOString(),
+    sortOrder: numberValue(record.fields[fields.habits.sortOrder])
   };
 }
 
 export function habitToAirtable(
   name: string,
   targetDaysPerWeek: number,
-  createdAt: string
+  createdAt: string,
+  sortOrder: number
 ): AnyFields {
   return {
     [fields.habits.name]: name,
     [fields.habits.targetDaysPerWeek]: targetDaysPerWeek,
     [fields.habits.status]: "Active",
-    [fields.habits.createdAt]: createdAt
+    [fields.habits.createdAt]: createdAt,
+    [fields.habits.sortOrder]: sortOrder
   };
 }
 
@@ -152,6 +155,7 @@ export function habitUpdateToAirtable(update: HabitUpdate): AnyFields {
   if (update.status !== undefined) {
     result[fields.habits.status] = update.status === "archived" ? "Archived" : "Active";
   }
+  if (update.sortOrder !== undefined) result[fields.habits.sortOrder] = update.sortOrder;
   return result;
 }
 

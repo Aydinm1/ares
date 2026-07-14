@@ -292,7 +292,7 @@
   z-index: 20;
   top: 36px;
   right: 8px;
-  width: 132px;
+  width: 144px;
   padding: 5px;
   border: 1px solid var(--assignment-border);
   border-radius: 8px;
@@ -318,6 +318,16 @@
 
 .rowMenu button:hover {
   background: var(--assignment-blue-soft);
+}
+
+.rowMenu button:disabled {
+  color: var(--assignment-muted);
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.rowMenu button:disabled:hover {
+  background: transparent;
 }
 
 .rowMenu button:last-child {
