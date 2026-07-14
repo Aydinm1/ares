@@ -84,6 +84,28 @@
   gap: 8px;
 }
 
+.logoutButton {
+  display: inline-flex;
+  min-height: 30px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 10px;
+  border: 1px solid var(--assignment-border);
+  border-radius: 7px;
+  color: var(--assignment-muted);
+  background: #ffffff;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.logoutButton:hover {
+  color: var(--assignment-blue);
+  background: var(--assignment-blue-soft);
+}
+
 .mobileNavItem {
   display: grid;
   width: 34px;

@@ -91,6 +91,11 @@ export function AssignmentShell({
         </div>
         <div className={styles.topbarActions}>
           {activeNav !== "intake" ? <InboxQuickCapture /> : null}
+          <form action="/api/logout" method="post">
+            <button className={styles.logoutButton} type="submit" title="Sign out">
+              Sign out
+            </button>
+          </form>
           <nav className={styles.mobileNav} aria-label="Mobile navigation">
             <Link
               className={`${styles.mobileNavItem} ${activeNav === "intake" ? styles.mobileNavItemActive : ""}`}

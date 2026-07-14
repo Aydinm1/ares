@@ -306,8 +306,23 @@ after each migration.
 ```text
 AIRTABLE_API_KEY=
 AIRTABLE_BASE_ID=
+ARES_AUTH_PASSWORD_HASH=
+ARES_AUTH_SECRET=
+ARES_SESSION_DAYS=30
 ```
 
 `AIRTABLE_BASE_ID` is optional because the current base ID is the application
 default. The token requires record access for normal operation and
 `schema.bases:read` for live schema verification.
+
+ARES uses a single-owner password gate for all workspace pages and `/api/*`
+routes. Store only a generated password hash in `ARES_AUTH_PASSWORD_HASH`, use
+a long random `ARES_AUTH_SECRET` for signed session cookies, and adjust
+`ARES_SESSION_DAYS` only if the default 30-day mobile session is too long or
+too short.
+
+Generate the password hash locally with:
+
+```bash
+npm run auth:hash -- "your password"
+```
