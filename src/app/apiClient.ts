@@ -231,6 +231,12 @@ export async function updateAssignmentDetails(
   return response.assignment;
 }
 
+export async function deleteAssignment(id: string): Promise<void> {
+  await fetchJson<{ deleted: true }>(`/api/assignments/${encodeURIComponent(id)}`, {
+    method: "DELETE"
+  });
+}
+
 export class ApiClientError extends Error {
   constructor(
     message: string,

@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { GET as getAssignments } from "../app/api/assignments/route.js";
-import { PATCH } from "../app/api/assignments/[id]/route.js";
+import { DELETE, PATCH } from "../app/api/assignments/[id]/route.js";
 import { GET as getCourses } from "../app/api/courses/route.js";
 import { clearRepositoryReadCache } from "../app/api/_lib/schoolRoutes.js";
 import {
@@ -9,6 +9,7 @@ import {
   loadAssignments,
   loadCourses,
   updateAssignmentCompletion,
+  deleteAssignment,
   updateAssignmentDetails,
   updateAssignmentVisibility
 } from "../src/app/apiClient.js";
@@ -227,6 +228,44 @@ test("assignment PATCH invalidates cached assignment reads", async () => {
   assert.equal(assignmentReads, 2);
 });
 
+test("assignment DELETE removes the Airtable record and invalidates cached assignment reads", async () => {
+  let assignmentReads = 0;
+  let deletedUrl: string | undefined;
+  globalThis.fetch = async (input, init) => {
+    const url = String(input);
+    assert.ok(url.includes(encodeURIComponent(tableRef("assignments"))));
+    if (init?.method === "DELETE") {
+      deletedUrl = url;
+      return Response.json({ id: "recAssignment", deleted: true });
+    }
+    assignmentReads += 1;
+    return Response.json({
+      records: [{
+        id: "recAssignment",
+        fields: {
+          [fields.assignments.title]: `Essay ${assignmentReads}`,
+          [fields.assignments.completed]: false
+        }
+      }]
+    });
+  };
+
+  assert.equal((await getAssignments(new Request("http://localhost/api/assignments"))).status, 200);
+  assert.equal((await getAssignments(new Request("http://localhost/api/assignments"))).status, 200);
+  assert.equal(assignmentReads, 1);
+
+  const deleteResponse = await DELETE(
+    new Request("http://localhost/api/assignments/recAssignment", { method: "DELETE" }),
+    { params: Promise.resolve({ id: "recAssignment" }) }
+  );
+  assert.equal(deleteResponse.status, 200);
+  assert.match(deletedUrl ?? "", new RegExp(`${tableRef("assignments")}/recAssignment$`));
+  assert.deepEqual(await deleteResponse.json(), { deleted: true });
+
+  assert.equal((await getAssignments(new Request("http://localhost/api/assignments"))).status, 200);
+  assert.equal(assignmentReads, 2);
+});
+
 test("assignment PATCH updates editable Airtable fields", async () => {
   let requestBody: unknown;
   globalThis.fetch = async (_input, init) => {
@@ -429,4 +468,14 @@ test("workspace API client serializes assignment editor updates", async () => {
     })).title,
     "Revised essay"
   );
+});
+
+test("workspace API client serializes assignment deletes", async () => {
+  globalThis.fetch = async (input, init) => {
+    assert.equal(String(input), "/api/assignments/rec%2Fone");
+    assert.equal(init?.method, "DELETE");
+    return Response.json({ deleted: true });
+  };
+
+  await deleteAssignment("rec/one");
 });

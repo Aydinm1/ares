@@ -104,6 +104,11 @@ export class SchoolRepository {
     return mapAssignment(record);
   }
 
+  async deleteAssignment(recordId: string): Promise<void> {
+    await this.client.delete(tableRef("assignments"), recordId);
+    this.invalidateAssignments();
+  }
+
   invalidateAssignments(): void {
     this.cache.delete("assignments");
   }

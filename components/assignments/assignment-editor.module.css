@@ -264,7 +264,8 @@
 
 .editorFooter {
   display: flex;
-  justify-content: flex-end;
+  align-items: center;
+  justify-content: space-between;
   gap: 10px;
   margin-top: auto;
   padding: 14px 20px;
@@ -272,9 +273,15 @@
   background: #ffffff;
 }
 
+.footerActions {
+  display: flex;
+  gap: 10px;
+}
+
 .primaryButton,
 .secondaryButton,
-.dangerButton {
+.dangerButton,
+.deleteButton {
   min-height: 38px;
   padding: 0 14px;
   border-radius: 7px;
@@ -302,8 +309,24 @@
   background: #a52a23;
 }
 
+.deleteButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid transparent;
+  color: var(--assignment-danger);
+  background: transparent;
+}
+
+.deleteButton:hover {
+  border-color: #efb3ad;
+  background: #fff3f1;
+}
+
 .primaryButton:disabled,
-.secondaryButton:disabled {
+.secondaryButton:disabled,
+.dangerButton:disabled,
+.deleteButton:disabled {
   cursor: not-allowed;
   opacity: 0.55;
 }

@@ -21,3 +21,10 @@ export async function PATCH(request: Request, context: RouteContext): Promise<Re
     });
   });
 }
+
+export async function DELETE(_request: Request, context: RouteContext): Promise<Response> {
+  return routeJson(async () => {
+    await getRepository().deleteAssignment(await routeId(context));
+    return json(200, { deleted: true });
+  });
+}

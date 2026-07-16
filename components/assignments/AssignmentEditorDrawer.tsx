@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ArrowLeft, CalendarDays, Clock, Pencil, X } from "lucide-react";
+import { ArrowLeft, CalendarDays, Clock, Pencil, Trash2, X } from "lucide-react";
 import { assignmentDueInputParts } from "../../src/assignments";
 import type { AssignmentEditorUpdate } from "../../src/app/apiClient";
 import type { Assignment, Course } from "../../src/domain";
@@ -25,6 +25,7 @@ interface AssignmentEditorDrawerProps {
   onEditAssignment: (assignmentId: string, returnDateKey?: string) => void;
   onBackToAgenda: (dateKey: string) => void;
   onSave: (assignmentId: string, update: AssignmentEditorUpdate) => Promise<void>;
+  onDelete: (assignmentId: string) => Promise<void>;
 }
 
 export function AssignmentEditorDrawer({
@@ -38,6 +39,7 @@ export function AssignmentEditorDrawer({
   onEditAssignment,
   onBackToAgenda,
   onSave,
+  onDelete,
 }: AssignmentEditorDrawerProps) {
   const closeHandlerRef = useRef(onClose);
   const drawerRef = useRef<HTMLElement>(null);
@@ -107,6 +109,7 @@ export function AssignmentEditorDrawer({
             onClose={onClose}
             onBack={onBackToAgenda}
             onSave={onSave}
+            onDelete={onDelete}
             registerCloseHandler={(handler) => {
               closeHandlerRef.current = handler;
             }}
@@ -183,6 +186,7 @@ function AssignmentEditor({
   onClose,
   onBack,
   onSave,
+  onDelete,
   registerCloseHandler,
 }: {
   assignment: Assignment;
@@ -193,11 +197,13 @@ function AssignmentEditor({
   onClose: () => void;
   onBack: (dateKey: string) => void;
   onSave: (assignmentId: string, update: AssignmentEditorUpdate) => Promise<void>;
+  onDelete: (assignmentId: string) => Promise<void>;
   registerCloseHandler: (handler: () => void) => void;
 }) {
   const initialValues = useMemo(() => valuesFromAssignment(assignment), [assignment]);
   const [values, setValues] = useState(initialValues);
   const [discardAction, setDiscardAction] = useState<"close" | "back">();
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const titleRef = useRef<HTMLInputElement>(null);
   const dirty = JSON.stringify(values) !== JSON.stringify(initialValues);
   const points = values.pointsPossible === "" ? null : Number(values.pointsPossible);
@@ -210,6 +216,10 @@ function AssignmentEditor({
   useEffect(() => titleRef.current?.focus(), []);
 
   const requestClose = () => {
+    if (confirmDelete) {
+      setConfirmDelete(false);
+      return;
+    }
     if (dirty && !saving) {
       setDiscardAction("close");
       return;
@@ -390,13 +400,51 @@ function AssignmentEditor({
       </div>
 
       <footer className={styles.editorFooter}>
-        <button className={styles.secondaryButton} type="button" onClick={requestClose} disabled={saving}>
-          Cancel
+        <button
+          className={styles.deleteButton}
+          type="button"
+          onClick={() => setConfirmDelete(true)}
+          disabled={saving}
+        >
+          <Trash2 size={15} aria-hidden="true" />
+          Delete
         </button>
-        <button className={styles.primaryButton} type="submit" disabled={!dirty || !valid || saving}>
-          {saving ? "Saving..." : "Save changes"}
-        </button>
+        <div className={styles.footerActions}>
+          <button className={styles.secondaryButton} type="button" onClick={requestClose} disabled={saving}>
+            Cancel
+          </button>
+          <button className={styles.primaryButton} type="submit" disabled={!dirty || !valid || saving}>
+            {saving ? "Saving..." : "Save changes"}
+          </button>
+        </div>
       </footer>
+
+      {confirmDelete ? (
+        <div className={styles.discardPrompt} role="alertdialog" aria-modal="true" aria-label="Delete assignment">
+          <div>
+            <strong>Delete this assignment?</strong>
+            <p>This removes the task from Airtable. This cannot be undone here.</p>
+          </div>
+          <div className={styles.discardActions}>
+            <button
+              type="button"
+              className={styles.secondaryButton}
+              onClick={() => setConfirmDelete(false)}
+              disabled={saving}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              className={styles.dangerButton}
+              onClick={() => void onDelete(assignment.id)}
+              disabled={saving}
+            >
+              {saving ? "Deleting..." : "Delete assignment"}
+            </button>
+          </div>
+        </div>
+      ) : null}
 
       {discardAction ? (
         <div className={styles.discardPrompt} role="alertdialog" aria-modal="true" aria-label="Discard unsaved changes">

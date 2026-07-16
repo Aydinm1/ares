@@ -59,6 +59,7 @@ import {
 import {
   loadAssignments,
   loadCourses,
+  deleteAssignment,
   updateAssignmentCompletion,
   updateAssignmentDetails,
   updateAssignmentVisibility,
@@ -464,6 +465,32 @@ export function AssignmentsWorkspace() {
     [replaceCompletionState],
   );
 
+  const handleAssignmentDelete = useCallback(
+    async (assignmentId: string) => {
+      setEditorSaving(true);
+      setEditorError(undefined);
+      try {
+        await deleteAssignment(assignmentId);
+        clearCompletionFeedback(assignmentId);
+        const current = completionStateRef.current;
+        replaceCompletionState({
+          ...current,
+          assignments: current.assignments.filter((assignment) => assignment.id !== assignmentId),
+        });
+        const syncedAt = new Date();
+        setLastSyncedAt(syncedAt);
+        setSyncClock(syncedAt);
+        setSyncState("synced");
+        setDrawerState(undefined);
+      } catch (error) {
+        setEditorError(error instanceof Error ? error.message : "Assignment could not be deleted.");
+      } finally {
+        setEditorSaving(false);
+      }
+    },
+    [clearCompletionFeedback, replaceCompletionState],
+  );
+
   const formattedToday = format(today, "EEEE, MMMM d, yyyy");
   const syncLabel =
     syncState === "syncing"
@@ -590,6 +617,7 @@ export function AssignmentsWorkspace() {
           setDrawerState({ kind: "agenda", dateKey });
         }}
         onSave={handleAssignmentSave}
+        onDelete={handleAssignmentDelete}
       />
     </AssignmentShell>
   );
