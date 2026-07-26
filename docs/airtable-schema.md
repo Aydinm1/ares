@@ -69,7 +69,7 @@ flowchart LR
   Courses -->|Assignments| Assignments
   Courses -->|Category Weights| CategoryWeights[Category Weights]
   Courses -->|GE links| GE[General Education Requirements]
-  Courses -->|Staff Contacts| StaffContacts[Staff Contacts]
+  Courses -->|Staff Contacts| Contacts[Contacts]
   Courses -->|Prerequisites| Courses
   Assignments -->|Category Weights| CategoryWeights
   Habits -->|dated completion| HabitCheckIns[Habit Check-ins]
@@ -264,7 +264,7 @@ Table ID: `tblXC0Vug7xyPFZqW`
 | Max Current Grade | `fldRmC3MuOSI2zdI2` | `formula` | Weighted-grade calculation |
 | Calculation | `fldKLOUv6A2o4LfOW` | `formula` | Grade calculation |
 
-## Staff Contacts
+## Contacts
 
 Table ID: `tblcB7zTektBmiE0a`
 
@@ -281,8 +281,8 @@ This table is live but is not read by the current application.
 | Notes | `fldg9YqtcD2fvtMVC` | `multilineText` | Contact notes |
 
 The architecture proposes broadening this concept into People when Career Hub
-requires recruiters, mentors, professors, and other contacts. No migration has
-been performed.
+requires recruiters, mentors, professors, and other contacts. Current outreach
+imports store source and triage details in Notes until a richer schema exists.
 
 ## Known Drift and Cleanup Candidates
 

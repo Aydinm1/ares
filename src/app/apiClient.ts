@@ -5,6 +5,9 @@ import type {
   CompetencyFocusUpdate,
   CompetencyOverview,
   CompetencyUpdate,
+  Contact,
+  ContactEvidenceUpdate,
+  ContactWorkflow,
   Course,
   Habit,
   HabitCheckIn,
@@ -12,6 +15,7 @@ import type {
   HabitWeek,
   InboxItem
 } from "../domain/index.js";
+import type { ContactIntakePreview } from "../contacts/intake.js";
 
 export interface AssignmentEditorUpdate {
   title?: string;
@@ -39,6 +43,110 @@ export async function loadCourses(options: LoadOptions = {}): Promise<Course[]> 
     apiUrl("/api/courses", options)
   );
   return response.courses;
+}
+
+export async function loadContacts(options: LoadOptions = {}): Promise<Contact[]> {
+  const response = await fetchJson<{ contacts: Contact[] }>(
+    apiUrl("/api/contacts", options)
+  );
+  return response.contacts;
+}
+
+export interface SaveContactClientFitResult {
+  savedIds: string[];
+  missingIds: string[];
+  savedCount: number;
+  skippedCount: number;
+  updatedAt: string;
+  version: string;
+}
+
+export async function saveContactClientFit(contactIds: string[]): Promise<SaveContactClientFitResult> {
+  return fetchJson<SaveContactClientFitResult>("/api/contacts/client-fit", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ contactIds })
+  });
+}
+
+export async function saveContactEvidence(
+  contactId: string,
+  update: ContactEvidenceUpdate
+): Promise<Contact> {
+  const response = await fetchJson<{ contact: Contact }>(
+    `/api/contacts/${encodeURIComponent(contactId)}`,
+    {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(update)
+    }
+  );
+  return response.contact;
+}
+
+export interface ContactIntakeResult extends ContactIntakePreview {
+  createdContacts: Contact[];
+  scoredCount?: number;
+  clientFitVersion?: string;
+}
+
+export interface ContactIntakeUpdateResult extends ContactIntakePreview {
+  updatedContacts: Contact[];
+  updatedCount: number;
+  createdContacts: Contact[];
+  createdCount: number;
+  scoredCount: number;
+  clientFitVersion?: string;
+  unmatchedContacts: ContactIntakePreview["contacts"];
+}
+
+export interface ContactIntakeRequestOptions {
+  sourceOverride?: string;
+  targetWorkflows?: ContactWorkflow[];
+  createUnmatched?: boolean;
+  saveEligibleClientFit?: boolean;
+}
+
+export async function previewContactIntake(
+  rawText: string,
+  options: ContactIntakeRequestOptions = {}
+): Promise<ContactIntakePreview> {
+  return fetchJson<ContactIntakePreview>("/api/contacts/intake", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ rawText, dryRun: true, ...options })
+  });
+}
+
+export async function saveContactIntake(
+  rawText: string,
+  options: ContactIntakeRequestOptions = {}
+): Promise<ContactIntakeResult> {
+  return fetchJson<ContactIntakeResult>("/api/contacts/intake", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ rawText, dryRun: false, ...options })
+  });
+}
+
+export async function updateExistingContactIntake(
+  rawText: string,
+  options: ContactIntakeRequestOptions = {}
+): Promise<ContactIntakeUpdateResult> {
+  return fetchJson<ContactIntakeUpdateResult>("/api/contacts/intake", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      rawText,
+      dryRun: false,
+      action: "updateExisting",
+      targetWorkflows: options.targetWorkflows ?? ["Personal Networking"],
+      sourceOverride: options.sourceOverride ?? "LinkedIn connections paste",
+      createUnmatched: true,
+      saveEligibleClientFit: true,
+      ...options
+    })
+  });
 }
 
 export async function loadInboxItems(): Promise<InboxItem[]> {

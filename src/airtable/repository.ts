@@ -6,6 +6,8 @@ import type {
   CompetencyFocusUpdate,
   CompetencyOverview,
   CompetencyUpdate,
+  Contact,
+  ContactEvidenceUpdate,
   Course,
   Habit,
   HabitCheckIn,
@@ -20,6 +22,11 @@ import {
   competencyFocusUpdateToAirtable,
   competencyToAirtable,
   competencyUpdateToAirtable,
+  contactClientFitToAirtable,
+  contactEvidenceToAirtable,
+  contactIntakeToAirtable,
+  contactIntakeUpdateToAirtable,
+  type ContactClientFitPersistence,
   habitCheckInToAirtable,
   habitToAirtable,
   habitUpdateToAirtable,
@@ -27,6 +34,7 @@ import {
   mapAssignment,
   mapCompetency,
   mapCompetencyFocus,
+  mapContact,
   mapCourse,
   mapGeneralEducationRequirement,
   mapGradeCategory,
@@ -35,6 +43,7 @@ import {
   mapInboxItem
 } from "./mappers.js";
 import { fields, tableRef } from "./schema.js";
+import type { ParsedContactInput } from "../contacts/intake.js";
 
 const READ_CACHE_TTL_MS = 30_000;
 const HABIT_ORDER_STEP = 1000;
@@ -47,6 +56,10 @@ interface CacheEntry<T> {
 
 export interface ReadOptions {
   refresh?: boolean;
+}
+
+export interface ContactClientFitUpdate extends ContactClientFitPersistence {
+  id: string;
 }
 
 export class SchoolRepository {
@@ -94,6 +107,88 @@ export class SchoolRepository {
     });
   }
 
+  async listContacts(options: ReadOptions = {}): Promise<Contact[]> {
+    return this.readCached("contacts", options, async () => {
+      const query = new URLSearchParams();
+      for (const field of CONTACT_LIST_FIELDS) {
+        query.append("fields[]", field);
+      }
+      const records = await this.client.list<Record<string, unknown>>(
+        tableRef("contacts"),
+        query
+      );
+      return records.map(mapContact).sort(compareContactsForDefaultView);
+    });
+  }
+
+  async updateContactClientFits(updates: ContactClientFitUpdate[]): Promise<void> {
+    for (const chunk of chunks(updates, 10)) {
+      await this.client.updateMany<Record<string, unknown>>(
+        tableRef("contacts"),
+        chunk.map((update) => ({
+          id: update.id,
+          fields: contactClientFitToAirtable(update)
+        }))
+      );
+    }
+    this.invalidateContacts();
+  }
+
+  async updateContactEvidence(recordId: string, update: ContactEvidenceUpdate): Promise<Contact> {
+    const record = await this.client.update<Record<string, unknown>>(
+      tableRef("contacts"),
+      recordId,
+      contactEvidenceToAirtable({
+        ...update,
+        lastReviewedAt: new Date().toISOString()
+      })
+    );
+    this.invalidateContacts();
+    return mapContact(record);
+  }
+
+  async createContactsFromIntake(contacts: ParsedContactInput[]): Promise<Contact[]> {
+    const created: Contact[] = [];
+    for (const chunk of chunks(contacts, 10)) {
+      const records = await this.client.createMany<Record<string, unknown>>(
+        tableRef("contacts"),
+        chunk.map((contact) => ({ fields: contactIntakeToAirtable(contact) })),
+        { typecast: true }
+      );
+      created.push(...records.map(mapContact));
+    }
+    this.invalidateContacts();
+    return created;
+  }
+
+  async updateContactsFromIntake(contacts: ParsedContactInput[]): Promise<Contact[]> {
+    const existingContacts = await this.listContacts({ refresh: true });
+    const existingByName = new Map<string, Contact[]>();
+    for (const contact of existingContacts) {
+      const key = normalizeContactName(contact.name);
+      existingByName.set(key, [...(existingByName.get(key) ?? []), contact]);
+    }
+
+    const updates = contacts.flatMap((parsed) => {
+      const existing = findExistingContactForIntake(parsed, existingByName);
+      if (!existing) return [];
+      const fieldsToUpdate = contactIntakeUpdateToAirtable(parsed, existing);
+      if (!Object.keys(fieldsToUpdate).length) return [];
+      return [{ id: existing.id, fields: fieldsToUpdate }];
+    });
+
+    const updated: Contact[] = [];
+    for (const chunk of chunks(updates, 10)) {
+      const records = await this.client.updateMany<Record<string, unknown>>(
+        tableRef("contacts"),
+        chunk
+      );
+      updated.push(...records.map(mapContact));
+    }
+    this.invalidateContacts();
+    return updated;
+  }
+
   async updateAssignment(recordId: string, update: AssignmentUpdate): Promise<Assignment> {
     const record = await this.client.update<Record<string, unknown>>(
       tableRef("assignments"),
@@ -111,6 +206,10 @@ export class SchoolRepository {
 
   invalidateAssignments(): void {
     this.cache.delete("assignments");
+  }
+
+  invalidateContacts(): void {
+    this.cache.delete("contacts");
   }
 
   clearReadCache(): void {
@@ -357,6 +456,143 @@ export class SchoolRepository {
     this.cache.set(key, { expiresAt: now + READ_CACHE_TTL_MS, value });
     return value;
   }
+}
+
+const CONTACT_LIST_FIELDS = [
+  fields.contacts.name,
+  fields.contacts.course,
+  fields.contacts.role,
+  fields.contacts.email,
+  fields.contacts.officeHours,
+  fields.contacts.location,
+  fields.contacts.notes,
+  fields.contacts.sourceEvent,
+  fields.contacts.sourceKey,
+  fields.contacts.codeLabPriority,
+  fields.contacts.codeLabFitReason,
+  fields.contacts.potentialProjectAngles,
+  fields.contacts.generatedReachOutReason,
+  fields.contacts.generatedProjectIdeas,
+  fields.contacts.generatedDiscoveryPrompts,
+  fields.contacts.generatedCodeLabScore,
+  fields.contacts.generatedTechRelevanceScore,
+  fields.contacts.generatedAuthorityScore,
+  fields.contacts.generatedProjectSourceScore,
+  fields.contacts.generatedWarmPathScore,
+  fields.contacts.generatedScoreReason,
+  fields.contacts.generatedClientFitUpdatedAt,
+  fields.contacts.generatedClientFitVersion,
+  fields.contacts.outreachStatus,
+  fields.contacts.linkedInUrl,
+  fields.contacts.linkedInConnectedOn,
+  fields.contacts.identityStatus,
+  fields.contacts.organizationMatchStatus,
+  fields.contacts.evidenceNotes,
+  fields.contacts.lastReviewedAt,
+  fields.contacts.prospectType,
+  fields.contacts.seniority,
+  fields.contacts.function,
+  fields.contacts.company,
+  fields.contacts.headline,
+  fields.contacts.linkedInHeadline,
+  fields.contacts.source,
+  fields.contacts.searchTerm,
+  fields.contacts.contactSegment,
+  fields.contacts.connectionDegree,
+  fields.contacts.studentStatus,
+  fields.contacts.projectPotential,
+  fields.contacts.reviewStatus,
+  fields.contacts.duplicateKey,
+  fields.contacts.duplicateGroup,
+  fields.contacts.autoPriority,
+  fields.contacts.autoStudentStatus,
+  fields.contacts.autoSeniority,
+  fields.contacts.autoSource,
+  fields.contacts.autoSearchTerm,
+  fields.contacts.autoFunctionTags,
+  fields.contacts.autoProspectType,
+  fields.contacts.autoProjectPotential,
+  fields.contacts.autoHeadline,
+  fields.contacts.autoCompany,
+  fields.contacts.autoDuplicateGroup,
+  fields.contacts.autoDuplicateKey,
+  fields.contacts.autoReviewStatus,
+  fields.contacts.workflows,
+  fields.contacts.relationshipType,
+  fields.contacts.personalPriority,
+  fields.contacts.birthday,
+  fields.contacts.lastContacted,
+  fields.contacts.nextFollowUp,
+  fields.contacts.organizations,
+  fields.contacts.interactions,
+  fields.contacts.outreachOpportunities,
+  fields.contacts.importantDates,
+  fields.contacts.autoWorkflowTags
+];
+
+function compareContactsForDefaultView(a: Contact, b: Contact): number {
+  return contactRank(b) - contactRank(a) || a.name.localeCompare(b.name);
+}
+
+function contactRank(contact: Contact): number {
+  if (typeof contact.generatedCodeLabScore === "number") {
+    return contact.generatedCodeLabScore * 1000;
+  }
+
+  let score = 0;
+  if (contact.priority === "High") score += 100;
+  if (contact.priority === "Medium") score += 60;
+  if (contact.studentStatus === "Not Student") score += 24;
+  if (contact.prospectType === "Decision Maker") score += 18;
+  if (contact.prospectType === "Technical Leader") score += 16;
+  if (contact.prospectType === "Product") score += 14;
+  if (contact.prospectType === "Operator") score += 8;
+  if (contact.reviewStatus === "Needs Review") score -= 8;
+  if (contact.prospectType === "Skip" || contact.priority === "Skip") score -= 200;
+  return score;
+}
+
+function chunks<T>(items: T[], size: number): T[][] {
+  const result: T[][] = [];
+  for (let index = 0; index < items.length; index += size) {
+    result.push(items.slice(index, index + size));
+  }
+  return result;
+}
+
+function findExistingContactForIntake(
+  contact: ParsedContactInput,
+  existingByName: Map<string, Contact[]>
+): Contact | undefined {
+  const matches = existingByName.get(normalizeContactName(contact.name)) ?? [];
+  if (!matches.length) return undefined;
+  const normalizedCompany = normalizeContactCompany(contact.company);
+  return matches.find((match) => normalizeContactCompany(match.company) === normalizedCompany) ?? matches[0];
+}
+
+function normalizeContactName(value: string): string {
+  return normalizeContactText(value)
+    .replace(/,#open_to_work/gi, "")
+    .replace(/#open_to_work/gi, "")
+    .replace(/[^\p{L}\p{N}\s]/gu, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function normalizeContactCompany(value?: string): string {
+  return normalizeContactText(value ?? "")
+    .replace(/\b(inc|llc|ltd|corp|corporation|company|co)\b\.?/g, "")
+    .replace(/[^\p{L}\p{N}\s]/gu, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function normalizeContactText(value: string): string {
+  return value
+    .replace(/[\u200e\u200f\u200b-\u200d\ufeff]/g, "")
+    .toLowerCase()
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 function compareHabitsByOrder(a: Habit, b: Habit): number {

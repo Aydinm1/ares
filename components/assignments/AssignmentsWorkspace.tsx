@@ -18,6 +18,7 @@ import {
   GraduationCap,
   Pencil,
   RefreshCw,
+  UsersRound,
   X,
 } from "lucide-react";
 import { format } from "date-fns";
@@ -77,6 +78,7 @@ const icons: AssignmentUiIcons = {
   intake: <Inbox size={19} strokeWidth={2} />,
   habits: <CircleCheckBig size={19} strokeWidth={2} />,
   competencies: <Compass size={19} strokeWidth={2} />,
+  contacts: <UsersRound size={19} strokeWidth={2} />,
   calendar: <CalendarDays size={17} strokeWidth={2} />,
   list: <List size={17} strokeWidth={2} />,
   previous: <ChevronLeft size={18} strokeWidth={2} />,
@@ -510,6 +512,7 @@ export function AssignmentsWorkspace() {
         intake: icons.intake,
         habits: icons.habits,
         competencies: icons.competencies,
+        contacts: icons.contacts,
       }}
     >
       <WorkspaceHeader

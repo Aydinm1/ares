@@ -25,6 +25,7 @@ import {
   Pencil,
   Plus,
   Trash2,
+  UsersRound,
   X,
 } from "lucide-react";
 import { AssignmentShell } from "../assignment-ui";
@@ -54,6 +55,7 @@ const icons = {
   competencies: <Compass size={19} strokeWidth={2} />,
   assignments: <ListTodo size={19} strokeWidth={2} />,
   courses: <GraduationCap size={19} strokeWidth={2} />,
+  contacts: <UsersRound size={19} strokeWidth={2} />,
 };
 
 function formatSessionTotal(total: number): string {

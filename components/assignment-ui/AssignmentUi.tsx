@@ -17,6 +17,7 @@ export interface AssignmentUiIcons {
   intake: ReactNode;
   habits: ReactNode;
   competencies: ReactNode;
+  contacts: ReactNode;
   calendar: ReactNode;
   list: ReactNode;
   previous: ReactNode;
@@ -70,8 +71,8 @@ export interface CourseFilterOption {
 
 interface AssignmentShellProps {
   brandName?: string;
-  activeNav: "intake" | "habits" | "competencies" | "assignments" | "courses";
-  icons: Pick<AssignmentUiIcons, "intake" | "habits" | "competencies" | "assignments" | "courses">;
+  activeNav: "intake" | "habits" | "competencies" | "contacts" | "assignments" | "courses";
+  icons: Pick<AssignmentUiIcons, "intake" | "habits" | "competencies" | "contacts" | "assignments" | "courses">;
   children: ReactNode;
 }
 
@@ -131,6 +132,14 @@ export function AssignmentShell({
               {icons.assignments}
             </Link>
             <Link
+              className={`${styles.mobileNavItem} ${activeNav === "contacts" ? styles.mobileNavItemActive : ""}`}
+              href="/contacts"
+              aria-label="Contacts"
+              aria-current={activeNav === "contacts" ? "page" : undefined}
+            >
+              {icons.contacts}
+            </Link>
+            <Link
               className={`${styles.mobileNavItem} ${activeNav === "courses" ? styles.mobileNavItemActive : ""}`}
               href="/courses"
               aria-label="4 Year Plan"
@@ -183,6 +192,16 @@ export function AssignmentShell({
               {icons.assignments}
             </span>
             <span>Assignments</span>
+          </Link>
+          <Link
+            className={`${styles.navItem} ${activeNav === "contacts" ? styles.navItemActive : ""}`}
+            href="/contacts"
+            aria-current={activeNav === "contacts" ? "page" : undefined}
+          >
+            <span className={styles.navIcon} aria-hidden="true">
+              {icons.contacts}
+            </span>
+            <span>Contacts</span>
           </Link>
           <Link
             className={`${styles.navItem} ${activeNav === "courses" ? styles.navItemActive : ""}`}

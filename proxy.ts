@@ -5,7 +5,7 @@ import {
   verifySessionCookieValue,
 } from "./src/auth/session";
 
-const PROTECTED_PATHS = ["/", "/habits", "/assignments", "/courses", "/inbox"];
+const PROTECTED_PATHS = ["/", "/habits", "/assignments", "/courses", "/inbox", "/contacts"];
 
 function isProtectedPath(pathname: string): boolean {
   return (

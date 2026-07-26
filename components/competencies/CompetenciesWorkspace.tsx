@@ -22,6 +22,7 @@ import {
   RotateCcw,
   Square,
   Trash2,
+  UsersRound,
   X,
 } from "lucide-react";
 import { AssignmentShell } from "../assignment-ui";
@@ -47,6 +48,7 @@ const icons = {
   intake: <Inbox size={19} strokeWidth={2} />,
   habits: <CircleCheckBig size={19} strokeWidth={2} />,
   competencies: <Compass size={19} strokeWidth={2} />,
+  contacts: <UsersRound size={19} strokeWidth={2} />,
 };
 
 const STATUS_LABELS: Record<CompetencyStatus, string> = {

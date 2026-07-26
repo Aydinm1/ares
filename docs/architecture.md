@@ -271,8 +271,8 @@ Career Hub introduces only the fields needed for recruiting: name,
 Organization, role, email, profile URL, and notes. Relationship history and
 reminders remain a later module.
 
-The existing `Staff Contacts` table can be migrated into this broader concept
-when People becomes active.
+The existing `Contacts` table can be migrated into this broader concept when
+People becomes active.
 
 #### Experience
 

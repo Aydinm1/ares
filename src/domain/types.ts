@@ -168,3 +168,100 @@ export interface CompetencyFocusUpdate {
   notes?: string | null;
   endReason?: string | null;
 }
+
+export type ContactWorkflow =
+  | "School"
+  | "CodeLab Outreach"
+  | "180DC Outreach"
+  | "Personal Networking"
+  | "Friends/Family"
+  | "Birthdays"
+  | "Community"
+  | "Recruiting/Talent"
+  | "Needs Cleanup";
+
+export type ContactProspectType =
+  | "Decision Maker"
+  | "Technical Leader"
+  | "Product"
+  | "Operator"
+  | "Student/Talent"
+  | "Community/Connector"
+  | "Low Signal"
+  | "Skip";
+
+export type ContactPriority = "High" | "Medium" | "Low" | "Skip" | "Needs Review";
+
+export type ContactStudentStatus = "Student" | "Recent Grad" | "Not Student" | "Unknown";
+
+export type ContactReviewStatus = "Auto Parsed" | "Needs Review" | "Reviewed" | "Do Not Contact";
+
+export type ContactVerificationStatus = "Unverified" | "Needs Review" | "Verified" | "Rejected";
+
+export interface ContactEvidenceUpdate {
+  linkedInUrl?: string | null;
+  identityStatus?: ContactVerificationStatus;
+  organizationMatchStatus?: ContactVerificationStatus;
+  evidenceNotes?: string | null;
+  notes?: string | null;
+  outreachStatus?: string | null;
+  lastContacted?: string | null;
+  nextFollowUp?: string | null;
+}
+
+export interface Contact {
+  id: AirtableRecordId;
+  name: string;
+  email?: string;
+  role?: string;
+  headline?: string;
+  company?: string;
+  notes?: string;
+  linkedInUrl?: string;
+  linkedInConnectedOn?: string;
+  identityStatus?: ContactVerificationStatus;
+  organizationMatchStatus?: ContactVerificationStatus;
+  evidenceNotes?: string;
+  lastReviewedAt?: string;
+  source?: string;
+  sourceEvent?: string;
+  searchTerm?: string;
+  contactSegment?: string;
+  connectionDegree?: string;
+  priority?: ContactPriority;
+  prospectType?: ContactProspectType;
+  seniority?: string;
+  studentStatus?: ContactStudentStatus;
+  projectPotential?: string;
+  reviewStatus?: ContactReviewStatus;
+  functionTags: string[];
+  workflows: ContactWorkflow[];
+  autoWorkflowTags: ContactWorkflow[];
+  relationshipType?: string;
+  personalPriority?: string;
+  birthday?: string;
+  lastContacted?: string;
+  nextFollowUp?: string;
+  courseIds: AirtableRecordId[];
+  organizationIds: AirtableRecordId[];
+  interactionIds: AirtableRecordId[];
+  outreachOpportunityIds: AirtableRecordId[];
+  importantDateIds: AirtableRecordId[];
+  duplicateGroup?: string;
+  duplicateKey?: string;
+  codeLabFitReason?: string;
+  potentialProjectAngles?: string;
+  generatedReachOutReason?: string;
+  generatedProjectIdeas?: string;
+  generatedDiscoveryPrompts?: string;
+  generatedCodeLabScore?: number;
+  generatedTechRelevanceScore?: number;
+  generatedAuthorityScore?: number;
+  generatedProjectSourceScore?: number;
+  generatedWarmPathScore?: number;
+  generatedScoreReason?: string;
+  generatedClientFitUpdatedAt?: string;
+  generatedClientFitVersion?: string;
+  outreachStatus?: string;
+  createdAt?: string;
+}

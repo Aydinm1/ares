@@ -11,6 +11,11 @@ export interface AirtableListResponse<TFields> {
   offset?: string;
 }
 
+export interface AirtableUpdateRecord<TFields> {
+  id: string;
+  fields: Partial<TFields>;
+}
+
 export class AirtableClient {
   private readonly apiKey: string;
   private readonly baseId: string;
@@ -47,11 +52,34 @@ export class AirtableClient {
     });
   }
 
+  async updateMany<TFields>(
+    table: string,
+    records: AirtableUpdateRecord<TFields>[]
+  ): Promise<AirtableRecord<TFields>[]> {
+    const response = await this.request<AirtableListResponse<TFields>>(this.tableUrl(table), {
+      method: "PATCH",
+      body: JSON.stringify({ records })
+    });
+    return response.records;
+  }
+
   async create<TFields>(table: string, fields: Partial<TFields>): Promise<AirtableRecord<TFields>> {
     return this.request<AirtableRecord<TFields>>(this.tableUrl(table), {
       method: "POST",
       body: JSON.stringify({ fields })
     });
+  }
+
+  async createMany<TFields>(
+    table: string,
+    records: Array<{ fields: Partial<TFields> }>,
+    options: { typecast?: boolean } = {}
+  ): Promise<AirtableRecord<TFields>[]> {
+    const response = await this.request<AirtableListResponse<TFields>>(this.tableUrl(table), {
+      method: "POST",
+      body: JSON.stringify({ records, typecast: options.typecast })
+    });
+    return response.records;
   }
 
   async delete(table: string, recordId: string): Promise<void> {

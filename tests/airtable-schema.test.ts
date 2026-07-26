@@ -1,6 +1,10 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import nextEnv from "@next/env";
 import { AIRTABLE_BASE_ID, tables } from "../src/airtable/schema.js";
+
+const { loadEnvConfig } = nextEnv;
+loadEnvConfig(process.cwd());
 
 type ExpectedField = {
   id: string;
@@ -133,6 +137,91 @@ const expectedSchema: ExpectedTable[] = [
       { id: "fld9fLJmasqyggusr", name: "Notes", type: "multilineText" },
       { id: "fldy9bK3IHuyRMAqv", name: "End Reason", type: "multilineText" },
       { id: "fldeQ5Wa62LgKui5O", name: "Created At", type: "dateTime" }
+    ]
+  },
+  {
+    id: tables.contacts.id,
+    name: tables.contacts.name,
+    fields: [
+      { id: "fldnrCMRMSKjhtLup", name: "Name", type: "singleLineText" },
+      { id: "fldGFrLnXnHcpXmzi", name: "Email", type: "email" },
+      { id: "fldET7kXEZhw8KqjN", name: "Course", type: "multipleRecordLinks", linkedTableId: tables.courses.id },
+      { id: "fld9Ano4u99JWLmuV", name: "Generated Reach Out Reason", type: "multilineText" },
+      { id: "fld37xGsAz1QOTZ1g", name: "Generated Project Ideas", type: "multilineText" },
+      { id: "fld3QOuQc3928SmMd", name: "Generated Discovery Prompts", type: "multilineText" },
+      { id: "fld0FfCx0iysGDcip", name: "Generated CodeLab Score", type: "number" },
+      { id: "fldNRlijYI4y1XPir", name: "Generated Tech Relevance Score", type: "number" },
+      { id: "fldnBnlA5bkDDm6tj", name: "Generated Authority Score", type: "number" },
+      { id: "fldKsexOG3JpWQvyz", name: "Generated Project Source Score", type: "number" },
+      { id: "fldrQl2YVLokfrXLa", name: "Generated Warm Path Score", type: "number" },
+      { id: "fldFRkTgsiUzLPffl", name: "Generated Score Reason", type: "multilineText" },
+      { id: "fldX06gLAzPPzcVdL", name: "Generated Client Fit Updated At", type: "dateTime" },
+      { id: "fldlG9L38hSmsJ00d", name: "Generated Client Fit Version", type: "singleLineText" },
+      { id: "fldaHl3fXdMfI8VAJ", name: "LinkedIn URL", type: "url" },
+      { id: "fldeQTdUf1RkV1JSi", name: "LinkedIn Connected On", type: "date" },
+      { id: "fldUw7ip8hXF45RNR", name: "Identity Status", type: "singleSelect" },
+      { id: "fldd82LO106tlyVE8", name: "Organization Match Status", type: "singleSelect" },
+      { id: "fldtpuELmI7JUT7Xd", name: "Evidence Notes", type: "multilineText" },
+      { id: "fldpJQja9Qw5fNxPM", name: "Last Reviewed At", type: "dateTime" },
+      { id: "fldoCrTjiMg2oidDB", name: "Workflows", type: "multipleSelects" },
+      { id: "fldur3RmRvvwksQjD", name: "Auto Workflow Tags", type: "formula" },
+      { id: "fldT1xbrfoaTjKR5o", name: "Relationship Type", type: "singleSelect" },
+      { id: "fldDkO7AqQQ2WzkBm", name: "Personal Priority", type: "singleSelect" },
+      { id: "fld6cJoPdgQp8rYAG", name: "Birthday", type: "date" },
+      { id: "fldLnY7br8mXdgPsl", name: "Last Contacted", type: "date" },
+      { id: "fldAl8tes9C5Ivyjg", name: "Next Follow Up", type: "date" },
+      { id: "fldH4nQL5TxpYX6bV", name: "Organizations", type: "multipleRecordLinks", linkedTableId: tables.organizations.id },
+      { id: "fldXIywP9NxIazGlq", name: "Interactions", type: "multipleRecordLinks", linkedTableId: tables.interactions.id },
+      { id: "fldDirj32sHtBUfdC", name: "Outreach Opportunities", type: "multipleRecordLinks", linkedTableId: tables.outreachOpportunities.id },
+      { id: "fldTEFYOzhKjuInnZ", name: "Important Dates", type: "multipleRecordLinks", linkedTableId: tables.importantDates.id }
+    ]
+  },
+  {
+    id: tables.organizations.id,
+    name: tables.organizations.name,
+    fields: [
+      { id: "fldrtlqvR57NonPmz", name: "Organization Name", type: "singleLineText" },
+      { id: "fldcFljbsPmcbCsUh", name: "Organization Type", type: "singleSelect" },
+      { id: "fldve4PyTFSoEg5Bw", name: "Website", type: "url" },
+      { id: "fldH1Bsftdbgkz6D8", name: "LinkedIn URL", type: "url" },
+      { id: "fldA7zJB5RSziZHqI", name: "Verification Status", type: "singleSelect" },
+      { id: "fldxytJ66bHTuinSj", name: "Evidence URLs", type: "multilineText" },
+      { id: "fldMJAJ9sw6odSnDy", name: "Description", type: "multilineText" },
+      { id: "fld8FdsLAtu1AZ6JB", name: "Tech Relevance", type: "singleSelect" },
+      { id: "fldOY3AlZVrNWrxZO", name: "Notes", type: "multilineText" },
+      { id: "fldFgucJkHvp17XDW", name: "Contacts", type: "multipleRecordLinks", linkedTableId: tables.contacts.id },
+      { id: "fld2s5jHp5a6M2Gex", name: "Outreach Opportunities", type: "multipleRecordLinks", linkedTableId: tables.outreachOpportunities.id }
+    ]
+  },
+  {
+    id: tables.interactions.id,
+    name: tables.interactions.name,
+    fields: [
+      { id: "fldQ0bulzpwKoT7Zc", name: "Interaction Title", type: "singleLineText" },
+      { id: "fldnncRHdWuZFUYf7", name: "Contacts", type: "multipleRecordLinks", linkedTableId: tables.contacts.id },
+      { id: "fldpOgMz1Rtejvbay", name: "Interaction Date", type: "date" },
+      { id: "fldjrwe5xisG53rW9", name: "Workflow", type: "singleSelect" }
+    ]
+  },
+  {
+    id: tables.outreachOpportunities.id,
+    name: tables.outreachOpportunities.name,
+    fields: [
+      { id: "fldsmd7DYJkn8Ti8Z", name: "Opportunity Name", type: "singleLineText" },
+      { id: "fldiGLynWJpsMVKyt", name: "Contacts", type: "multipleRecordLinks", linkedTableId: tables.contacts.id },
+      { id: "fld4z9MGMpK66Ieln", name: "Organizations", type: "multipleRecordLinks", linkedTableId: tables.organizations.id },
+      { id: "fldjtemQ4ShSLorMP", name: "Workflow", type: "singleSelect" },
+      { id: "fldHLOIFif23nKOEv", name: "Stage", type: "singleSelect" }
+    ]
+  },
+  {
+    id: tables.importantDates.id,
+    name: tables.importantDates.name,
+    fields: [
+      { id: "fldjvL6q7LqgG2JzG", name: "Date Name", type: "singleLineText" },
+      { id: "fldKpCDpR5MHe7Yut", name: "Contacts", type: "multipleRecordLinks", linkedTableId: tables.contacts.id },
+      { id: "fldhrhAFa7HM6GKEa", name: "Date", type: "date" },
+      { id: "fldHsVGvfSzGy9Zmn", name: "Date Type", type: "singleSelect" }
     ]
   }
 ];

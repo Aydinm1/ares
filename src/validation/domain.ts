@@ -4,6 +4,9 @@ import type {
   CompetencyFocusUpdate,
   CompetencyStatus,
   CompetencyUpdate,
+  ContactEvidenceUpdate,
+  ContactVerificationStatus,
+  ContactWorkflow,
   HabitUpdate
 } from "../domain/types.js";
 
@@ -65,6 +68,22 @@ const FOCUS_WRITE_FIELDS = new Set([
   "endedAt",
   "notes",
   "endReason"
+]);
+const CONTACT_EVIDENCE_WRITE_FIELDS = new Set([
+  "linkedInUrl",
+  "identityStatus",
+  "organizationMatchStatus",
+  "evidenceNotes",
+  "notes",
+  "outreachStatus",
+  "lastContacted",
+  "nextFollowUp"
+]);
+const CONTACT_VERIFICATION_STATUSES = new Set<ContactVerificationStatus>([
+  "Unverified",
+  "Needs Review",
+  "Verified",
+  "Rejected"
 ]);
 
 export function validateHabitCreate(value: unknown): {
@@ -477,6 +496,199 @@ export function validateAssignmentWrite(value: unknown): AssignmentUpdate {
 
   if (issues.length) throw new ValidationError(issues);
   return update;
+}
+
+export function validateContactEvidenceWrite(value: unknown): ContactEvidenceUpdate {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    throw new ValidationError(["Request body must be an object."]);
+  }
+
+  const payload = value as Record<string, unknown>;
+  const issues: string[] = [];
+  const keys = Object.keys(payload);
+  if (keys.length === 0) issues.push("At least one field must be changed.");
+  if (keys.some((key) => !CONTACT_EVIDENCE_WRITE_FIELDS.has(key))) {
+    issues.push("Request contains fields that cannot be changed.");
+  }
+
+  const update: ContactEvidenceUpdate = {};
+  if ("linkedInUrl" in payload) {
+    if (payload.linkedInUrl === null || payload.linkedInUrl === "") {
+      update.linkedInUrl = null;
+    } else if (typeof payload.linkedInUrl !== "string") {
+      issues.push("linkedInUrl must be a URL string or null.");
+    } else {
+      const url = payload.linkedInUrl.trim();
+      if (url.length > 500) {
+        issues.push("linkedInUrl must be 500 characters or fewer.");
+      } else if (!/^https?:\/\//i.test(url)) {
+        issues.push("linkedInUrl must start with http:// or https://.");
+      } else {
+        update.linkedInUrl = url;
+      }
+    }
+  }
+
+  for (const field of ["identityStatus", "organizationMatchStatus"] as const) {
+    if (field in payload) {
+      const value = payload[field];
+      if (typeof value !== "string" || !CONTACT_VERIFICATION_STATUSES.has(value as ContactVerificationStatus)) {
+        issues.push(`${field} must be a valid verification status.`);
+      } else {
+        update[field] = value as ContactVerificationStatus;
+      }
+    }
+  }
+
+  if ("evidenceNotes" in payload) {
+    if (payload.evidenceNotes === null || payload.evidenceNotes === "") {
+      update.evidenceNotes = null;
+    } else if (typeof payload.evidenceNotes !== "string") {
+      issues.push("evidenceNotes must be a string or null.");
+    } else if (payload.evidenceNotes.trim().length > 4000) {
+      issues.push("evidenceNotes must be 4,000 characters or fewer.");
+    } else {
+      update.evidenceNotes = payload.evidenceNotes.trim();
+    }
+  }
+
+  if ("notes" in payload) {
+    if (payload.notes === null || payload.notes === "") {
+      update.notes = null;
+    } else if (typeof payload.notes !== "string") {
+      issues.push("notes must be a string or null.");
+    } else if (payload.notes.trim().length > 8000) {
+      issues.push("notes must be 8,000 characters or fewer.");
+    } else {
+      update.notes = payload.notes.trim();
+    }
+  }
+
+  if ("outreachStatus" in payload) {
+    if (payload.outreachStatus === null || payload.outreachStatus === "") {
+      update.outreachStatus = null;
+    } else if (typeof payload.outreachStatus !== "string") {
+      issues.push("outreachStatus must be a string or null.");
+    } else if (payload.outreachStatus.trim().length > 80) {
+      issues.push("outreachStatus must be 80 characters or fewer.");
+    } else {
+      update.outreachStatus = payload.outreachStatus.trim();
+    }
+  }
+
+  for (const field of ["lastContacted", "nextFollowUp"] as const) {
+    if (field in payload) {
+      const value = payload[field];
+      if (value === null || value === "") {
+        update[field] = null;
+      } else if (typeof value !== "string") {
+        issues.push(`${field} must be a local date string or null.`);
+      } else if (!isValidLocalDate(value.trim())) {
+        issues.push(`${field} must use YYYY-MM-DD format.`);
+      } else {
+        update[field] = value.trim();
+      }
+    }
+  }
+
+  if (issues.length) throw new ValidationError(issues);
+  return update;
+}
+
+export function validateContactIntakeRequest(value: unknown): {
+  rawText: string;
+  dryRun: boolean;
+  action: "create" | "updateExisting";
+  targetWorkflows: ContactWorkflow[];
+  sourceOverride?: string;
+  createUnmatched: boolean;
+  saveEligibleClientFit: boolean;
+} {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    throw new ValidationError(["Request body must be an object."]);
+  }
+  const payload = value as Record<string, unknown>;
+  const issues: string[] = [];
+  const allowedKeys = new Set([
+    "rawText",
+    "dryRun",
+    "action",
+    "targetWorkflows",
+    "sourceOverride",
+    "createUnmatched",
+    "saveEligibleClientFit"
+  ]);
+  if (Object.keys(payload).some((key) => !allowedKeys.has(key))) {
+    issues.push("Request contains fields that cannot be supplied.");
+  }
+  if (typeof payload.rawText !== "string" || payload.rawText.trim().length === 0) {
+    issues.push("rawText must be a non-empty string.");
+  } else if (payload.rawText.length > 250_000) {
+    issues.push("rawText must be 250,000 characters or fewer.");
+  }
+  if ("dryRun" in payload && typeof payload.dryRun !== "boolean") {
+    issues.push("dryRun must be a boolean.");
+  }
+  if (
+    "action" in payload &&
+    payload.action !== "create" &&
+    payload.action !== "updateExisting"
+  ) {
+    issues.push("action must be create or updateExisting.");
+  }
+  const workflowChoices = new Set([
+    "School",
+    "CodeLab Outreach",
+    "180DC Outreach",
+    "Personal Networking",
+    "Friends/Family",
+    "Birthdays",
+    "Community",
+    "Recruiting/Talent",
+    "Needs Cleanup"
+  ]);
+  const targetWorkflows: ContactWorkflow[] = [];
+  if ("targetWorkflows" in payload) {
+    if (!Array.isArray(payload.targetWorkflows)) {
+      issues.push("targetWorkflows must be an array.");
+    } else {
+      for (const item of payload.targetWorkflows) {
+        if (typeof item !== "string" || !workflowChoices.has(item)) {
+          issues.push("Every targetWorkflows item must be a known workflow.");
+          break;
+        }
+        if (!targetWorkflows.includes(item as ContactWorkflow)) {
+          targetWorkflows.push(item as ContactWorkflow);
+        }
+      }
+    }
+  }
+  let sourceOverride: string | undefined;
+  if ("sourceOverride" in payload) {
+    if (typeof payload.sourceOverride !== "string" || !payload.sourceOverride.trim()) {
+      issues.push("sourceOverride must be a non-empty string.");
+    } else if (payload.sourceOverride.trim().length > 120) {
+      issues.push("sourceOverride must be 120 characters or fewer.");
+    } else {
+      sourceOverride = payload.sourceOverride.trim();
+    }
+  }
+  if ("createUnmatched" in payload && typeof payload.createUnmatched !== "boolean") {
+    issues.push("createUnmatched must be a boolean.");
+  }
+  if ("saveEligibleClientFit" in payload && typeof payload.saveEligibleClientFit !== "boolean") {
+    issues.push("saveEligibleClientFit must be a boolean.");
+  }
+  if (issues.length) throw new ValidationError(issues);
+  return {
+    rawText: String(payload.rawText).trim(),
+    dryRun: payload.dryRun !== false,
+    action: payload.action === "updateExisting" ? "updateExisting" : "create",
+    targetWorkflows,
+    sourceOverride,
+    createUnmatched: payload.createUnmatched === true,
+    saveEligibleClientFit: payload.saveEligibleClientFit === true
+  };
 }
 
 export function validateAssignmentCompletionWrite(
