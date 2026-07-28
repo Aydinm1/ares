@@ -42,6 +42,14 @@ export interface CodeLabProjectSourcingFit {
   message: string;
 }
 
+export interface PracticeOutreachFit {
+  score: number;
+  eligible: boolean;
+  relationshipRisk: NonNullable<Contact["relationshipRisk"]>;
+  outreachReadiness: NonNullable<Contact["outreachReadiness"]>;
+  reasons: string[];
+}
+
 const DEFAULT_DISCOVERY_PROMPTS = [
   "Where does your team still rely on spreadsheets, manual handoffs, or repeated status updates?",
   "What reporting or onboarding workflow is painful but too small for your engineering team to prioritize?",
@@ -98,6 +106,38 @@ export function buildCodeLabProjectSourcingFit(contact: Contact): CodeLabProject
     technicalLanes: lanes,
     reasons,
     message: sourcingMessage(contact, suggestedAsk, lanes)
+  };
+}
+
+export function buildPracticeOutreachFit(contact: Contact): PracticeOutreachFit {
+  const sourcing = buildCodeLabProjectSourcingFit(contact);
+  const relationshipRisk = contact.relationshipRisk ?? inferRelationshipRisk(contact);
+  const outreachReadiness = contact.outreachReadiness ?? inferOutreachReadiness(contact, relationshipRisk);
+  const reasons = practiceOutreachReasons(contact, sourcing, relationshipRisk, outreachReadiness);
+  const eligible = reasons.length === 0;
+  const riskScore =
+    relationshipRisk === "Cold Practice" ? 10 :
+      relationshipRisk === "Warm Light" ? 8 :
+        relationshipRisk === "Warm Sensitive" ? 2 :
+          relationshipRisk === "Big Ask Later" ? 1 :
+            0;
+  const readinessScore =
+    outreachReadiness === "Practice Candidate" ? 10 :
+      outreachReadiness === "Ready to DM" ? 7 :
+        outreachReadiness === "Research First" ? 4 :
+          outreachReadiness === "Ask Family Context" ? 1 :
+            0;
+  const score = roundScore(Math.min(10, Math.max(1,
+    sourcing.score * 0.45 +
+    riskScore * 0.35 +
+    readinessScore * 0.20
+  )));
+  return {
+    score: eligible ? score : Math.min(score, 4.5),
+    eligible,
+    relationshipRisk,
+    outreachReadiness,
+    reasons
   };
 }
 
@@ -526,6 +566,8 @@ function contactHaystack(contact: Contact): string {
     contact.headline,
     contact.company,
     contact.notes,
+    contact.relationshipContext,
+    contact.researchDossier,
     contact.searchTerm,
     contact.source,
     contact.seniority,
@@ -535,6 +577,69 @@ function contactHaystack(contact: Contact): string {
     contact.personalPriority,
     ...contact.functionTags
   ].join(" ").toLowerCase();
+}
+
+function inferRelationshipRisk(contact: Contact): NonNullable<Contact["relationshipRisk"]> {
+  const haystack = contactHaystack(contact);
+  if (
+    contact.reviewStatus === "Do Not Contact" ||
+    contact.personalPriority === "Avoid" ||
+    contact.personalPriority === "Awkward" ||
+    /\b(ex'?s mom|ex family|awkward|avoid|do not contact|do not ask|representation concern)\b/.test(haystack)
+  ) {
+    return "Avoid / Need Context";
+  }
+  if (contact.relationshipType === "Family" || contact.workflows.includes("Friends/Family")) {
+    return "Big Ask Later";
+  }
+  if (/\b(dad knows|father knows|my dad|family friend|met as a kid|little kid|close community|community giant)\b/.test(haystack)) {
+    return "Warm Sensitive";
+  }
+  if (
+    contact.relationshipType === "Friend" ||
+    contact.relationshipType === "Professional Contact" ||
+    contact.relationshipType === "Community Contact" ||
+    contact.connectionDegree === "1st" ||
+    contact.workflows.includes("Community") ||
+    contact.workflows.includes("Personal Networking")
+  ) {
+    return "Warm Light";
+  }
+  return "Cold Practice";
+}
+
+function inferOutreachReadiness(
+  contact: Contact,
+  relationshipRisk: NonNullable<Contact["relationshipRisk"]>
+): NonNullable<Contact["outreachReadiness"]> {
+  if (relationshipRisk === "Avoid / Need Context" || relationshipRisk === "Big Ask Later") return "Hold";
+  if (relationshipRisk === "Warm Sensitive") return "Ask Family Context";
+  if (contact.researchStatus === "Researched") return "Ready to DM";
+  if (relationshipRisk === "Cold Practice" || relationshipRisk === "Warm Light") return "Practice Candidate";
+  return "Research First";
+}
+
+function practiceOutreachReasons(
+  contact: Contact,
+  sourcing: CodeLabProjectSourcingFit,
+  relationshipRisk: NonNullable<Contact["relationshipRisk"]>,
+  outreachReadiness: NonNullable<Contact["outreachReadiness"]>
+): string[] {
+  const reasons: string[] = [];
+  if (relationshipRisk === "Warm Sensitive") reasons.push("Warm sensitive contact; get context before practice outreach.");
+  if (relationshipRisk === "Big Ask Later") reasons.push("High-reputation or family-linked ask; save for later.");
+  if (relationshipRisk === "Avoid / Need Context") reasons.push("Relationship risk needs context before outreach.");
+  if (outreachReadiness === "Ask Family Context" || outreachReadiness === "Hold") {
+    reasons.push(`Readiness is ${outreachReadiness}.`);
+  }
+  if (contact.studentStatus === "Student" || contact.studentStatus === "Recent Grad") {
+    reasons.push("Student or recent-grad profile is not a good practice sponsor target.");
+  }
+  if (sourcing.role === "Skip" || sourcing.suggestedAsk === "Avoid") {
+    reasons.push("CodeLab sourcing fit says avoid or skip.");
+  }
+  if (sourcing.score < 6) reasons.push("Technical project signal is too weak for outreach practice.");
+  return reasons;
 }
 
 function contactProfileHaystack(contact: Contact): string {

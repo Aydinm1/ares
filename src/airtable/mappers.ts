@@ -10,8 +10,11 @@ import type {
   CompetencyUpdate,
   Contact,
   ContactEvidenceUpdate,
+  ContactOutreachReadiness,
   ContactPriority,
   ContactProspectType,
+  ContactRelationshipRisk,
+  ContactResearchStatus,
   ContactReviewStatus,
   ContactStudentStatus,
   ContactVerificationStatus,
@@ -132,6 +135,38 @@ function contactVerificationStatus(value: unknown): ContactVerificationStatus | 
     text === "Needs Review" ||
     text === "Verified" ||
     text === "Rejected"
+    ? text
+    : undefined;
+}
+
+function contactRelationshipRisk(value: unknown): ContactRelationshipRisk | undefined {
+  const text = stringValue(value);
+  return text === "Cold Practice" ||
+    text === "Warm Light" ||
+    text === "Warm Sensitive" ||
+    text === "Big Ask Later" ||
+    text === "Avoid / Need Context"
+    ? text
+    : undefined;
+}
+
+function contactOutreachReadiness(value: unknown): ContactOutreachReadiness | undefined {
+  const text = stringValue(value);
+  return text === "Practice Candidate" ||
+    text === "Research First" ||
+    text === "Ready to DM" ||
+    text === "Ask Family Context" ||
+    text === "Hold"
+    ? text
+    : undefined;
+}
+
+function contactResearchStatus(value: unknown): ContactResearchStatus | undefined {
+  const text = stringValue(value);
+  return text === "Not Started" ||
+    text === "Queued" ||
+    text === "Researched" ||
+    text === "Needs More Sources"
     ? text
     : undefined;
 }
@@ -276,6 +311,13 @@ export function mapContact(record: AirtableRecord<AnyFields>): Contact {
     autoWorkflowTags: contactWorkflowsFromFormula(value[fields.contacts.autoWorkflowTags]),
     relationshipType: trimmedString(value[fields.contacts.relationshipType]),
     personalPriority: trimmedString(value[fields.contacts.personalPriority]),
+    relationshipRisk: contactRelationshipRisk(value[fields.contacts.relationshipRisk]),
+    outreachReadiness: contactOutreachReadiness(value[fields.contacts.outreachReadiness]),
+    relationshipContext: trimmedString(value[fields.contacts.relationshipContext]),
+    researchStatus: contactResearchStatus(value[fields.contacts.researchStatus]),
+    researchDossier: trimmedString(value[fields.contacts.researchDossier]),
+    researchSourceUrls: trimmedString(value[fields.contacts.researchSourceUrls]),
+    lastResearchedAt: trimmedString(value[fields.contacts.lastResearchedAt]),
     birthday: trimmedString(value[fields.contacts.birthday]),
     lastContacted: trimmedString(value[fields.contacts.lastContacted]),
     nextFollowUp: trimmedString(value[fields.contacts.nextFollowUp]),
@@ -352,6 +394,13 @@ export function contactEvidenceToAirtable(input: ContactEvidenceUpdate & { lastR
   if ("outreachStatus" in input) output[fields.contacts.outreachStatus] = input.outreachStatus ?? null;
   if ("lastContacted" in input) output[fields.contacts.lastContacted] = input.lastContacted ?? null;
   if ("nextFollowUp" in input) output[fields.contacts.nextFollowUp] = input.nextFollowUp ?? null;
+  if ("relationshipRisk" in input) output[fields.contacts.relationshipRisk] = input.relationshipRisk ?? null;
+  if ("outreachReadiness" in input) output[fields.contacts.outreachReadiness] = input.outreachReadiness ?? null;
+  if ("relationshipContext" in input) output[fields.contacts.relationshipContext] = input.relationshipContext ?? null;
+  if ("researchStatus" in input) output[fields.contacts.researchStatus] = input.researchStatus ?? null;
+  if ("researchDossier" in input) output[fields.contacts.researchDossier] = input.researchDossier ?? null;
+  if ("researchSourceUrls" in input) output[fields.contacts.researchSourceUrls] = input.researchSourceUrls ?? null;
+  if ("lastResearchedAt" in input) output[fields.contacts.lastResearchedAt] = input.lastResearchedAt ?? null;
   return output;
 }
 

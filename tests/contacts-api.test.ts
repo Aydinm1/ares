@@ -50,6 +50,13 @@ test("Contacts GET maps auto-classified CRM fields", async () => {
           [fields.contacts.identityStatus]: "Verified",
           [fields.contacts.organizationMatchStatus]: "Needs Review",
           [fields.contacts.evidenceNotes]: "Matched against company website.",
+          [fields.contacts.relationshipRisk]: "Warm Sensitive",
+          [fields.contacts.outreachReadiness]: "Ask Family Context",
+          [fields.contacts.relationshipContext]: "Dad knows him; get context first.",
+          [fields.contacts.researchStatus]: "Queued",
+          [fields.contacts.researchDossier]: "- Confirmed role from company page [source]",
+          [fields.contacts.researchSourceUrls]: "https://example.com/profile",
+          [fields.contacts.lastResearchedAt]: "2026-07-26T12:00:00.000Z",
           [fields.contacts.organizations]: ["recOrg000000000"],
           [fields.contacts.outreachOpportunities]: ["recOpp000000000"]
         }
@@ -73,6 +80,13 @@ test("Contacts GET maps auto-classified CRM fields", async () => {
   assert.equal(body.contacts[0]?.identityStatus, "Verified");
   assert.equal(body.contacts[0]?.organizationMatchStatus, "Needs Review");
   assert.equal(body.contacts[0]?.evidenceNotes, "Matched against company website.");
+  assert.equal(body.contacts[0]?.relationshipRisk, "Warm Sensitive");
+  assert.equal(body.contacts[0]?.outreachReadiness, "Ask Family Context");
+  assert.equal(body.contacts[0]?.relationshipContext, "Dad knows him; get context first.");
+  assert.equal(body.contacts[0]?.researchStatus, "Queued");
+  assert.equal(body.contacts[0]?.researchDossier, "- Confirmed role from company page [source]");
+  assert.equal(body.contacts[0]?.researchSourceUrls, "https://example.com/profile");
+  assert.equal(body.contacts[0]?.lastResearchedAt, "2026-07-26T12:00:00.000Z");
 });
 
 test("Contacts API client loads contacts", async () => {
@@ -366,6 +380,49 @@ test("Contacts PATCH persists outreach tracking fields", async () => {
   assert.equal(updates[0]?.[fields.contacts.lastContacted], "2026-07-22");
   assert.equal(updates[0]?.[fields.contacts.nextFollowUp], "2026-07-28");
   assert.equal(updates[0]?.[fields.contacts.notes], "Asked for CodeLab project sponsor intro.");
+});
+
+test("Contacts PATCH persists relationship risk and sourced research fields", async () => {
+  const updates: Array<Record<string, unknown>> = [];
+  globalThis.fetch = async (input, init) => {
+    const url = new URL(String(input));
+    assert.equal(init?.method, "PATCH");
+    assert.equal(url.pathname.endsWith(`/${tableRef("contacts")}/recContact000000`), true);
+    const body = JSON.parse(String(init?.body)) as { fields: Record<string, unknown> };
+    updates.push(body.fields);
+    return Response.json({
+      id: "recContact000000",
+      fields: {
+        [fields.contacts.name]: "Farhez Rayani",
+        ...body.fields
+      }
+    });
+  };
+
+  const response = await PATCH(new Request("http://localhost/api/contacts/recContact000000", {
+    method: "PATCH",
+    body: JSON.stringify({
+      relationshipRisk: "Warm Sensitive",
+      outreachReadiness: "Ask Family Context",
+      relationshipContext: "Dad knows him; ask for relationship status before outreach.",
+      researchStatus: "Researched",
+      researchDossier: "- CG/VFX and real-time pipeline background [https://example.com/farhez]",
+      researchSourceUrls: "https://example.com/farhez",
+      lastResearchedAt: "2026-07-26T12:00:00.000Z"
+    })
+  }), { params: Promise.resolve({ id: "recContact000000" }) });
+
+  assert.equal(response.status, 200);
+  const body = await response.json() as { contact: Record<string, unknown> };
+  assert.equal(body.contact.relationshipRisk, "Warm Sensitive");
+  assert.equal(body.contact.outreachReadiness, "Ask Family Context");
+  assert.equal(updates[0]?.[fields.contacts.relationshipRisk], "Warm Sensitive");
+  assert.equal(updates[0]?.[fields.contacts.outreachReadiness], "Ask Family Context");
+  assert.equal(updates[0]?.[fields.contacts.relationshipContext], "Dad knows him; ask for relationship status before outreach.");
+  assert.equal(updates[0]?.[fields.contacts.researchStatus], "Researched");
+  assert.match(String(updates[0]?.[fields.contacts.researchDossier]), /real-time pipeline/);
+  assert.equal(updates[0]?.[fields.contacts.researchSourceUrls], "https://example.com/farhez");
+  assert.equal(updates[0]?.[fields.contacts.lastResearchedAt], "2026-07-26T12:00:00.000Z");
 });
 
 test("Contacts intake POST previews and creates only non-duplicates", async () => {

@@ -1,6 +1,10 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { buildCodeLabProjectSourcingFit, buildContactIntelligence } from "../src/contacts/intelligence.js";
+import {
+  buildCodeLabProjectSourcingFit,
+  buildContactIntelligence,
+  buildPracticeOutreachFit
+} from "../src/contacts/intelligence.js";
 import type { Contact } from "../src/domain/types.js";
 
 function contact(overrides: Partial<Contact>): Contact {
@@ -376,4 +380,71 @@ test("CodeLab sourcing treats prestige sales and creative pipeline leads as rout
   assert.equal(farhez.role, "Router");
   assert.equal(farhez.projectBar, "Strong Technical");
   assert.ok(farhez.technicalLanes.includes("Games/Interactive"));
+});
+
+test("practice outreach includes safe cold and warm-light technical contacts", () => {
+  const cold = buildPracticeOutreachFit(contact({
+    name: "Cold CTO",
+    headline: "CTO at Fleet Telemetry SaaS | vehicle data, automation, cloud platform",
+    prospectType: "Technical Leader",
+    studentStatus: "Not Student",
+    relationshipRisk: "Cold Practice",
+    outreachReadiness: "Practice Candidate",
+    functionTags: ["Engineering", "Data"]
+  }));
+  const warmLight = buildPracticeOutreachFit(contact({
+    name: "Warm Product Operator",
+    headline: "Product Operations Lead at Healthcare IT platform",
+    prospectType: "Product",
+    studentStatus: "Not Student",
+    relationshipRisk: "Warm Light",
+    outreachReadiness: "Practice Candidate",
+    functionTags: ["Product", "Operations", "Healthcare"],
+    workflows: ["Community"]
+  }));
+
+  assert.equal(cold.eligible, true);
+  assert.equal(warmLight.eligible, true);
+  assert.ok(cold.score >= 7);
+  assert.ok(warmLight.score >= 7);
+});
+
+test("practice outreach excludes sensitive, family, and recent-grad contacts even when project fit is strong", () => {
+  const sensitive = buildPracticeOutreachFit(contact({
+    name: "Farhez Rayani",
+    headline: "Lighting Director @ WaterProof Studios | Pixar, Disney, Nintendo pipeline",
+    prospectType: "Technical Leader",
+    studentStatus: "Not Student",
+    relationshipRisk: "Warm Sensitive",
+    outreachReadiness: "Ask Family Context",
+    relationshipContext: "Dad knows him and I met him as a little kid.",
+    functionTags: ["Engineering", "Product"],
+    workflows: ["Community"]
+  }));
+  const family = buildPracticeOutreachFit(contact({
+    name: "Jay",
+    headline: "CTO and AI product leader",
+    prospectType: "Technical Leader",
+    studentStatus: "Not Student",
+    relationshipRisk: "Big Ask Later",
+    outreachReadiness: "Hold",
+    relationshipType: "Family",
+    functionTags: ["Engineering", "AI/ML"]
+  }));
+  const recentGrad = buildPracticeOutreachFit(contact({
+    name: "Recent Grad",
+    headline: "Incoming AI Product @ Salesforce | Prev @ Amazon",
+    prospectType: "Product",
+    studentStatus: "Recent Grad",
+    relationshipRisk: "Cold Practice",
+    outreachReadiness: "Practice Candidate",
+    functionTags: ["AI/ML", "Product"]
+  }));
+
+  assert.equal(sensitive.eligible, false);
+  assert.match(sensitive.reasons.join(" "), /Warm sensitive/);
+  assert.equal(family.eligible, false);
+  assert.match(family.reasons.join(" "), /later|Hold/i);
+  assert.equal(recentGrad.eligible, false);
+  assert.match(recentGrad.reasons.join(" "), /recent-grad/i);
 });

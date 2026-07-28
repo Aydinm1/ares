@@ -27,10 +27,18 @@ import { formatLastSyncedLabel } from "../../src/assignments";
 import {
   CONTACT_INTELLIGENCE_VERSION,
   buildCodeLabProjectSourcingFit,
-  buildContactIntelligence
+  buildContactIntelligence,
+  buildPracticeOutreachFit
 } from "../../src/contacts/intelligence";
 import type { ContactIntakePreview, ParsedContactInput } from "../../src/contacts/intake";
-import type { Contact, ContactVerificationStatus, ContactWorkflow } from "../../src/domain";
+import type {
+  Contact,
+  ContactOutreachReadiness,
+  ContactRelationshipRisk,
+  ContactResearchStatus,
+  ContactVerificationStatus,
+  ContactWorkflow
+} from "../../src/domain";
 import styles from "./contacts.module.css";
 
 const icons = {
@@ -44,10 +52,11 @@ const icons = {
   sync: <RefreshCw size={16} strokeWidth={2} />,
 };
 
-type ContactTab = "sourcing" | "outreach" | "all" | "school" | "personal" | "birthdays" | "cleanup";
+type ContactTab = "practice" | "sourcing" | "outreach" | "all" | "school" | "personal" | "birthdays" | "cleanup";
 type IntakeMode = "linkedin" | "ipn" | "lead";
 
 const tabs: Array<{ id: ContactTab; label: string }> = [
+  { id: "practice", label: "Practice Outreach" },
   { id: "sourcing", label: "CodeLab Sourcing" },
   { id: "outreach", label: "Outreach" },
   { id: "all", label: "All People" },
@@ -73,6 +82,29 @@ const studentOptions = ["All", "Not Student", "Student", "Recent Grad", "Unknown
 const reviewOptions = ["All", "Auto Parsed", "Needs Review", "Reviewed", "Do Not Contact"] as const;
 const scoreOptions = ["All", "8+", "7+", "6+", "Unscored"] as const;
 const verificationOptions = ["Unverified", "Needs Review", "Verified", "Rejected"] as const;
+const relationshipRiskOptions = [
+  "Cold Practice",
+  "Warm Light",
+  "Warm Sensitive",
+  "Big Ask Later",
+  "Avoid / Need Context"
+] as const satisfies readonly ContactRelationshipRisk[];
+const relationshipRiskFilterOptions = ["All", ...relationshipRiskOptions] as const;
+const outreachReadinessOptions = [
+  "Practice Candidate",
+  "Research First",
+  "Ready to DM",
+  "Ask Family Context",
+  "Hold"
+] as const satisfies readonly ContactOutreachReadiness[];
+const outreachReadinessFilterOptions = ["All", ...outreachReadinessOptions] as const;
+const researchStatusOptions = [
+  "Not Started",
+  "Queued",
+  "Researched",
+  "Needs More Sources"
+] as const satisfies readonly ContactResearchStatus[];
+const researchStatusFilterOptions = ["All", ...researchStatusOptions] as const;
 const intakeModeOptions = ["linkedin", "ipn", "lead"] as const;
 const CONTACT_FIT_BATCH_LIMIT = 50;
 
@@ -90,6 +122,9 @@ export function ContactsWorkspace() {
   const [studentStatus, setStudentStatus] = useState<(typeof studentOptions)[number]>("All");
   const [reviewStatus, setReviewStatus] = useState<(typeof reviewOptions)[number]>("All");
   const [scoreFilter, setScoreFilter] = useState<(typeof scoreOptions)[number]>("All");
+  const [relationshipRisk, setRelationshipRisk] = useState<(typeof relationshipRiskFilterOptions)[number]>("All");
+  const [outreachReadiness, setOutreachReadiness] = useState<(typeof outreachReadinessFilterOptions)[number]>("All");
+  const [researchStatus, setResearchStatus] = useState<(typeof researchStatusFilterOptions)[number]>("All");
   const [selectedId, setSelectedId] = useState<string>();
   const [fitSaveState, setFitSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [fitSaveMessage, setFitSaveMessage] = useState<string>();
@@ -141,9 +176,24 @@ export function ContactsWorkspace() {
         (prospectType === "All" || contact.prospectType === prospectType) &&
         (studentStatus === "All" || contact.studentStatus === studentStatus) &&
         (reviewStatus === "All" || contact.reviewStatus === reviewStatus) &&
+        (relationshipRisk === "All" || buildPracticeOutreachFit(contact).relationshipRisk === relationshipRisk) &&
+        (outreachReadiness === "All" || buildPracticeOutreachFit(contact).outreachReadiness === outreachReadiness) &&
+        (researchStatus === "All" || (contact.researchStatus ?? "Not Started") === researchStatus) &&
         matchesScoreFilter(contact, scoreFilter, activeTab)
       ).sort((a, b) => sortContactsForTab(a, b, activeTab)),
-    [activeTab, contacts, priority, prospectType, query, reviewStatus, scoreFilter, studentStatus]
+    [
+      activeTab,
+      contacts,
+      outreachReadiness,
+      priority,
+      prospectType,
+      query,
+      relationshipRisk,
+      researchStatus,
+      reviewStatus,
+      scoreFilter,
+      studentStatus
+    ]
   );
   const intakePreviewRows = useMemo(() => buildIntakePreviewRows(intakePreview), [intakePreview]);
   const selectedContact =
@@ -259,6 +309,7 @@ export function ContactsWorkspace() {
       <section className={styles.workspace} aria-label="Contacts workspace">
         <div className={styles.metrics} aria-label="Contact summary">
           <Metric label="Sources" value={counts.highSignal} />
+          <Metric label="Practice" value={counts.practice} />
           <Metric label="Decision Makers" value={counts.decisionMakers} />
           <Metric label="Product" value={counts.product} />
           <Metric label="Technical" value={counts.technical} />
@@ -390,6 +441,9 @@ export function ContactsWorkspace() {
           <Select label="Student" value={studentStatus} options={studentOptions} onChange={setStudentStatus} />
           <Select label="Review" value={reviewStatus} options={reviewOptions} onChange={setReviewStatus} />
           <Select label="Score" value={scoreFilter} options={scoreOptions} onChange={setScoreFilter} />
+          <Select label="Risk" value={relationshipRisk} options={relationshipRiskFilterOptions} onChange={setRelationshipRisk} />
+          <Select label="Ready" value={outreachReadiness} options={outreachReadinessFilterOptions} onChange={setOutreachReadiness} />
+          <Select label="Research" value={researchStatus} options={researchStatusFilterOptions} onChange={setResearchStatus} />
         </div>
 
         {loading ? <ContactSkeleton /> : null}
@@ -425,6 +479,7 @@ export function ContactsWorkspace() {
               <div className={styles.contactList}>
                 {filteredContacts.map((contact) => {
                   const sourcing = buildCodeLabProjectSourcingFit(contact);
+                  const practice = buildPracticeOutreachFit(contact);
                   const primaryScore = scoreForTab(contact, activeTab);
                   return (
                     <button
@@ -444,6 +499,9 @@ export function ContactsWorkspace() {
                         {activeTab === "sourcing" ? <Pill>Fit {formatScore(contactScore(contact))}</Pill> : null}
                         {activeTab === "sourcing" ? <Pill>{sourcing.suggestedAsk}</Pill> : null}
                         {activeTab === "sourcing" ? <Pill>{sourcing.role}</Pill> : null}
+                        {activeTab === "practice" ? <Pill>{practice.relationshipRisk}</Pill> : null}
+                        {activeTab === "practice" ? <Pill>{practice.outreachReadiness}</Pill> : null}
+                        {activeTab === "practice" ? <Pill>{contact.researchStatus ?? "Not Started"}</Pill> : null}
                         {contact.priority ? <Pill>{contact.priority}</Pill> : null}
                         {contact.prospectType ? <Pill>{contact.prospectType}</Pill> : null}
                         {contact.studentStatus === "Student" ? <Pill>Student</Pill> : null}
@@ -534,9 +592,14 @@ function ContactDetail({
         <DetailRow label="Seniority" value={contact.seniority} />
         <DetailRow label="Project Potential" value={contact.projectPotential} />
         <DetailRow label="Review" value={contact.reviewStatus} />
+        <DetailRow label="Relationship Risk" value={buildPracticeOutreachFit(contact).relationshipRisk} />
+        <DetailRow label="Readiness" value={buildPracticeOutreachFit(contact).outreachReadiness} />
+        <DetailRow label="Research" value={contact.researchStatus ?? "Not Started"} />
         <DetailRow label="Saved Fit" value={formatDateTime(contact.generatedClientFitUpdatedAt)} />
       </div>
       <EvidenceEditor contact={contact} onEvidenceSaved={onEvidenceSaved} />
+      <RelationshipEditor contact={contact} onSaved={onEvidenceSaved} />
+      <ResearchEditor contact={contact} onSaved={onEvidenceSaved} />
       <OutreachEditor contact={contact} onSaved={onEvidenceSaved} />
       <div className={styles.tagCloud}>
         {[...contact.workflows, ...contact.autoWorkflowTags, ...contact.functionTags]
@@ -837,6 +900,187 @@ function OutreachEditor({
   );
 }
 
+function RelationshipEditor({
+  contact,
+  onSaved
+}: {
+  contact: Contact;
+  onSaved: (contact: Contact) => void;
+}) {
+  const practice = buildPracticeOutreachFit(contact);
+  const [relationshipRisk, setRelationshipRisk] = useState<ContactRelationshipRisk>(
+    contact.relationshipRisk ?? practice.relationshipRisk
+  );
+  const [outreachReadiness, setOutreachReadiness] = useState<ContactOutreachReadiness>(
+    contact.outreachReadiness ?? practice.outreachReadiness
+  );
+  const [relationshipContext, setRelationshipContext] = useState(contact.relationshipContext ?? "");
+  const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const [message, setMessage] = useState<string>();
+
+  useEffect(() => {
+    const nextPractice = buildPracticeOutreachFit(contact);
+    setRelationshipRisk(contact.relationshipRisk ?? nextPractice.relationshipRisk);
+    setOutreachReadiness(contact.outreachReadiness ?? nextPractice.outreachReadiness);
+    setRelationshipContext(contact.relationshipContext ?? "");
+    setSaveState("idle");
+    setMessage(undefined);
+  }, [contact]);
+
+  const save = useCallback(async () => {
+    if (saveState === "saving") return;
+    setSaveState("saving");
+    setMessage(undefined);
+    try {
+      const updated = await saveContactEvidence(contact.id, {
+        relationshipRisk,
+        outreachReadiness,
+        relationshipContext: relationshipContext.trim() || null
+      });
+      onSaved(updated);
+      setSaveState("saved");
+      setMessage("Relationship risk saved.");
+    } catch (saveError) {
+      setSaveState("error");
+      setMessage(saveError instanceof Error ? saveError.message : "Relationship risk could not be saved.");
+    }
+  }, [contact.id, outreachReadiness, relationshipContext, relationshipRisk, onSaved, saveState]);
+
+  return (
+    <form className={styles.evidenceCard} onSubmit={(event) => {
+      event.preventDefault();
+      void save();
+    }}>
+      <div className={styles.sectionHeader}>
+        <p>Practice Safety</p>
+        <h3>Relationship risk</h3>
+      </div>
+      <div className={styles.evidenceGrid}>
+        <Select
+          label="Risk"
+          value={relationshipRisk}
+          options={relationshipRiskOptions}
+          onChange={setRelationshipRisk}
+        />
+        <Select
+          label="Readiness"
+          value={outreachReadiness}
+          options={outreachReadinessOptions}
+          onChange={setOutreachReadiness}
+        />
+      </div>
+      {practice.reasons.length ? (
+        <div className={styles.fitBlock}>
+          <h4>Practice blockers</h4>
+          <ul>
+            {practice.reasons.map((reason) => <li key={reason}>{reason}</li>)}
+          </ul>
+        </div>
+      ) : null}
+      <label className={styles.evidenceField}>
+        <span>Relationship Context</span>
+        <textarea
+          value={relationshipContext}
+          onChange={(event) => setRelationshipContext(event.target.value)}
+          placeholder="Dad knows him, met twice, high-school speaker, family sensitivity, representation concern"
+          rows={3}
+        />
+      </label>
+      <button className={styles.saveEvidenceButton} type="submit" disabled={saveState === "saving"}>
+        <Save size={14} aria-hidden="true" />
+        {saveState === "saving" ? "Saving" : "Save Risk"}
+      </button>
+      {message ? <p className={styles.evidenceStatus} data-state={saveState}>{message}</p> : null}
+    </form>
+  );
+}
+
+function ResearchEditor({
+  contact,
+  onSaved
+}: {
+  contact: Contact;
+  onSaved: (contact: Contact) => void;
+}) {
+  const [researchStatus, setResearchStatus] = useState<ContactResearchStatus>(
+    contact.researchStatus ?? "Not Started"
+  );
+  const [researchDossier, setResearchDossier] = useState(contact.researchDossier ?? "");
+  const [researchSourceUrls, setResearchSourceUrls] = useState(contact.researchSourceUrls ?? "");
+  const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const [message, setMessage] = useState<string>();
+
+  useEffect(() => {
+    setResearchStatus(contact.researchStatus ?? "Not Started");
+    setResearchDossier(contact.researchDossier ?? "");
+    setResearchSourceUrls(contact.researchSourceUrls ?? "");
+    setSaveState("idle");
+    setMessage(undefined);
+  }, [contact]);
+
+  const save = useCallback(async () => {
+    if (saveState === "saving") return;
+    setSaveState("saving");
+    setMessage(undefined);
+    try {
+      const updated = await saveContactEvidence(contact.id, {
+        researchStatus,
+        researchDossier: researchDossier.trim() || null,
+        researchSourceUrls: researchSourceUrls.trim() || null,
+        lastResearchedAt: new Date().toISOString()
+      });
+      onSaved(updated);
+      setSaveState("saved");
+      setMessage("Research dossier saved.");
+    } catch (saveError) {
+      setSaveState("error");
+      setMessage(saveError instanceof Error ? saveError.message : "Research dossier could not be saved.");
+    }
+  }, [contact.id, onSaved, researchDossier, researchSourceUrls, researchStatus, saveState]);
+
+  return (
+    <form className={styles.evidenceCard} onSubmit={(event) => {
+      event.preventDefault();
+      void save();
+    }}>
+      <div className={styles.sectionHeader}>
+        <p>Research</p>
+        <h3>Source-backed dossier</h3>
+      </div>
+      <Select
+        label="Status"
+        value={researchStatus}
+        options={researchStatusOptions}
+        onChange={setResearchStatus}
+      />
+      <label className={styles.evidenceField}>
+        <span>Research Dossier</span>
+        <textarea
+          value={researchDossier}
+          onChange={(event) => setResearchDossier(event.target.value)}
+          placeholder="- Role/company fact [source]\n- Project-relevant problem angle [source]\n- Conversation hook [source]"
+          rows={5}
+        />
+      </label>
+      <label className={styles.evidenceField}>
+        <span>Research Source URLs</span>
+        <textarea
+          value={researchSourceUrls}
+          onChange={(event) => setResearchSourceUrls(event.target.value)}
+          placeholder="https://..."
+          rows={3}
+        />
+      </label>
+      <DetailRow label="Last Researched" value={formatDateTime(contact.lastResearchedAt)} />
+      <button className={styles.saveEvidenceButton} type="submit" disabled={saveState === "saving"}>
+        <Save size={14} aria-hidden="true" />
+        {saveState === "saving" ? "Saving" : "Save Research"}
+      </button>
+      {message ? <p className={styles.evidenceStatus} data-state={saveState}>{message}</p> : null}
+    </form>
+  );
+}
+
 function DetailRow({ label, value, href }: { label: string; value?: string; href?: string }) {
   return (
     <div className={styles.detailRow}>
@@ -874,6 +1118,8 @@ function ContactSkeleton() {
 function matchesTab(contact: Contact, tab: ContactTab): boolean {
   const workflows = new Set([...contact.workflows, ...contact.autoWorkflowTags]);
   const sourcing = buildCodeLabProjectSourcingFit(contact);
+  const practice = buildPracticeOutreachFit(contact);
+  if (tab === "practice") return practice.eligible;
   if (tab === "sourcing") {
     return sourcing.suggestedAsk === "DM First" ||
       sourcing.suggestedAsk === "Ask for Intro" ||
@@ -896,6 +1142,11 @@ function matchesTab(contact: Contact, tab: ContactTab): boolean {
 }
 
 function sortContactsForTab(a: Contact, b: Contact, tab: ContactTab): number {
+  if (tab === "practice") {
+    return buildPracticeOutreachFit(b).score - buildPracticeOutreachFit(a).score ||
+      buildCodeLabProjectSourcingFit(b).score - buildCodeLabProjectSourcingFit(a).score ||
+      a.name.localeCompare(b.name);
+  }
   if (tab === "sourcing") {
     return buildCodeLabProjectSourcingFit(b).score - buildCodeLabProjectSourcingFit(a).score ||
       contactScore(b) - contactScore(a) ||
@@ -918,6 +1169,9 @@ function matchesSearch(contact: Contact, query: string): boolean {
     contact.potentialProjectAngles,
     contact.generatedReachOutReason,
     contact.generatedProjectIdeas,
+    contact.relationshipContext,
+    contact.researchDossier,
+    contact.researchSourceUrls,
   ].some((value) => value?.toLowerCase().includes(normalizedQuery));
 }
 
@@ -931,6 +1185,7 @@ function matchesScoreFilter(contact: Contact, scoreFilter: (typeof scoreOptions)
 }
 
 function scoreForTab(contact: Contact, tab: ContactTab): number {
+  if (tab === "practice") return buildPracticeOutreachFit(contact).score;
   return tab === "sourcing" ? buildCodeLabProjectSourcingFit(contact).score : contactScore(contact);
 }
 
@@ -994,6 +1249,7 @@ function contactCounts(contacts: Contact[]) {
   return {
     total: contacts.length,
     highSignal: contacts.filter((contact) => matchesTab(contact, "sourcing")).length,
+    practice: contacts.filter((contact) => matchesTab(contact, "practice")).length,
     decisionMakers: contacts.filter((contact) => contact.prospectType === "Decision Maker").length,
     product: contacts.filter((contact) => contact.prospectType === "Product").length,
     technical: contacts.filter((contact) => contact.prospectType === "Technical Leader").length,

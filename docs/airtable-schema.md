@@ -279,6 +279,13 @@ This table is live but is not read by the current application.
 | Office Hours | `flddl6PVsMwPttAJB` | `singleLineText` | Availability |
 | Location | `fldsNZArHRBn2Ut8h` | `singleLineText` | Office/meeting location |
 | Notes | `fldg9YqtcD2fvtMVC` | `multilineText` | Contact notes |
+| Relationship Risk | `fldGM0IPk4HvUJlUY` | `singleSelect` | Outreach reputation-risk tier |
+| Outreach Readiness | `fldtw8UCEn9lDGVER` | `singleSelect` | Whether the contact is practice-ready, research-first, or on hold |
+| Relationship Context | `fldmiF0TSbuYDtPcO` | `multilineText` | Why the relationship is safe, sensitive, or blocked |
+| Research Status | `fldainyJcZRDZx1vK` | `singleSelect` | Research dossier progress |
+| Research Dossier | `fldbcoTHwMCP0DHX7` | `multilineText` | Source-backed conversation prep notes |
+| Research Source URLs | `fldXvmSRNBgrXsUcF` | `multilineText` | URLs supporting dossier claims |
+| Last Researched At | `fldwIOwQc5Qb1yHYM` | `dateTime` | Timestamp of the last dossier update |
 
 The architecture proposes broadening this concept into People when Career Hub
 requires recruiters, mentors, professors, and other contacts. Current outreach

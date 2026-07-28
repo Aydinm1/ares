@@ -5,6 +5,9 @@ import type {
   CompetencyStatus,
   CompetencyUpdate,
   ContactEvidenceUpdate,
+  ContactOutreachReadiness,
+  ContactRelationshipRisk,
+  ContactResearchStatus,
   ContactVerificationStatus,
   ContactWorkflow,
   HabitUpdate
@@ -77,13 +80,40 @@ const CONTACT_EVIDENCE_WRITE_FIELDS = new Set([
   "notes",
   "outreachStatus",
   "lastContacted",
-  "nextFollowUp"
+  "nextFollowUp",
+  "relationshipRisk",
+  "outreachReadiness",
+  "relationshipContext",
+  "researchStatus",
+  "researchDossier",
+  "researchSourceUrls",
+  "lastResearchedAt"
 ]);
 const CONTACT_VERIFICATION_STATUSES = new Set<ContactVerificationStatus>([
   "Unverified",
   "Needs Review",
   "Verified",
   "Rejected"
+]);
+const CONTACT_RELATIONSHIP_RISKS = new Set<ContactRelationshipRisk>([
+  "Cold Practice",
+  "Warm Light",
+  "Warm Sensitive",
+  "Big Ask Later",
+  "Avoid / Need Context"
+]);
+const CONTACT_OUTREACH_READINESS = new Set<ContactOutreachReadiness>([
+  "Practice Candidate",
+  "Research First",
+  "Ready to DM",
+  "Ask Family Context",
+  "Hold"
+]);
+const CONTACT_RESEARCH_STATUSES = new Set<ContactResearchStatus>([
+  "Not Started",
+  "Queued",
+  "Researched",
+  "Needs More Sources"
 ]);
 
 export function validateHabitCreate(value: unknown): {
@@ -587,6 +617,79 @@ export function validateContactEvidenceWrite(value: unknown): ContactEvidenceUpd
         issues.push(`${field} must use YYYY-MM-DD format.`);
       } else {
         update[field] = value.trim();
+      }
+    }
+  }
+
+  if ("relationshipRisk" in payload) {
+    if (payload.relationshipRisk === null || payload.relationshipRisk === "") {
+      update.relationshipRisk = null;
+    } else if (
+      typeof payload.relationshipRisk !== "string" ||
+      !CONTACT_RELATIONSHIP_RISKS.has(payload.relationshipRisk as ContactRelationshipRisk)
+    ) {
+      issues.push("relationshipRisk must be a valid relationship risk.");
+    } else {
+      update.relationshipRisk = payload.relationshipRisk as ContactRelationshipRisk;
+    }
+  }
+
+  if ("outreachReadiness" in payload) {
+    if (payload.outreachReadiness === null || payload.outreachReadiness === "") {
+      update.outreachReadiness = null;
+    } else if (
+      typeof payload.outreachReadiness !== "string" ||
+      !CONTACT_OUTREACH_READINESS.has(payload.outreachReadiness as ContactOutreachReadiness)
+    ) {
+      issues.push("outreachReadiness must be a valid outreach readiness.");
+    } else {
+      update.outreachReadiness = payload.outreachReadiness as ContactOutreachReadiness;
+    }
+  }
+
+  if ("researchStatus" in payload) {
+    if (payload.researchStatus === null || payload.researchStatus === "") {
+      update.researchStatus = null;
+    } else if (
+      typeof payload.researchStatus !== "string" ||
+      !CONTACT_RESEARCH_STATUSES.has(payload.researchStatus as ContactResearchStatus)
+    ) {
+      issues.push("researchStatus must be a valid research status.");
+    } else {
+      update.researchStatus = payload.researchStatus as ContactResearchStatus;
+    }
+  }
+
+  for (const [field, limit] of [
+    ["relationshipContext", 4000],
+    ["researchDossier", 12000],
+    ["researchSourceUrls", 4000]
+  ] as const) {
+    if (field in payload) {
+      const value = payload[field];
+      if (value === null || value === "") {
+        update[field] = null;
+      } else if (typeof value !== "string") {
+        issues.push(`${field} must be a string or null.`);
+      } else if (value.trim().length > limit) {
+        issues.push(`${field} must be ${limit.toLocaleString()} characters or fewer.`);
+      } else {
+        update[field] = value.trim();
+      }
+    }
+  }
+
+  if ("lastResearchedAt" in payload) {
+    if (payload.lastResearchedAt === null || payload.lastResearchedAt === "") {
+      update.lastResearchedAt = null;
+    } else if (typeof payload.lastResearchedAt !== "string") {
+      issues.push("lastResearchedAt must be an ISO timestamp or null.");
+    } else {
+      const timestamp = payload.lastResearchedAt.trim();
+      if (Number.isNaN(new Date(timestamp).getTime())) {
+        issues.push("lastResearchedAt must be a valid timestamp.");
+      } else {
+        update.lastResearchedAt = timestamp;
       }
     }
   }

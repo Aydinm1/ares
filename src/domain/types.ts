@@ -198,6 +198,26 @@ export type ContactReviewStatus = "Auto Parsed" | "Needs Review" | "Reviewed" | 
 
 export type ContactVerificationStatus = "Unverified" | "Needs Review" | "Verified" | "Rejected";
 
+export type ContactRelationshipRisk =
+  | "Cold Practice"
+  | "Warm Light"
+  | "Warm Sensitive"
+  | "Big Ask Later"
+  | "Avoid / Need Context";
+
+export type ContactOutreachReadiness =
+  | "Practice Candidate"
+  | "Research First"
+  | "Ready to DM"
+  | "Ask Family Context"
+  | "Hold";
+
+export type ContactResearchStatus =
+  | "Not Started"
+  | "Queued"
+  | "Researched"
+  | "Needs More Sources";
+
 export interface ContactEvidenceUpdate {
   linkedInUrl?: string | null;
   identityStatus?: ContactVerificationStatus;
@@ -207,6 +227,13 @@ export interface ContactEvidenceUpdate {
   outreachStatus?: string | null;
   lastContacted?: string | null;
   nextFollowUp?: string | null;
+  relationshipRisk?: ContactRelationshipRisk | null;
+  outreachReadiness?: ContactOutreachReadiness | null;
+  relationshipContext?: string | null;
+  researchStatus?: ContactResearchStatus | null;
+  researchDossier?: string | null;
+  researchSourceUrls?: string | null;
+  lastResearchedAt?: string | null;
 }
 
 export interface Contact {
@@ -239,6 +266,13 @@ export interface Contact {
   autoWorkflowTags: ContactWorkflow[];
   relationshipType?: string;
   personalPriority?: string;
+  relationshipRisk?: ContactRelationshipRisk;
+  outreachReadiness?: ContactOutreachReadiness;
+  relationshipContext?: string;
+  researchStatus?: ContactResearchStatus;
+  researchDossier?: string;
+  researchSourceUrls?: string;
+  lastResearchedAt?: string;
   birthday?: string;
   lastContacted?: string;
   nextFollowUp?: string;
