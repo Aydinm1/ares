@@ -18,6 +18,7 @@ export interface AssignmentUiIcons {
   habits: ReactNode;
   competencies: ReactNode;
   contacts: ReactNode;
+  grades: ReactNode;
   calendar: ReactNode;
   list: ReactNode;
   previous: ReactNode;
@@ -71,8 +72,8 @@ export interface CourseFilterOption {
 
 interface AssignmentShellProps {
   brandName?: string;
-  activeNav: "intake" | "habits" | "competencies" | "contacts" | "assignments" | "courses";
-  icons: Pick<AssignmentUiIcons, "intake" | "habits" | "competencies" | "contacts" | "assignments" | "courses">;
+  activeNav: "intake" | "habits" | "competencies" | "contacts" | "assignments" | "courses" | "grades";
+  icons: Pick<AssignmentUiIcons, "intake" | "habits" | "competencies" | "contacts" | "assignments" | "courses" | "grades">;
   children: ReactNode;
 }
 
@@ -140,6 +141,14 @@ export function AssignmentShell({
               {icons.contacts}
             </Link>
             <Link
+              className={`${styles.mobileNavItem} ${activeNav === "grades" ? styles.mobileNavItemActive : ""}`}
+              href="/grades"
+              aria-label="Grades"
+              aria-current={activeNav === "grades" ? "page" : undefined}
+            >
+              {icons.grades}
+            </Link>
+            <Link
               className={`${styles.mobileNavItem} ${activeNav === "courses" ? styles.mobileNavItemActive : ""}`}
               href="/courses"
               aria-label="4 Year Plan"
@@ -202,6 +211,16 @@ export function AssignmentShell({
               {icons.contacts}
             </span>
             <span>Contacts</span>
+          </Link>
+          <Link
+            className={`${styles.navItem} ${activeNav === "grades" ? styles.navItemActive : ""}`}
+            href="/grades"
+            aria-current={activeNav === "grades" ? "page" : undefined}
+          >
+            <span className={styles.navIcon} aria-hidden="true">
+              {icons.grades}
+            </span>
+            <span>Grades</span>
           </Link>
           <Link
             className={`${styles.navItem} ${activeNav === "courses" ? styles.navItemActive : ""}`}

@@ -83,6 +83,28 @@ const expectedSchema: ExpectedTable[] = [
     ]
   },
   {
+    id: tables.gradeCategories.id,
+    name: tables.gradeCategories.name,
+    fields: [
+      { id: "fldFEB3hCPYfyr2gO", name: "Category Weight Name", type: "singleLineText" },
+      {
+        id: "fldlBGVyXIkQe2Vqy",
+        name: "Courses",
+        type: "multipleRecordLinks",
+        linkedTableId: tables.courses.id
+      },
+      { id: "fldgGJJJ21BKz8UvO", name: "Weight (%)", type: "number" },
+      {
+        id: "fldHqh72rPBkcq9JK",
+        name: "Assignments",
+        type: "multipleRecordLinks",
+        linkedTableId: tables.assignments.id
+      },
+      { id: "fldiEsM0oEomrMknp", name: "Calculation Type", type: "singleSelect" },
+      { id: "fldlxgH2nfrXdNtC7", name: "Max Extra Credit (%)", type: "number" }
+    ]
+  },
+  {
     id: tables.habits.id,
     name: tables.habits.name,
     fields: [

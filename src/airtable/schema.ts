@@ -44,8 +44,10 @@ export const fields = {
   },
   gradeCategories: {
     name: "Category Weight Name",
-    course: "Subject",
-    weightPercent: "Weight (%)"
+    course: "Courses",
+    weightPercent: "Weight (%)",
+    calculationType: "Calculation Type",
+    maxExtraCreditPercent: "Max Extra Credit (%)"
   },
   inboxItems: {
     text: "Text",

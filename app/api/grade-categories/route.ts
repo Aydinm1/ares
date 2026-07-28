@@ -1,18 +1,18 @@
 import {
-  json,
   getRepository,
+  json,
   readJson,
   routeJson,
   shouldRefreshCache
 } from "../_lib/schoolRoutes.js";
-import { validateAssignmentWrite } from "../../../src/validation/domain.js";
+import { validateGradeCategoryWrite } from "../../../src/validation/domain.js";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(request: Request): Promise<Response> {
   return routeJson(async () =>
     json(200, {
-      assignments: await getRepository().listAssignments({
+      gradeCategories: await getRepository().listGradeCategories({
         refresh: shouldRefreshCache(request)
       })
     })
@@ -21,9 +21,9 @@ export async function GET(request: Request): Promise<Response> {
 
 export async function POST(request: Request): Promise<Response> {
   return routeJson(async () => {
-    const update = validateAssignmentWrite(await readJson(request));
+    const update = validateGradeCategoryWrite(await readJson(request));
     return json(201, {
-      assignment: await getRepository().createAssignment(update)
+      gradeCategory: await getRepository().createGradeCategory(update)
     });
   });
 }

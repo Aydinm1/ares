@@ -10,6 +10,7 @@ import {
 import {
   ArrowDown,
   ArrowUp,
+  Calculator,
   CircleAlert,
   CircleCheckBig,
   Compass,
@@ -49,6 +50,7 @@ const icons = {
   habits: <CircleCheckBig size={19} strokeWidth={2} />,
   competencies: <Compass size={19} strokeWidth={2} />,
   contacts: <UsersRound size={19} strokeWidth={2} />,
+  grades: <Calculator size={19} strokeWidth={2} />,
 };
 
 const STATUS_LABELS: Record<CompetencyStatus, string> = {

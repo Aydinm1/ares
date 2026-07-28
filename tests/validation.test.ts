@@ -8,6 +8,7 @@ import {
   validateCompetencyFocusUpdate,
   validateCompetencyOrder,
   validateCompetencyUpdate,
+  validateGradeCategoryWrite,
   validateHabitCreate,
   validateHabitCheckInDate,
   validateHabitDate,
@@ -30,6 +31,13 @@ test("accepts only completion statuses and rejects extra fields", () => {
   assert.deepEqual(validateAssignmentWrite({ hiddenFromList: true }), {
     hiddenFromList: true
   });
+  assert.deepEqual(validateAssignmentWrite({
+    categoryId: "recCategory123456",
+    pointsEarned: 9.5
+  }), {
+    categoryId: "recCategory123456",
+    pointsEarned: 9.5
+  });
   assert.throws(
     () => validateAssignmentCompletionWrite({ status: "graded" }),
     ValidationError
@@ -40,6 +48,23 @@ test("accepts only completion statuses and rejects extra fields", () => {
   );
   assert.throws(() => validateAssignmentWrite({ hiddenFromList: "true" }), ValidationError);
   assert.throws(() => validateAssignmentCompletionWrite(null), ValidationError);
+});
+
+test("validates grade category writes", () => {
+  assert.deepEqual(validateGradeCategoryWrite({
+    courseId: "recCourse12345678",
+    name: "Exam 1",
+    weightPercent: 25,
+    calculationType: "required",
+    maxExtraCreditPercent: null
+  }), {
+    courseId: "recCourse12345678",
+    name: "Exam 1",
+    weightPercent: 25,
+    calculationType: "required",
+    maxExtraCreditPercent: null
+  });
+  assert.throws(() => validateGradeCategoryWrite({ name: "", weightPercent: 120 }), ValidationError);
 });
 
 test("validates low-friction Inbox captures", () => {

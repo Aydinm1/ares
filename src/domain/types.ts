@@ -24,6 +24,8 @@ export interface GradeCategory {
   courseId: AirtableRecordId;
   name: string;
   weightPercent: number;
+  calculationType?: "required" | "extra_credit";
+  maxExtraCreditPercent?: number;
 }
 
 export interface GradePolicy {
@@ -72,9 +74,19 @@ export interface AssignmentUpdate {
   courseId?: AirtableRecordId | null;
   dueAt?: string | null;
   status?: "submitted" | "not_started";
+  categoryId?: AirtableRecordId | null;
+  pointsEarned?: number | null;
   pointsPossible?: number | null;
   weekLabel?: string | null;
   hiddenFromList?: boolean;
+}
+
+export interface GradeCategoryUpdate {
+  courseId?: AirtableRecordId | null;
+  name?: string;
+  weightPercent?: number;
+  calculationType?: "required" | "extra_credit";
+  maxExtraCreditPercent?: number | null;
 }
 
 export interface InboxItem {

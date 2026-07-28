@@ -254,6 +254,8 @@ Table ID: `tblXC0Vug7xyPFZqW`
 | Courses | `fldlBGVyXIkQe2Vqy` | `multipleRecordLinks` | Links Courses; intended `GradeCategory.courseId` |
 | Weight (%) | `fldgGJJJ21BKz8UvO` | `number` | `GradeCategory.weightPercent` |
 | Assignments | `fldHqh72rPBkcq9JK` | `multipleRecordLinks` | Links Assignments |
+| Calculation Type | `fldiEsM0oEomrMknp` | `singleSelect` | `GradeCategory.calculationType` |
+| Max Extra Credit (%) | `fldlxgH2nfrXdNtC7` | `number` | `GradeCategory.maxExtraCreditPercent` |
 | Points Earned Roll Up | `fldt6MAlctKPHkUnj` | `rollup` | Grade calculation |
 | Total Points Roll Up | `flddbYyA6YnWVe845` | `rollup` | Grade calculation |
 | Percent Per Category | `fldzt8fwE6o4RmN5C` | `formula` | Grade calculation |
@@ -292,18 +294,6 @@ requires recruiters, mentors, professors, and other contacts. Current outreach
 imports store source and triage details in Notes until a richer schema exists.
 
 ## Known Drift and Cleanup Candidates
-
-### App Contract Drift
-
-`src/airtable/schema.ts` currently declares the Category Weights course-link
-field as `Subject`. The live field is:
-
-```text
-Courses (fldlBGVyXIkQe2Vqy, multipleRecordLinks -> tbl3nkjD0LefcY3t9)
-```
-
-Until the adapter is corrected, `GradeCategory.courseId` may not resolve and
-course grade-policy enrichment may be incomplete.
 
 ### Live Schema Cleanup Candidates
 

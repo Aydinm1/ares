@@ -10,6 +10,7 @@ import type {
   ContactResearchStatus,
   ContactVerificationStatus,
   ContactWorkflow,
+  GradeCategoryUpdate,
   HabitUpdate
 } from "../domain/types.js";
 
@@ -43,6 +44,8 @@ const ASSIGNMENT_UPDATE_FIELDS = new Set([
   "courseId",
   "dueDate",
   "dueTime",
+  "categoryId",
+  "pointsEarned",
   "pointsPossible",
   "weekLabel",
   "status",
@@ -64,6 +67,13 @@ const COMPETENCY_WRITE_FIELDS = new Set([
   "vision",
   "description",
   "sortOrder"
+]);
+const GRADE_CATEGORY_WRITE_FIELDS = new Set([
+  "courseId",
+  "name",
+  "weightPercent",
+  "calculationType",
+  "maxExtraCreditPercent"
 ]);
 const FOCUS_WRITE_FIELDS = new Set([
   "title",
@@ -468,6 +478,26 @@ export function validateAssignmentWrite(value: unknown): AssignmentUpdate {
       update.status = payload.status;
     }
   }
+  if ("categoryId" in payload) {
+    if (payload.categoryId !== null && (
+      typeof payload.categoryId !== "string" || !AIRTABLE_RECORD_ID.test(payload.categoryId)
+    )) {
+      issues.push("categoryId must be an Airtable record ID or null.");
+    } else {
+      update.categoryId = payload.categoryId as string | null;
+    }
+  }
+  if ("pointsEarned" in payload) {
+    if (payload.pointsEarned !== null && (
+      typeof payload.pointsEarned !== "number" ||
+      !Number.isFinite(payload.pointsEarned) ||
+      payload.pointsEarned < 0
+    )) {
+      issues.push("pointsEarned must be a non-negative number or null.");
+    } else {
+      update.pointsEarned = payload.pointsEarned as number | null;
+    }
+  }
   if ("hiddenFromList" in payload) {
     if (typeof payload.hiddenFromList !== "boolean") {
       issues.push("hiddenFromList must be a boolean.");
@@ -521,6 +551,73 @@ export function validateAssignmentWrite(value: unknown): AssignmentUpdate {
         `${payload.dueDate}T${dueTime}:00`,
         ACADEMIC_TIME_ZONE
       ).toISOString();
+    }
+  }
+
+  if (issues.length) throw new ValidationError(issues);
+  return update;
+}
+
+export function validateGradeCategoryWrite(value: unknown): GradeCategoryUpdate {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    throw new ValidationError(["Request body must be an object."]);
+  }
+  const payload = value as Record<string, unknown>;
+  const issues: string[] = [];
+  for (const key of Object.keys(payload)) {
+    if (!GRADE_CATEGORY_WRITE_FIELDS.has(key)) {
+      issues.push(`Unexpected field: ${key}.`);
+    }
+  }
+
+  const update: GradeCategoryUpdate = {};
+  if ("courseId" in payload) {
+    if (payload.courseId !== null && (
+      typeof payload.courseId !== "string" || !AIRTABLE_RECORD_ID.test(payload.courseId)
+    )) {
+      issues.push("courseId must be an Airtable record ID or null.");
+    } else {
+      update.courseId = payload.courseId as string | null;
+    }
+  }
+  if ("name" in payload) {
+    if (typeof payload.name !== "string" || payload.name.trim().length === 0) {
+      issues.push("name must be a non-empty string.");
+    } else if (payload.name.trim().length > 120) {
+      issues.push("name must be 120 characters or fewer.");
+    } else {
+      update.name = payload.name.trim();
+    }
+  }
+  if ("weightPercent" in payload) {
+    if (
+      typeof payload.weightPercent !== "number" ||
+      !Number.isFinite(payload.weightPercent) ||
+      payload.weightPercent < 0 ||
+      payload.weightPercent > 100
+    ) {
+      issues.push("weightPercent must be a number from 0 through 100.");
+    } else {
+      update.weightPercent = payload.weightPercent;
+    }
+  }
+  if ("calculationType" in payload) {
+    if (payload.calculationType !== "required" && payload.calculationType !== "extra_credit") {
+      issues.push("calculationType must be required or extra_credit.");
+    } else {
+      update.calculationType = payload.calculationType;
+    }
+  }
+  if ("maxExtraCreditPercent" in payload) {
+    if (payload.maxExtraCreditPercent !== null && (
+      typeof payload.maxExtraCreditPercent !== "number" ||
+      !Number.isFinite(payload.maxExtraCreditPercent) ||
+      payload.maxExtraCreditPercent < 0 ||
+      payload.maxExtraCreditPercent > 100
+    )) {
+      issues.push("maxExtraCreditPercent must be a number from 0 through 100 or null.");
+    } else {
+      update.maxExtraCreditPercent = payload.maxExtraCreditPercent as number | null;
     }
   }
 

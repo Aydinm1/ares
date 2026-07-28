@@ -281,6 +281,8 @@ test("serializes editable assignment fields without touching omitted fields", ()
       title: "Revised essay",
       courseId: "recCourse",
       dueAt: null,
+      categoryId: "recCategory123456",
+      pointsEarned: 24,
       pointsPossible: 25,
       weekLabel: null,
       hiddenFromList: true
@@ -289,6 +291,8 @@ test("serializes editable assignment fields without touching omitted fields", ()
       [fields.assignments.title]: "Revised essay",
       [fields.assignments.course]: ["recCourse"],
       [fields.assignments.dueAt]: null,
+      [fields.assignments.gradeCategory]: ["recCategory123456"],
+      [fields.assignments.pointsEarned]: 24,
       [fields.assignments.pointsPossible]: 25,
       [fields.assignments.weekLabel]: null,
       [fields.assignments.hiddenFromList]: true
@@ -296,5 +300,9 @@ test("serializes editable assignment fields without touching omitted fields", ()
   );
   assert.deepEqual(assignmentUpdateToAirtable({ courseId: null }), {
     [fields.assignments.course]: []
+  });
+  assert.deepEqual(assignmentUpdateToAirtable({ categoryId: null, pointsEarned: null }), {
+    [fields.assignments.gradeCategory]: [],
+    [fields.assignments.pointsEarned]: null
   });
 });

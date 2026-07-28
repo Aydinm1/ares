@@ -9,6 +9,8 @@ import type {
   Contact,
   ContactEvidenceUpdate,
   Course,
+  GradeCategory,
+  GradeCategoryUpdate,
   Habit,
   HabitCheckIn,
   HabitUpdate,
@@ -26,6 +28,7 @@ import {
   contactEvidenceToAirtable,
   contactIntakeToAirtable,
   contactIntakeUpdateToAirtable,
+  gradeCategoryUpdateToAirtable,
   type ContactClientFitPersistence,
   habitCheckInToAirtable,
   habitToAirtable,
@@ -104,6 +107,13 @@ export class SchoolRepository {
     return this.readCached("assignments", options, async () => {
       const records = await this.client.list<Record<string, unknown>>(tableRef("assignments"));
       return records.map(mapAssignment);
+    });
+  }
+
+  async listGradeCategories(options: ReadOptions = {}): Promise<GradeCategory[]> {
+    return this.readCached("gradeCategories", options, async () => {
+      const records = await this.client.list<Record<string, unknown>>(tableRef("gradeCategories"));
+      return records.map(mapGradeCategory);
     });
   }
 
@@ -199,6 +209,34 @@ export class SchoolRepository {
     return mapAssignment(record);
   }
 
+  async createAssignment(update: AssignmentUpdate): Promise<Assignment> {
+    const record = await this.client.create<Record<string, unknown>>(
+      tableRef("assignments"),
+      assignmentUpdateToAirtable(update)
+    );
+    this.invalidateAssignments();
+    return mapAssignment(record);
+  }
+
+  async createGradeCategory(update: GradeCategoryUpdate): Promise<GradeCategory> {
+    const record = await this.client.create<Record<string, unknown>>(
+      tableRef("gradeCategories"),
+      gradeCategoryUpdateToAirtable(update)
+    );
+    this.invalidateGradeCategories();
+    return mapGradeCategory(record);
+  }
+
+  async updateGradeCategory(recordId: string, update: GradeCategoryUpdate): Promise<GradeCategory> {
+    const record = await this.client.update<Record<string, unknown>>(
+      tableRef("gradeCategories"),
+      recordId,
+      gradeCategoryUpdateToAirtable(update)
+    );
+    this.invalidateGradeCategories();
+    return mapGradeCategory(record);
+  }
+
   async deleteAssignment(recordId: string): Promise<void> {
     await this.client.delete(tableRef("assignments"), recordId);
     this.invalidateAssignments();
@@ -206,6 +244,11 @@ export class SchoolRepository {
 
   invalidateAssignments(): void {
     this.cache.delete("assignments");
+  }
+
+  invalidateGradeCategories(): void {
+    this.cache.delete("gradeCategories");
+    this.cache.delete("courses");
   }
 
   invalidateContacts(): void {

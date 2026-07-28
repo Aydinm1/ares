@@ -3,6 +3,7 @@
 import { type ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 import {
   CalendarDays,
+  Calculator,
   CircleAlert,
   CircleCheckBig,
   Compass,
@@ -48,6 +49,7 @@ const icons = {
   habits: <CircleCheckBig size={19} strokeWidth={2} />,
   competencies: <Compass size={19} strokeWidth={2} />,
   contacts: <UsersRound size={19} strokeWidth={2} />,
+  grades: <Calculator size={19} strokeWidth={2} />,
   calendar: <CalendarDays size={17} strokeWidth={2} />,
   sync: <RefreshCw size={16} strokeWidth={2} />,
 };

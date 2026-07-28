@@ -23,6 +23,7 @@ import type {
   CourseStatus,
   GeneralEducationRequirement,
   GradeCategory,
+  GradeCategoryUpdate,
   Habit,
   HabitCheckIn,
   HabitUpdate,
@@ -687,6 +688,12 @@ export function assignmentUpdateToAirtable(update: AssignmentUpdate): AnyFields 
   if (update.status !== undefined) {
     fieldsToUpdate[fields.assignments.completed] = update.status === "submitted";
   }
+  if (update.categoryId !== undefined) {
+    fieldsToUpdate[fields.assignments.gradeCategory] = update.categoryId ? [update.categoryId] : [];
+  }
+  if (update.pointsEarned !== undefined) {
+    fieldsToUpdate[fields.assignments.pointsEarned] = update.pointsEarned;
+  }
   if (update.pointsPossible !== undefined) {
     fieldsToUpdate[fields.assignments.pointsPossible] = update.pointsPossible;
   }
@@ -699,12 +706,48 @@ export function assignmentUpdateToAirtable(update: AssignmentUpdate): AnyFields 
   return fieldsToUpdate;
 }
 
+function gradeCalculationType(value: unknown): GradeCategory["calculationType"] | undefined {
+  const text = stringValue(value);
+  if (text === "Required") return "required";
+  if (text === "Extra Credit") return "extra_credit";
+  return undefined;
+}
+
+function gradeCalculationTypeToAirtable(
+  value: GradeCategoryUpdate["calculationType"]
+): string | undefined {
+  if (value === "required") return "Required";
+  if (value === "extra_credit") return "Extra Credit";
+  return undefined;
+}
+
 export function mapGradeCategory(record: AirtableRecord<AnyFields>): GradeCategory {
   const value = record.fields;
   return {
     id: record.id,
     courseId: firstLinkedId(value[fields.gradeCategories.course]) ?? "",
     name: stringValue(value[fields.gradeCategories.name]) ?? "Uncategorized",
-    weightPercent: numberValue(value[fields.gradeCategories.weightPercent]) ?? 0
+    weightPercent: numberValue(value[fields.gradeCategories.weightPercent]) ?? 0,
+    calculationType: gradeCalculationType(value[fields.gradeCategories.calculationType]),
+    maxExtraCreditPercent: numberValue(value[fields.gradeCategories.maxExtraCreditPercent])
   };
+}
+
+export function gradeCategoryUpdateToAirtable(update: GradeCategoryUpdate): AnyFields {
+  const fieldsToUpdate: AnyFields = {};
+  if (update.name !== undefined) fieldsToUpdate[fields.gradeCategories.name] = update.name;
+  if (update.courseId !== undefined) {
+    fieldsToUpdate[fields.gradeCategories.course] = update.courseId ? [update.courseId] : [];
+  }
+  if (update.weightPercent !== undefined) {
+    fieldsToUpdate[fields.gradeCategories.weightPercent] = update.weightPercent;
+  }
+  if (update.calculationType !== undefined) {
+    fieldsToUpdate[fields.gradeCategories.calculationType] =
+      gradeCalculationTypeToAirtable(update.calculationType);
+  }
+  if (update.maxExtraCreditPercent !== undefined) {
+    fieldsToUpdate[fields.gradeCategories.maxExtraCreditPercent] = update.maxExtraCreditPercent;
+  }
+  return fieldsToUpdate;
 }

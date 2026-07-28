@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { GET as getAssignments } from "../app/api/assignments/route.js";
+import { GET as getAssignments, POST as createAssignmentRoute } from "../app/api/assignments/route.js";
 import { DELETE, PATCH } from "../app/api/assignments/[id]/route.js";
 import { GET as getCourses } from "../app/api/courses/route.js";
 import { clearRepositoryReadCache } from "../app/api/_lib/schoolRoutes.js";
@@ -276,6 +276,8 @@ test("assignment PATCH updates editable Airtable fields", async () => {
         [fields.assignments.title]: "Revised essay",
         [fields.assignments.course]: ["rec12345678901234"],
         [fields.assignments.dueAt]: "2026-07-04T06:59:00.000Z",
+        [fields.assignments.gradeCategory]: ["recCategory123456"],
+        [fields.assignments.pointsEarned]: 18,
         [fields.assignments.pointsPossible]: 20,
         [fields.assignments.weekLabel]: "2"
       }
@@ -290,6 +292,8 @@ test("assignment PATCH updates editable Airtable fields", async () => {
         courseId: "rec12345678901234",
         dueDate: "2026-07-03",
         dueTime: "",
+        categoryId: "recCategory123456",
+        pointsEarned: 18,
         pointsPossible: 20,
         weekLabel: "2"
       })
@@ -303,8 +307,54 @@ test("assignment PATCH updates editable Airtable fields", async () => {
       [fields.assignments.title]: "Revised essay",
       [fields.assignments.course]: ["rec12345678901234"],
       [fields.assignments.dueAt]: "2026-07-04T06:59:00.000Z",
+      [fields.assignments.gradeCategory]: ["recCategory123456"],
+      [fields.assignments.pointsEarned]: 18,
       [fields.assignments.pointsPossible]: 20,
       [fields.assignments.weekLabel]: "2"
+    }
+  });
+});
+
+test("assignment POST creates editable Airtable fields", async () => {
+  let requestBody: unknown;
+  globalThis.fetch = async (_input, init) => {
+    requestBody = JSON.parse(String(init?.body));
+    return Response.json({
+      id: "recAssignment",
+      fields: {
+        [fields.assignments.title]: "Extra Credit",
+        [fields.assignments.course]: ["rec12345678901234"],
+        [fields.assignments.gradeCategory]: ["recCategory123456"],
+        [fields.assignments.completed]: true,
+        [fields.assignments.pointsEarned]: 2,
+        [fields.assignments.pointsPossible]: 3
+      }
+    });
+  };
+
+  const response = await createAssignmentRoute(
+    new Request("http://localhost/api/assignments", {
+      method: "POST",
+      body: JSON.stringify({
+        title: "Extra Credit",
+        courseId: "rec12345678901234",
+        categoryId: "recCategory123456",
+        status: "submitted",
+        pointsEarned: 2,
+        pointsPossible: 3
+      })
+    })
+  );
+
+  assert.equal(response.status, 201);
+  assert.deepEqual(requestBody, {
+    fields: {
+      [fields.assignments.title]: "Extra Credit",
+      [fields.assignments.course]: ["rec12345678901234"],
+      [fields.assignments.completed]: true,
+      [fields.assignments.gradeCategory]: ["recCategory123456"],
+      [fields.assignments.pointsEarned]: 2,
+      [fields.assignments.pointsPossible]: 3
     }
   });
 });

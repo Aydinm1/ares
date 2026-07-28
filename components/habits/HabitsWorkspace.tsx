@@ -11,6 +11,7 @@ import {
 import {
   ArrowDown,
   ArrowUp,
+  Calculator,
   Check,
   ChevronLeft,
   ChevronRight,
@@ -56,6 +57,7 @@ const icons = {
   assignments: <ListTodo size={19} strokeWidth={2} />,
   courses: <GraduationCap size={19} strokeWidth={2} />,
   contacts: <UsersRound size={19} strokeWidth={2} />,
+  grades: <Calculator size={19} strokeWidth={2} />,
 };
 
 function formatSessionTotal(total: number): string {

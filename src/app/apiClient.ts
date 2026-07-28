@@ -9,6 +9,8 @@ import type {
   ContactEvidenceUpdate,
   ContactWorkflow,
   Course,
+  GradeCategory,
+  GradeCategoryUpdate,
   Habit,
   HabitCheckIn,
   HabitUpdate,
@@ -22,6 +24,9 @@ export interface AssignmentEditorUpdate {
   courseId?: string | null;
   dueDate?: string | null;
   dueTime?: string | null;
+  status?: "submitted" | "not_started";
+  categoryId?: string | null;
+  pointsEarned?: number | null;
   pointsPossible?: number | null;
   weekLabel?: string | null;
   hiddenFromList?: boolean;
@@ -43,6 +48,13 @@ export async function loadCourses(options: LoadOptions = {}): Promise<Course[]> 
     apiUrl("/api/courses", options)
   );
   return response.courses;
+}
+
+export async function loadGradeCategories(options: LoadOptions = {}): Promise<GradeCategory[]> {
+  const response = await fetchJson<{ gradeCategories: GradeCategory[] }>(
+    apiUrl("/api/grade-categories", options)
+  );
+  return response.gradeCategories;
 }
 
 export async function loadContacts(options: LoadOptions = {}): Promise<Contact[]> {
@@ -337,6 +349,39 @@ export async function updateAssignmentDetails(
     }
   );
   return response.assignment;
+}
+
+export async function createAssignment(update: AssignmentEditorUpdate): Promise<Assignment> {
+  const response = await fetchJson<{ assignment: Assignment }>("/api/assignments", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(update)
+  });
+  return response.assignment;
+}
+
+export async function createGradeCategory(update: GradeCategoryUpdate): Promise<GradeCategory> {
+  const response = await fetchJson<{ gradeCategory: GradeCategory }>("/api/grade-categories", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(update)
+  });
+  return response.gradeCategory;
+}
+
+export async function updateGradeCategory(
+  id: string,
+  update: GradeCategoryUpdate
+): Promise<GradeCategory> {
+  const response = await fetchJson<{ gradeCategory: GradeCategory }>(
+    `/api/grade-categories/${encodeURIComponent(id)}`,
+    {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(update)
+    }
+  );
+  return response.gradeCategory;
 }
 
 export async function deleteAssignment(id: string): Promise<void> {
