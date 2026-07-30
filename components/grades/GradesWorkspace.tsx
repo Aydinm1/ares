@@ -12,6 +12,7 @@ import {
   ListTodo,
   RefreshCw,
   Save,
+  Trash2,
   UsersRound,
 } from "lucide-react";
 import {
@@ -22,6 +23,7 @@ import {
 import {
   createAssignment,
   createGradeCategory,
+  deleteGradeCategory,
   loadAssignments,
   loadCourses,
   loadGradeCategories,
@@ -270,6 +272,32 @@ export function GradesWorkspace() {
     selectedCourseAssignments,
     selectedCourseCategories
   ]);
+
+  const deleteCategory = useCallback(async (category: GradeCategory) => {
+    setSavingId(category.id);
+    setMutationError(undefined);
+    try {
+      await deleteGradeCategory(category.id);
+      setCategoryDrafts((current) => {
+        const next = { ...current };
+        delete next[category.id];
+        return next;
+      });
+      setAssignmentDrafts((current) =>
+        Object.fromEntries(
+          Object.entries(current).map(([assignmentId, draft]) => [
+            assignmentId,
+            draft.categoryId === category.id ? { ...draft, categoryId: "" } : draft
+          ])
+        )
+      );
+      await loadData(true);
+    } catch (error) {
+      setMutationError(error instanceof Error ? error.message : "Could not delete weight row.");
+    } finally {
+      setSavingId(undefined);
+    }
+  }, [loadData]);
 
   const applyPsc141Policy = useCallback(async () => {
     if (!selectedCourse) return;
@@ -520,6 +548,15 @@ export function GradesWorkspace() {
                           }));
                         }}
                       />
+                      <button
+                        aria-label={`Delete ${category.name} weight row`}
+                        className={styles.rowIconButton}
+                        type="button"
+                        onClick={() => void deleteCategory(category)}
+                        disabled={savingId === category.id || savingId === "save-all" || savingId === "psc141"}
+                      >
+                        <Trash2 size={14} aria-hidden="true" />
+                      </button>
                     </div>
                   );
                 })}

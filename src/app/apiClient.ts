@@ -384,6 +384,12 @@ export async function updateGradeCategory(
   return response.gradeCategory;
 }
 
+export async function deleteGradeCategory(id: string): Promise<void> {
+  await fetchJson<{ deleted: true }>(`/api/grade-categories/${encodeURIComponent(id)}`, {
+    method: "DELETE"
+  });
+}
+
 export async function deleteAssignment(id: string): Promise<void> {
   await fetchJson<{ deleted: true }>(`/api/assignments/${encodeURIComponent(id)}`, {
     method: "DELETE"

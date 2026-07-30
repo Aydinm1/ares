@@ -361,6 +361,30 @@
   padding: 0 7px;
 }
 
+.rowIconButton {
+  display: inline-grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  justify-self: start;
+  padding: 0;
+  border: 1px solid var(--assignment-border);
+  border-radius: 7px;
+  color: #8a1f1f;
+  background: #ffffff;
+  cursor: pointer;
+}
+
+.rowIconButton:hover {
+  border-color: #efb0b0;
+  background: #fff1f1;
+}
+
+.rowIconButton:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+
 .pendingAdd {
   color: var(--assignment-muted);
   font-size: 12px;

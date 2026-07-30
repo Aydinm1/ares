@@ -237,6 +237,12 @@ export class SchoolRepository {
     return mapGradeCategory(record);
   }
 
+  async deleteGradeCategory(recordId: string): Promise<void> {
+    await this.client.delete(tableRef("gradeCategories"), recordId);
+    this.invalidateGradeCategories();
+    this.invalidateAssignments();
+  }
+
   async deleteAssignment(recordId: string): Promise<void> {
     await this.client.delete(tableRef("assignments"), recordId);
     this.invalidateAssignments();

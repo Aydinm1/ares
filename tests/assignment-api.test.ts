@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { GET as getAssignments, POST as createAssignmentRoute } from "../app/api/assignments/route.js";
 import { DELETE, PATCH } from "../app/api/assignments/[id]/route.js";
+import { DELETE as deleteGradeCategoryRoute } from "../app/api/grade-categories/[id]/route.js";
 import { GET as getCourses } from "../app/api/courses/route.js";
 import { clearRepositoryReadCache } from "../app/api/_lib/schoolRoutes.js";
 import {
@@ -10,6 +11,7 @@ import {
   loadCourses,
   updateAssignmentCompletion,
   deleteAssignment,
+  deleteGradeCategory,
   updateAssignmentDetails,
   updateAssignmentVisibility
 } from "../src/app/apiClient.js";
@@ -264,6 +266,27 @@ test("assignment DELETE removes the Airtable record and invalidates cached assig
 
   assert.equal((await getAssignments(new Request("http://localhost/api/assignments"))).status, 200);
   assert.equal(assignmentReads, 2);
+});
+
+test("grade category DELETE removes the Airtable record", async () => {
+  let deletedUrl: string | undefined;
+  globalThis.fetch = async (input, init) => {
+    const url = String(input);
+    if (init?.method === "DELETE") {
+      deletedUrl = url;
+      return Response.json({ deleted: true });
+    }
+    throw new Error(`Unexpected fetch: ${url}`);
+  };
+
+  const response = await deleteGradeCategoryRoute(
+    new Request("http://localhost/api/grade-categories/recCategory", { method: "DELETE" }),
+    { params: Promise.resolve({ id: "recCategory" }) }
+  );
+
+  assert.equal(response.status, 200);
+  assert.match(deletedUrl ?? "", new RegExp(`${tableRef("gradeCategories")}/recCategory$`));
+  assert.deepEqual(await response.json(), { deleted: true });
 });
 
 test("assignment PATCH updates editable Airtable fields", async () => {
@@ -528,4 +551,14 @@ test("workspace API client serializes assignment deletes", async () => {
   };
 
   await deleteAssignment("rec/one");
+});
+
+test("workspace API client serializes grade category deletes", async () => {
+  globalThis.fetch = async (input, init) => {
+    assert.equal(String(input), "/api/grade-categories/rec%2Fcategory");
+    assert.equal(init?.method, "DELETE");
+    return Response.json({ deleted: true });
+  };
+
+  await deleteGradeCategory("rec/category");
 });
